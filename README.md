@@ -1,1 +1,0 @@
-# KAWING--IoT-Integrated-Post-Harvest-Coordination-Platform
