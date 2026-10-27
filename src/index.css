@@ -1,0 +1,640 @@
+@import url('https://db.onlinewebfonts.com/c/b1314443e183d1cdd77049077c46facc?family=Orbitron-Medium');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Orbitron:wght@700;800;900&family=Space+Grotesk:wght@300..700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+/* Keep multiline fields at their designed size while allowing content to scroll. */
+textarea {
+  resize: none;
+}
+
+/* Desktop sidebar: compact icon rail that reveals its labels on hover. */
+@media (min-width: 768px) {
+  .desktop-sidebar-shell {
+    --sidebar-expanded-width: 14rem;
+    width: 88px;
+    transition: width 280ms cubic-bezier(.22, 1, .36, 1);
+  }
+
+  .desktop-sidebar-shell:hover,
+  .desktop-sidebar-shell.theme-reveal-expanded { width: var(--sidebar-expanded-width); }
+
+  .desktop-sidebar-shell > .sidebar-content {
+    width: 100%;
+    min-width: 0;
+    transition: none;
+  }
+
+  .desktop-sidebar-shell .sidebar-expanded-only {
+    max-width: 14rem;
+    opacity: 1;
+    overflow: hidden;
+    transform: translateX(0);
+    white-space: nowrap;
+    transition:
+      max-width 260ms ease,
+      opacity 180ms ease 80ms,
+      transform 260ms ease,
+      visibility 0s linear;
+  }
+
+  .desktop-sidebar-shell:not(:hover):not(.theme-reveal-expanded) .sidebar-expanded-only {
+    max-width: 0 !important;
+    opacity: 0;
+    transform: translateX(-0.4rem);
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      max-width 240ms ease,
+      opacity 120ms ease,
+      transform 200ms ease,
+      visibility 0s linear 240ms;
+  }
+
+  .desktop-sidebar-shell .sidebar-profile-button,
+  .desktop-sidebar-shell .sidebar-theme-toggle,
+  .desktop-sidebar-shell .sidebar-logout-button {
+    width: 100%;
+    height: 3rem;
+    justify-content: flex-start;
+    padding-left: 1rem;
+    padding-right: 0.5rem;
+  }
+
+  .desktop-sidebar-shell .sidebar-logout-button,
+  .desktop-sidebar-shell .sidebar-theme-toggle {
+    padding-left: 1.5rem;
+  }
+
+  .desktop-sidebar-shell .sidebar-nav-button {
+    width: 100%;
+    height: 3rem;
+    padding-left: 1.125rem;
+    padding-right: 0.5rem;
+  }
+
+  .desktop-sidebar-shell .sidebar-profile-button,
+  .desktop-sidebar-shell .sidebar-nav-button,
+  .desktop-sidebar-shell .sidebar-logout-button,
+  .desktop-sidebar-shell .sidebar-theme-toggle,
+  .desktop-sidebar-shell .sidebar-section-heading {
+    transition: padding 280ms ease, gap 280ms ease, background-color 180ms ease, border-color 180ms ease;
+  }
+
+  .desktop-sidebar-shell .sidebar-nav-button > div {
+    transition: gap 260ms ease;
+  }
+
+  .desktop-sidebar-shell:not(:hover):not(.theme-reveal-expanded) .sidebar-nav-button > div {
+    gap: 0;
+  }
+
+  .desktop-sidebar-shell:not(:hover):not(.theme-reveal-expanded) .sidebar-section-heading {
+    width: 4rem;
+    margin-left: auto;
+    margin-right: auto;
+    justify-content: center;
+  }
+
+  .desktop-sidebar-shell:not(:hover):not(.theme-reveal-expanded) .sidebar-price-offers-icon > svg {
+    transform: translateX(1px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .desktop-sidebar-shell {
+    --sidebar-expanded-width: 16rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .desktop-sidebar-shell {
+    --sidebar-expanded-width: 18rem;
+  }
+}
+
+@media (min-width: 768px) and (prefers-reduced-motion: reduce) {
+  .desktop-sidebar-shell,
+  .desktop-sidebar-shell * { transition: none !important; }
+}
+
+/* Comfortable mouse/touch target for every popup close control. */
+button[aria-label*="close" i],
+button[aria-label*="isara" i] {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Spacious, readable forms for the farmer's main popup workflows. */
+@media (min-width: 640px) {
+  .kawing-readable-modal form {
+    padding: 1.75rem !important;
+  }
+
+  .kawing-readable-modal form > * + * {
+    margin-top: 1.25rem !important;
+  }
+
+  .kawing-readable-modal label,
+  .kawing-readable-modal input,
+  .kawing-readable-modal select,
+  .kawing-readable-modal textarea,
+  .kawing-readable-modal button {
+    font-size: 1rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .kawing-readable-modal input,
+  .kawing-readable-modal select,
+  .kawing-readable-modal textarea {
+    padding: 0.75rem 0.9rem !important;
+  }
+
+  .kawing-readable-modal p {
+    font-size: 0.9375rem !important;
+    line-height: 1.6 !important;
+  }
+
+  .kawing-readable-modal form > div > span,
+  .kawing-readable-modal form label > span:first-child,
+  .kawing-readable-modal form button > span:first-child {
+    font-size: 1rem !important;
+  }
+
+  .kawing-readable-modal form button > span + span {
+    font-size: 0.875rem !important;
+    line-height: 1.5 !important;
+  }
+}
+
+/* Use wide screens as a two-column workspace instead of a tall, narrow form. */
+@media (min-width: 1024px) {
+  .post-harvest-form {
+    display: grid;
+    align-content: start;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    grid-template-areas:
+      "information moisture"
+      "selling selling"
+      "total total"
+      "actions actions";
+    align-items: start;
+    gap: 1.25rem;
+  }
+
+  .kawing-readable-modal form.post-harvest-form > * {
+    margin-top: 0 !important;
+  }
+
+  .post-harvest-information { grid-area: information; }
+  .post-harvest-selling { grid-area: selling; }
+  .post-harvest-moisture { grid-area: moisture; }
+  .post-harvest-total { grid-area: total; }
+  .post-harvest-actions { grid-area: actions; }
+
+  .request-service-form > * {
+    margin-top: 0 !important;
+  }
+}
+
+@variant dark (&:where(.dark, .dark *));
+
+html.theme-revealing *,
+html.theme-revealing *::before,
+html.theme-revealing *::after {
+  transition: none !important;
+}
+
+html.theme-revealing::view-transition { pointer-events: none; }
+
+html.theme-revealing::view-transition-old(root),
+html.theme-revealing::view-transition-new(root) {
+  mix-blend-mode: normal;
+  animation: none;
+}
+
+html.theme-revealing::view-transition-old(root) { z-index: 0; }
+html.theme-revealing::view-transition-new(root) {
+  z-index: 1;
+  animation: theme-circle-reveal 500ms cubic-bezier(.22, 1, .36, 1) both;
+}
+
+@keyframes theme-circle-reveal {
+  from { clip-path: circle(0px at var(--theme-reveal-x) var(--theme-reveal-y)); }
+  to { clip-path: circle(var(--theme-reveal-radius) at var(--theme-reveal-x) var(--theme-reveal-y)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.theme-revealing::view-transition-new(root) { animation: none; }
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Base custom resets */
+html, body, #root {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  font-family: var(--font-sans);
+  background-color: #0f172a;
+  color: #f8fafc;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dark, .dark body {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+/* Optional light theme; existing dark rules remain unchanged. */
+html:not(.dark),
+html:not(.dark) body,
+html:not(.dark) #root {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+html:not(.dark) .glass-header-scrolled {
+  background-color: rgba(248, 250, 252, 0.88) !important;
+  border-bottom-color: rgba(16, 185, 129, 0.3) !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(16, 185, 129, 0.1) !important;
+}
+
+@media (max-width: 767px) {
+  .desktop-sidebar-shell .sidebar-theme-container {
+    align-self: center;
+    padding: 0 0.5rem;
+  }
+
+  .desktop-sidebar-shell .sidebar-theme-toggle {
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+  }
+
+  .desktop-sidebar-shell .sidebar-theme-toggle .sidebar-expanded-only {
+    display: none;
+  }
+
+  html:not(.dark) .desktop-sidebar-shell > .sidebar-content {
+    border-top-color: rgb(203 213 225 / 0.8);
+    box-shadow: 0 -12px 28px rgb(15 23 42 / 0.08);
+  }
+
+  html:not(.dark) .desktop-sidebar-shell .sidebar-content > .flex-1 > .sidebar-expanded-only {
+    background: #fff;
+    border-color: #cbd5e1;
+    box-shadow: 0 18px 45px rgb(15 23 42 / 0.12);
+  }
+}
+
+/* Forest palette for the light-mode navigation panel. */
+html:not(.dark) .sidebar-content {
+  background: #0b2419;
+  color: #f1f8f3;
+  border-color: #264535;
+}
+
+html:not(.dark) .sidebar-content .sidebar-profile-button,
+html:not(.dark) .sidebar-content .sidebar-theme-toggle {
+  background: #123221;
+  border-color: #30523d;
+  color: #f1f8f3;
+}
+
+html:not(.dark) .sidebar-content .sidebar-profile-button span,
+html:not(.dark) .sidebar-content .sidebar-profile-button svg,
+html:not(.dark) .sidebar-content .sidebar-nav-button,
+html:not(.dark) .sidebar-content .sidebar-nav-button svg {
+  color: #f1f8f3;
+}
+
+html:not(.dark) .sidebar-content .sidebar-nav-button > div > span:first-child {
+  background: #1a3b28;
+  color: #d4e9db;
+}
+
+html:not(.dark) .sidebar-content .sidebar-nav-button:hover,
+html:not(.dark) .sidebar-content .sidebar-profile-button:hover,
+html:not(.dark) .sidebar-content .sidebar-theme-toggle:hover,
+html:not(.dark) .sidebar-content .sidebar-section-heading button:hover {
+  background: #183e2a;
+}
+
+html:not(.dark) .sidebar-content .sidebar-nav-button.bg-emerald-600 {
+  background: #059669;
+  color: #fff;
+}
+
+html:not(.dark) .sidebar-content .sidebar-nav-button.bg-emerald-600 > div > span:first-child {
+  background: rgb(255 255 255 / 0.16);
+}
+
+html:not(.dark) .sidebar-content .sidebar-section-heading,
+html:not(.dark) .sidebar-content .sidebar-section-heading > span,
+html:not(.dark) .sidebar-content .sidebar-section-heading button {
+  color: #b8d3c1;
+}
+
+html:not(.dark) .sidebar-content .border-t,
+html:not(.dark) .sidebar-content .border-b,
+html:not(.dark) .sidebar-content .border-l {
+  border-color: #264535;
+}
+
+html:not(.dark) .sidebar-content > div:last-child {
+  background: #081d14;
+  color: #b8d3c1;
+}
+
+html:not(.dark) .sidebar-content > div:last-child svg { color: #6ee7b7; }
+
+html:not(.dark) .sidebar-content .sidebar-logout-button {
+  background: #352d29;
+  border-color: #88504b;
+  color: #fecaca;
+}
+html:not(.dark) .sidebar-content .sidebar-logout-button svg { color: #fca5a5; }
+html:not(.dark) .sidebar-content .sidebar-logout-button:hover { background: #49302b; }
+
+html:not(.dark) .sidebar-content > .flex-1 > .sidebar-expanded-only {
+  background: #0b2419;
+  border-color: #264535;
+}
+html:not(.dark) .sidebar-content > .flex-1 > .sidebar-expanded-only button { color: #f1f8f3; }
+html:not(.dark) .sidebar-content > .flex-1 > .sidebar-expanded-only button:hover { background: #183e2a; }
+html:not(.dark) .sidebar-content > .flex-1 > .sidebar-expanded-only button.bg-emerald-100 { background: #059669; }
+
+@media (max-width: 767px) {
+  html:not(.dark) .desktop-sidebar-shell > .sidebar-content { border-top-color: #264535; }
+  html:not(.dark) .desktop-sidebar-shell .sidebar-content > .flex-1 > .sidebar-expanded-only {
+    background: #0b2419;
+    border-color: #264535;
+  }
+}
+
+/* Custom scrollbar styling for extra polish */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ================= Custom Flowing Gradient Animations ================= */
+@keyframes gradientFlowSlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes buttonShineSweep {
+  0% {
+    transform: translateX(-100%) rotate(25deg);
+  }
+  100% {
+    transform: translateX(250%) rotate(25deg);
+  }
+}
+
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-gradient-slow {
+  background-size: 250% 250% !important;
+  animation: gradientFlowSlow 14s ease-in-out infinite !important;
+}
+
+.animate-gradient-medium {
+  background-size: 200% 200% !important;
+  animation: gradientFlowSlow 8s ease-in-out infinite !important;
+}
+
+.animate-float-gentle {
+  animation: floatGentle 4s ease-in-out infinite;
+}
+
+/* Glassmorphism Sticky Header on Scroll */
+.glass-header-scrolled {
+  background-color: rgba(15, 23, 42, 0.88) !important;
+  backdrop-filter: blur(12px) !important;
+  border-bottom-color: rgba(16, 185, 129, 0.3) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(16, 185, 129, 0.1) !important;
+}
+
+/* Shared dashboard rhythm: keep dense information readable without hiding it. */
+.dashboard-main {
+  max-width: 1600px !important;
+  padding: clamp(1.25rem, 2.5vw, 3rem) !important;
+  line-height: 1.55;
+}
+
+.dashboard-main > * + * {
+  margin-top: clamp(1.75rem, 2.4vw, 2.75rem) !important;
+}
+
+.dashboard-main > .grid {
+  gap: clamp(1.25rem, 2vw, 2rem) !important;
+}
+
+.dashboard-main :where(h1, h2, h3) + p {
+  margin-top: 0.5rem;
+  line-height: 1.65;
+}
+
+@media (max-width: 640px) {
+  .dashboard-main {
+    padding: 1.25rem 1rem 2rem !important;
+  }
+
+  .dashboard-main > * + * {
+    margin-top: 1.5rem !important;
+  }
+}
+
+/* Mobile-only safety net. Desktop starts at 768px and is intentionally untouched. */
+@media (max-width: 767px) {
+  .desktop-sidebar-shell {
+    position: fixed !important;
+    inset: auto 0 0 0 !important;
+    z-index: 80 !important;
+    display: block !important;
+    width: 100% !important;
+    height: calc(4.75rem + env(safe-area-inset-bottom)) !important;
+    overflow: visible !important;
+  }
+
+  .desktop-sidebar-shell > .sidebar-content {
+    width: 100% !important;
+    height: 100% !important;
+    flex-direction: row !important;
+    align-items: stretch;
+    border-top: 1px solid rgb(51 65 85 / 0.8);
+    border-right: 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -12px 28px rgb(2 6 23 / 0.28);
+  }
+
+  .desktop-sidebar-shell .sidebar-content > .mt-3,
+  .desktop-sidebar-shell .sidebar-content > .border-t,
+  .desktop-sidebar-shell .sidebar-section-heading,
+  .desktop-sidebar-shell .sidebar-content [aria-hidden="true"] {
+    display: none !important;
+  }
+
+  .desktop-sidebar-shell .sidebar-content > .flex-1 {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: stretch;
+    gap: 0.25rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.45rem 0.5rem;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  .desktop-sidebar-shell .sidebar-content > .flex-1::-webkit-scrollbar {
+    display: none;
+  }
+
+  .desktop-sidebar-shell .sidebar-nav-button {
+    width: auto !important;
+    min-width: 4.5rem;
+    min-height: 3.75rem;
+    flex: 0 0 auto;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.2rem;
+    padding: 0.35rem 0.5rem;
+    text-align: center;
+    scroll-snap-align: center;
+  }
+
+  .desktop-sidebar-shell .sidebar-nav-button > div {
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .desktop-sidebar-shell .sidebar-nav-button .sidebar-expanded-only {
+    display: block;
+    max-width: 4.75rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.625rem;
+    line-height: 0.75rem;
+  }
+
+  .desktop-sidebar-shell .sidebar-nav-button > .sidebar-expanded-only,
+  .desktop-sidebar-shell .sidebar-nav-button > div.sidebar-expanded-only {
+    display: none !important;
+  }
+
+  .desktop-sidebar-shell .sidebar-content > .flex-1 > .sidebar-expanded-only {
+    position: fixed;
+    right: 0.75rem;
+    bottom: calc(5rem + env(safe-area-inset-bottom));
+    left: 0.75rem;
+    z-index: 82;
+    max-height: 45dvh;
+    overflow-y: auto;
+    border: 1px solid rgb(51 65 85);
+    border-radius: 1rem;
+    background: rgb(15 23 42);
+    padding: 0.75rem;
+    box-shadow: 0 18px 45px rgb(2 6 23 / 0.45);
+  }
+
+  .dashboard-main {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 1rem 0.75rem calc(6.5rem + env(safe-area-inset-bottom)) !important;
+  }
+
+  .dashboard-main :where(button, a[role="button"], input, select) {
+    min-height: 2.75rem;
+  }
+
+  .dashboard-main :where(input, select, textarea) {
+    max-width: 100%;
+    font-size: 1rem;
+  }
+
+  .fixed.inset-0 {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .fixed.inset-0 > :where([role="dialog"], .kawing-readable-modal) {
+    max-height: calc(100dvh - 1.5rem) !important;
+    overflow-y: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+
+  .dashboard-main table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dashboard-main :where(h1, h2) {
+    overflow-wrap: anywhere;
+  }
+
+  .admin-dashboard-shell aside nav > button {
+    min-width: 3.25rem;
+    min-height: 3rem;
+    flex: 0 0 auto;
+    justify-content: center;
+    padding: 0.65rem;
+  }
+
+  .admin-dashboard-shell aside nav > button > div {
+    gap: 0;
+  }
+
+  .admin-dashboard-shell aside nav > button span:not(.rounded-full) {
+    display: none;
+  }
+}

@@ -1,0 +1,31 @@
+import type { UserAccount } from '../types';
+import type { FaqItem } from '../data/faqs';
+
+export function answerGrainyLocally(question: string, user: UserAccount, language: string, faqs: FaqItem[] = []): string {
+  const q = question.toLowerCase().trim();
+  const tl = /\b(paano|bakit|saan|ano|magkano|aking|ko|ng|ang|po|pautang|patuyo)\b/.test(q) || language !== 'en';
+  const say = (en: string, filipino: string) => tl ? filipino : en;
+  const farmer = user.role === 'farmer';
+
+  if (/\b(mc|moisture)\b/.test(q) && /\b(classification|classifications|classify|categories|category|levels|ranges|klasipikasyon|uri)\b/.test(q)) return say(
+    'MC means moisture content. KAWING uses these classifications:\n17% and above: Wet\n15% to below 17%: Moderate\n12% to below 15%: Dry\nBelow 12%: Risk of Grain Breakage.',
+    'Ang MC ay moisture content. Ito ang klasipikasyon sa KAWING:\n17% pataas: Basa (Wet)\n15% hanggang mas mababa sa 17%: Katamtaman (Moderate)\n12% hanggang mas mababa sa 15%: Tuyo (Dry)\nMas mababa sa 12%: Panganib ng Pagkabiyak ng Butil.');
+  const exact = faqs.find(f => [f.questionEn, f.questionTl].some(text => text.toLowerCase().replace(/[?!.,]/g, '').trim() === q.replace(/[?!.,]/g, '')));
+  if (exact) return tl ? exact.answerTl : exact.answerEn;
+  if (/\b(gmail|google|sign.in|token)\b/.test(q)) return say('Connect Google using the same email as your KAWING account. If token verification fails, reconnect once and report the exact error to the administrator.', 'Ikonekta ang Google account na kapareho ng email ng KAWING account mo. Kapag may token error, subukang kumonekta muli at ibigay ang eksaktong error sa administrator.');
+  if (/\b(email|notification|notifications|abiso)\b/.test(q)) return say('Open your profile, choose Edit, set Email Notifications, and save. Delivery also depends on the server email service.', 'Buksan ang profile, piliin ang Edit, itakda ang Email Notifications, at i-save. Kailangan din na gumagana ang email service ng server.');
+  if (/\b(coverage|sakop)\b/.test(q)) return say('Service Coverage Area appears during business registration only when at least one service is selected. Operating Address is still required.', 'Lalabas lang ang Service Coverage Area sa business registration kapag may napiling serbisyo. Kailangan pa rin ang Operating Address.');
+  if (/\b(register|registration|approval|approved|pending|rehistro|aprubado)\b/.test(q)) return say('New registration supports Farmer and Agricultural Business accounts. An administrator must approve the account before normal sign-in.', 'Farmer at Agricultural Business ang mga bagong account category. Kailangan ng admin approval bago makapasok.');
+  if (/\b(loan|loans|borrow|lending|pautang|utang|repay|interest)\b/.test(q)) return farmer
+    ? say('Open Farm Loans, choose a provider, review the terms, then submit your request for review.', 'Buksan ang Farm Loans, pumili ng provider, suriin ang terms, at isumite ang request.')
+    : say('Open Loan Management to configure your production-loan service and review applications.', 'Buksan ang Loan Management para ayusin ang loan service at suriin ang applications.');
+  if (/\b(truck|trucking|transport|hauling|storage|dryer|drying|milling|booking|book|service|serbisyo|patuyo|gilingan|imbakan)\b/.test(q)) return farmer
+    ? say('Open KAWING Partner Hub and choose a provider. Review coverage, capacity, rate, and availability before submitting the request.', 'Sa KAWING Partner Hub, pumili ng provider. Suriin ang coverage, kapasidad, presyo, at availability bago isumite ang request.')
+    : say('Open Logistics to manage service listings and available jobs. Check that the relevant capability is enabled, approved, and available.', 'Buksan ang Logistics para pamahalaan ang service listings at available jobs. Suriin kung enabled, approved, at available ang capability.');
+  if (/\b(moisture|palaysense|sensor|basa|dry|tuyo)\b|\d\s*%/.test(q)) return say('KAWING classifies moisture as Wet at 17% and above, Moderate from 15% to below 17%, Dry from 12% to below 15%, and risk of grain breakage below 12%. I cannot read your device live; check the harvest form.', 'Sa KAWING: Wet kung 17% pataas, Moderate kung 15% hanggang mas mababa sa 17%, Dry kung 12% hanggang mas mababa sa 15%, at panganib ng pagkabiyak ng butil kung mas mababa sa 12%. Tingnan ang harvest form para sa live reading.');
+  if (/\b(offer|offers|bid|bidding|price|presyo|alok)\b/.test(q)) return say(farmer ? 'Open Price Offers Received to compare buyer prices, quantities, identities, and terms before accepting.' : 'Open Buy Harvests to review a listing and send an offer. Track it in My Price Offers.', farmer ? 'Sa Price Offers Received, ihambing ang presyo, dami, buyer, at terms bago tumanggap.' : 'Gamitin ang Buy Harvests para makita ang ani at magbigay ng offer. Tingnan ito sa My Price Offers.');
+  if (/\b(harvest|post|ani|listing)\b/.test(q)) return say(farmer ? 'Open My Harvest Posts to create or manage a harvest. A fresh PalaySense reading is required.' : 'Use Buy Harvests to browse farmer listings.', farmer ? 'Buksan ang My Harvest Posts para mag-post o pamahalaan ang ani. Kailangan ang bagong PalaySense reading.' : 'Gamitin ang Buy Harvests para makita ang mga ani ng farmers.');
+  if (/\b(profile|bio|photo|picture|larawan|password)\b/.test(q)) return say('Open your profile from the sidebar and choose Edit, then save your changes.', 'Buksan ang profile mula sa sidebar, piliin ang Edit, at i-save ang pagbabago.');
+  if (/\b(save|saved|saving|error|fail|failed|duplicate)\b/.test(q)) return say('If saving fails, check the specific error and retry after correcting it.', 'Kapag hindi nag-save, tingnan ang eksaktong error at subukang muli pagkatapos itong ayusin.');
+  return say('I can explain harvest posts, price offers, service bookings, Farm Loans, account approval, and profile settings. Which task are you trying to complete?', 'Makatutulong ako sa harvest posts, price offers, bookings, Farm Loans, account approval, at profile settings. Ano ang gusto mong gawin?');
+}

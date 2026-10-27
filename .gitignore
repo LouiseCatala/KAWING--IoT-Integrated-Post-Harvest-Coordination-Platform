@@ -1,0 +1,15 @@
+node_modules/
+vendor/
+composer.phar
+composer-setup.php
+composer-installer.sig
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+kawing-config.php
+database/before-*.sql
+database/*backup*.sql

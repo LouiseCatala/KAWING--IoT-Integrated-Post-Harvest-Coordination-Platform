@@ -1,0 +1,25 @@
+<?php
+// Copy to /home/CPANEL_USERNAME/kawing-config.php (above public_html).
+return [
+    'db_host' => 'localhost',
+    'db_port' => '3306',
+    'db_name' => 'cpaneluser_kawing',
+    'db_user' => 'cpaneluser_kawinguser',
+    'db_password' => 'REPLACE_WITH_A_STRONG_PASSWORD',
+    'iot_api_key' => 'REPLACE_WITH_A_LONG_RANDOM_KEY',
+    'app_url' => 'https://your-domain.example',
+    'google_client_id' => '',
+    'google_client_secret' => '',
+    'admin_api_key' => 'REPLACE_WITH_A_DIFFERENT_LONG_RANDOM_KEY',
+    'fish_audio_api_key' => 'REPLACE_WITH_FISH_AUDIO_API_KEY',
+    'fish_audio_reference_id' => 'ad5685d84b4d4e9d8fd74ff3b12b30b2',
+    'smtp_enabled' => true,
+    'smtp_host' => 'smtp.gmail.com',
+    'smtp_port' => 587,
+    'smtp_encryption' => 'tls',
+    'smtp_username' => 'your-kawing-account@gmail.com',
+    'smtp_password' => 'REPLACE_WITH_GOOGLE_APP_PASSWORD',
+    'smtp_from_email' => 'your-kawing-account@gmail.com',
+    'smtp_from_name' => 'KAWING Notifications',
+    'smtp_test_recipient' => 'your-personal-email@example.com',
+];

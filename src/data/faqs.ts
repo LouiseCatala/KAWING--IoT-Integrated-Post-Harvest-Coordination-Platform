@@ -1,0 +1,19 @@
+export type FaqItem = {
+  id: string;
+  category: 'general' | 'farmers' | 'buyers' | 'services' | 'moisture';
+  questionEn: string;
+  questionTl: string;
+  answerEn: string;
+  answerTl: string;
+};
+
+export const FAQ_DATA: FaqItem[] = [
+  { id:'faq-1', category:'general', questionEn:'What is the Kawing Agricultural Platform?', questionTl:'Ano ang Kawing Agricultural Platform?', answerEn:'KAWING connects rice farmers in Mount Arayat, Pampanga, and Central Luzon with verified buyers, dryers, storage, haulers, and mills.', answerTl:'Iniuugnay ng KAWING ang mga magsasaka sa Arayat at Pampanga sa buyers, patuyuan, bodega, biyahero, at gilingan.' },
+  { id:'faq-2', category:'farmers', questionEn:'How do I post my palay harvest for sale?', questionTl:'Paano ako magpo-post ng aking aning palay?', answerEn:'In My Harvest Posts, select + Post Harvest. Fill in the required details, including variety, harvest date, measured weight, and selling option. Get a fresh PalaySense reading before posting.', answerTl:'Sa Aking Mga Na-post na Ani, piliin ang + Mag-post ng Ani. Kumpletuhin ang uri, petsa, timbang, paraan ng pagbebenta, at iba pang detalye. Kailangan ang bagong PalaySense reading.' },
+  { id:'faq-3', category:'moisture', questionEn:'Why is 14% Moisture Content important for palay?', questionTl:'Bakit mahalaga ang 14% Moisture Content sa palay?', answerEn:'Drying fresh palay to around 14% moisture helps reduce mold and heating, protect stored grain, and improve milling quality and value.', answerTl:'Ang pagpapatuyo sa humigit-kumulang 14% moisture ay nakatutulong laban sa amag at pag-init, sa ligtas na imbakan, at sa kalidad at halaga ng palay.' },
+  { id:'faq-4', category:'farmers', questionEn:'How do buyer price offers work on Kawing?', questionTl:'Paano gumagana ang price offers ng mga buyer?', answerEn:'Buyers can offer on posted harvests. In Price Offers Received, check price/kg, quantity, total value, and buyer details before accepting or rejecting.', answerTl:'Maaaring mag-alok ang buyers sa naka-post na ani. Sa Price Offers Received, suriin ang presyo/kilo, dami, kabuuang halaga, at buyer bago magpasya.' },
+  { id:'faq-5', category:'services', questionEn:'How do I request hauling, drying, storage, or milling?', questionTl:'Paano ako hihiling ng hauling, drying, storage, o milling?', answerEn:'In KAWING Partner Hub or Request Service, choose an available approved provider. Add details and a schedule, then submit.', answerTl:'Sa KAWING Partner Hub o Request Service, pumili ng available at aprubadong provider. Ilagay ang detalye at iskedyul, saka isumite.' },
+  { id:'faq-6', category:'buyers', questionEn:'How do buyers place offers on fresh harvests?', questionTl:'Paano naglalagay ng offer ang buyer sa sariwang ani?', answerEn:'In Harvest Marketplace, review a harvest and offer a price/kg. Cancel a pending offer before the farmer accepts or rejects it.', answerTl:'Sa Harvest Marketplace, suriin ang ani at mag-alok ng presyo/kilo. Puwedeng kanselahin ang pending offer bago magpasya ang farmer.' },
+  { id:'faq-7', category:'services', questionEn:'What are the benefits of mechanical recirculating dryers?', questionTl:'Ano ang pakinabang ng mechanical recirculating dryer?', answerEn:'Mechanical dryers provide even, controlled drying in changing weather, reducing rain exposure, contamination, and cracked grains.', answerTl:'Pantay at kontrolado ang pagpapatuyo kahit pabago-bago ang panahon. Nababawasan ang panganib sa ulan, dumi, at pagkabitak ng butil.' },
+  { id:'faq-8', category:'general', questionEn:'Is Kawing free for local farmers?', questionTl:'Libre ba ang Kawing para sa mga lokal na magsasaka?', answerEn:'Yes. Farmers can post harvests, view market information, and connect with buyers and approved providers.', answerTl:'Oo. Puwedeng mag-post ng ani, tumingin ng impormasyon sa merkado, at kumonekta sa buyers at aprubadong providers.' },
+];
