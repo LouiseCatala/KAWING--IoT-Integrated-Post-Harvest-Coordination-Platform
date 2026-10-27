@@ -6,9 +6,9 @@
 
 Connecting farmers, buyers, and agricultural service providers across Pampanga.
 
-**React 19 ? TypeScript ? Tailwind CSS 4 ? PHP ? MySQL ? PalaySense**
+**React 19 &middot; TypeScript &middot; Tailwind CSS 4 &middot; PHP &middot; MySQL &middot; PalaySense**
 
-[Overview](#overview) ? [Features](#features) ? [Local development](#local-development) ? [Deployment](#deployment) ? [PalaySense API](#palaysense-api)
+[Overview](#overview) &middot; [Features](#features) &middot; [Local development](#local-development) &middot; [Deployment](#deployment) &middot; [PalaySense API](#palaysense-api)
 
 </div>
 
