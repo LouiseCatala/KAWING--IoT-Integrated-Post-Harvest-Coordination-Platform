@@ -1,10 +1,58 @@
-# KAWING Agricultural Platform
+<div align="center">
 
-KAWING connects farmers with agricultural businesses, post-harvest services,
-market opportunities, production support, PalaySense readings, and Grainy AI.
-This repository contains the React/Vite frontend and the active PHP/MySQL API.
+# KAWING
 
-## Run locally with PHP + MySQL (no Docker)
+### IoT-Integrated Post-Harvest Coordination Platform
+
+Connecting farmers, buyers, and agricultural service providers across Pampanga.
+
+**React 19 ? TypeScript ? Tailwind CSS 4 ? PHP ? MySQL ? PalaySense**
+
+[Overview](#overview) ? [Features](#features) ? [Local development](#local-development) ? [Deployment](#deployment) ? [PalaySense API](#palaysense-api)
+
+</div>
+
+![KAWING landing page with a floating green island against a dark background](kawing.jpg)
+
+## Overview
+
+KAWING brings harvest trading, post-harvest services, production loans, and grain moisture readings into one platform. Farmers connect with buyers and service providers, while administrators manage accounts and platform activity.
+
+## Features
+
+| Area | What you can do |
+| --- | --- |
+| Harvest marketplace | Post harvests, receive price offers, and open harvests for bidding. |
+| Partner hub | Find buyers and providers for trucking, drying, storage, and milling. |
+| Production loans | Publish a loan service, apply for financing, and manage applications. |
+| PalaySense IoT | Receive grain moisture readings with color-coded classifications. |
+| Grainy AI | Access in-app guidance and answers to common questions. |
+| Administration | Manage users, verifications, announcements, and reports. |
+| Personalization | Switch between English and Tagalog, with dark mode by default and optional light mode. |
+
+## Architecture
+
+```text
+React + Vite frontend
+        |
+        v
+PHP / PDO API  <---  PalaySense moisture readings
+        |
+        v
+MySQL / MariaDB
+```
+
+| Location | Contents |
+| --- | --- |
+| `src/` | React interface, role dashboards, and shared state |
+| `public/api/` | PHP endpoints and server-side validation |
+| `database/` | Local database schema and migrations |
+| `deploy/cpanel/` | Hosting setup and production schema |
+| `scripts/` | Development tools and verification checks |
+
+See [Concurrency safeguards](CONCURRENCY.md) for write conflicts, duplicate submissions, and shared-resource protection.
+
+## Local development
 
 The active backend is PHP/PDO.
 
@@ -31,9 +79,9 @@ XAMPP, WampServer, and Laragon.
 
 Vite proxies `/api` requests to the local PHP server on port 8000. The PHP source lives in `public/api`; database credentials in `kawing-config.php` are ignored by Git.
 
-## Future cPanel deployment
+## Deployment
 
-The production deployment is now a static React build with a PHP/PDO API and MySQL. Node.js and Docker are not required on the cPanel server.
+Deploy the static React build alongside the PHP/PDO API and MySQL. Node.js and Docker are not required on the cPanel server.
 
 1. Create a cPanel MySQL database/user and grant all privileges.
 2. Import `deploy/cpanel/schema.sql` into the selected database.
@@ -64,3 +112,14 @@ PalaySense sends readings to `POST /api/moisture-readings` with the `x-api-key` 
 ```
 
 Read recent history from `GET /api/moisture-readings`. Results can be filtered by `harvestId`, `farmerEmail`, `deviceId`, and `since`, with an optional `limit` from 1 to 500.
+
+## Project checks
+
+```bash
+npm run lint
+npm run build
+```
+
+`lint` checks TypeScript types. `build` creates the production bundle in `dist/`.
+
+Keep real credentials in the ignored `kawing-config.php` or local environment files. Commit only the example configuration files; keep database backups out of Git.
