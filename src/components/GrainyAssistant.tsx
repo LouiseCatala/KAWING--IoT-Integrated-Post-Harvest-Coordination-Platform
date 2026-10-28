@@ -208,6 +208,21 @@ export default function GrainyAssistant({ user }: { user: UserAccount }) {
     try {
       if (selectedModel === 'local') throw new Error('Daily AI limit reached');
       fallbackReason = lang === 'en' ? 'The AI provider is unavailable or needs authorization. Showing saved help.' : 'Hindi available o kailangan ng authorization ang AI provider. Naka-save na tulong ang ipinapakita.';
+      if (!window.puter?.ai?.chat) {
+        await new Promise<void>((resolve, reject) => {
+          const existing = document.querySelector<HTMLScriptElement>('script[data-kawing-puter]');
+          const script = existing ?? document.createElement('script');
+          script.addEventListener('load', () => resolve(), { once: true });
+          script.addEventListener('error', () => reject(new Error('Puter.js could not be loaded')), { once: true });
+
+          if (!existing) {
+            script.src = 'https://js.puter.com/v2/';
+            script.async = true;
+            script.dataset.kawingPuter = 'true';
+            document.head.appendChild(script);
+          }
+        });
+      }
       if (!window.puter?.ai?.chat) throw new Error('Puter.js is unavailable');
       const conversation = [
         {

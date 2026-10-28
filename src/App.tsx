@@ -1,4 +1,4 @@
-import { IconAlertTriangle, IconLogout } from '@tabler/icons-react';
+import { IconAlertTriangle, IconLoader2, IconLogout } from '@tabler/icons-react';
 import React, { useState, useEffect, useRef } from 'react';
 import Splash from './components/Splash';
 import Auth from './components/Auth';
@@ -285,8 +285,18 @@ export default function App() {
   // 1. Load database from server DB on startup with local storage fallback
   useEffect(() => {
     async function initData() {
+      const fetchStartup = (input: RequestInfo | URL, init?: RequestInit) => {
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 5000);
+        return fetch(input, { ...init, signal: controller.signal })
+          .finally(() => window.clearTimeout(timeout));
+      };
+      // Start both requests together so an unavailable API can delay startup by
+      // at most five seconds instead of leaving the app on its loader forever.
+      const databaseRequest = fetchStartup('/api/db');
+      const sessionRequest = fetchStartup('/api/auth/me', { credentials: 'include' });
       try {
-        const res = await fetch('/api/db');
+        const res = await databaseRequest;
         if (res.ok) {
           const data = await res.json();
           setRegisteredUsers(migrateLegacyProviders(data.users ?? []));
@@ -322,7 +332,7 @@ export default function App() {
         // The PHP session is the sole authentication authority. Browser storage
         // is only a cache and must never grant access to a dashboard.
         try {
-          const authResponse = await fetch('/api/auth/me', { credentials: 'include' });
+          const authResponse = await sessionRequest;
           if (authResponse.ok) {
             const authData = await authResponse.json();
             const restoredUser = migrateLegacyProvider(authData.user as UserAccount);
@@ -1562,7 +1572,17 @@ export default function App() {
 
   // Do not flash a public page while server-side session restoration is pending.
   if (!isLoaded) {
-    return <div className="min-h-screen bg-slate-950" aria-label="Loading KAWING" />;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white" aria-label="Loading KAWING">
+        <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/20 bg-slate-900/70 px-5 py-4 shadow-xl">
+          <IconLoader2 size={24} stroke={2} className="animate-spin text-emerald-400" aria-hidden="true" />
+          <div>
+            <p className="font-display text-sm font-black tracking-wide">KAWING</p>
+            <p className="text-xs text-slate-400">Loading platform...</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Main view router based on phase
