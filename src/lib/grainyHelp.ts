@@ -7,6 +7,15 @@ export function answerGrainyLocally(question: string, user: UserAccount, languag
   const say = (en: string, filipino: string) => tl ? filipino : en;
   const farmer = user.role === 'farmer';
 
+  if (/\b(where|find|locate|located|saan|nasaan)\b/.test(q)) {
+    if (/\b(alert|alerts|notification|notifications|abiso|bell)\b/.test(q)) return say('Open Personal Alerts from the bell icon in the sidebar. For platform-wide notices, open Announcements Board.', 'Buksan ang Personal Alerts gamit ang bell icon sa sidebar. Para sa platform-wide notices, buksan ang Announcements Board.');
+    if (/\b(profile|account|bio|photo|picture|larawan)\b/.test(q)) return say('Open the profile card at the top of the sidebar, then choose Edit Profile Details.', 'Buksan ang profile card sa itaas ng sidebar, saka piliin ang Edit Profile Details.');
+    if (/\b(offer|offers|bid|bids|bidding|price|presyo|alok|deal)\b/.test(q)) return say(farmer ? 'Open Price Offers Received. Accepted Deal appears separately above the remaining Bid Rankings.' : 'Open My Price Offers to view pending, accepted, declined, or cancelled offers.', farmer ? 'Buksan ang Price Offers Received. Hiwalay sa itaas ang Accepted Deal bago ang natitirang Bid Rankings.' : 'Buksan ang My Price Offers para makita ang pending, accepted, declined, o cancelled offers.');
+    if (/\b(harvest|harvests|post|posts|ani|listing)\b/.test(q)) return say(farmer ? 'Open My Harvest Posts in the sidebar to post, view, edit, or delete a harvest.' : 'Open Buy Harvests in the sidebar to browse farmer listings.', farmer ? 'Buksan ang My Harvest Posts sa sidebar para mag-post, tumingin, mag-edit, o mag-delete ng ani.' : 'Buksan ang Buy Harvests sa sidebar para makita ang harvest listings.');
+    if (/\b(loan|loans|lender|pautang|utang)\b/.test(q)) return say(farmer ? 'Open Farm Loans in the sidebar.' : 'Open Loan Management in the sidebar.', farmer ? 'Buksan ang Farm Loans sa sidebar.' : 'Buksan ang Loan Management sa sidebar.');
+    if (/\b(truck|trucking|transport|storage|dryer|drying|milling|service|services|serbisyo)\b/.test(q)) return say(farmer ? 'Open KAWING Partner Hub, then choose the service category or provider.' : 'Open Logistics or the matching Trucking, Storage, Drying, or Milling workspace in the sidebar.', farmer ? 'Buksan ang KAWING Partner Hub, saka piliin ang service category o provider.' : 'Buksan ang Logistics o ang tamang Trucking, Storage, Drying, o Milling workspace sa sidebar.');
+  }
+
   if (/\b(mc|moisture)\b/.test(q) && /\b(classification|classifications|classify|categories|category|levels|ranges|klasipikasyon|uri)\b/.test(q)) return say(
     'MC means moisture content. KAWING uses these classifications:\n17% and above: Wet\n15% to below 17%: Moderate\n12% to below 15%: Dry\nBelow 12%: Risk of Grain Breakage.',
     'Ang MC ay moisture content. Ito ang klasipikasyon sa KAWING:\n17% pataas: Basa (Wet)\n15% hanggang mas mababa sa 17%: Katamtaman (Moderate)\n12% hanggang mas mababa sa 15%: Tuyo (Dry)\nMas mababa sa 12%: Panganib ng Pagkabiyak ng Butil.');

@@ -12,6 +12,9 @@ import { UserAccount } from '../types';
 import { FAQ_DATA, FaqItem } from '../data/faqs';
 import { useApp } from '../context/AppContext';
 import { GRAINY_PEEK_DURATION, GRAINY_PEEK_GREETING, startGrainyPeeking } from '../lib/grainyPeeking';
+import { alertDialog } from '../lib/appDialog';
+
+const alert = (message: string) => { void alertDialog(message, { tone: 'warning' }); };
 
 type GrainyStage = 'hidden' | 'peeking' | 'open';
 type GrainyMessage = { id: string; sender: 'user' | 'grainy'; text: string; audioUrl?: string; source?: 'faq' | 'ai' | 'local' };

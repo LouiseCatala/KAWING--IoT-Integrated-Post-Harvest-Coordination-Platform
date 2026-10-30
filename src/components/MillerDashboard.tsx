@@ -6,6 +6,7 @@ import { useApp } from '../context/AppContext';
 import Sidebar from './Sidebar';
 import PalayHub from './PalayHub';
 import AnnouncementsBoard from './AnnouncementsBoard';
+import { askConfirmation } from '../lib/appDialog';
 
 interface MillerDashboardProps {
   user: UserAccount;
@@ -63,7 +64,7 @@ export default function MillerDashboard({
           onMarkNotificationRead={onMarkNotificationRead}
         />
 
-        <main className="dashboard-main flex-1 min-w-0 w-full max-w-[1440px] mx-auto h-full overflow-y-auto px-4 sm:px-6 lg:px-8 py-8 scroll-smooth">
+        <main className="dashboard-main flex-1 min-w-0 w-full max-w-360 mx-auto h-full overflow-y-auto px-4 sm:px-6 lg:px-8 py-8 scroll-smooth">
         
         {/* Statistics panel */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 md:mb-8 font-sans">
@@ -158,7 +159,7 @@ export default function MillerDashboard({
                   key={s.id}
                   className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-300"
                 >
-                  <div className="p-6 flex-grow">
+                  <div className="p-6 grow">
                     <div className="flex items-start justify-between gap-4 mb-4">
                       <div>
                         <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded">
@@ -192,14 +193,14 @@ export default function MillerDashboard({
                   <div className="bg-slate-50 dark:bg-slate-900/50 p-4 border-t border-slate-100 dark:border-slate-800 flex gap-3">
                     <button
                       id={`reject-milling-${s.id}`}
-                      onClick={() => { if (window.confirm(lang === 'en' ? 'Reject this milling request?' : 'Tanggihan ang request na ito?')) onRejectService(s.id); }}
+                      onClick={() => askConfirmation(lang === 'en' ? 'Reject this milling request?' : 'Tanggihan ang request na ito?', () => onRejectService(s.id), { tone: 'danger', confirmLabel: lang === 'en' ? 'Reject Request' : 'Tanggihan' })}
                       className="flex-1 py-2.5 border border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-950/20 text-red-600 dark:text-red-400 font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer font-sans"
                     >
                       {lang === 'en' ? 'Reject' : 'Tanggihan'}
                     </button>
                     <button
                       id={`accept-milling-${s.id}`}
-                      onClick={() => { if (window.confirm(lang === 'en' ? 'Accept this milling request and take responsibility for it?' : 'Tanggapin at akuin ang request na ito?')) onAcceptService(s.id); }}
+                      onClick={() => askConfirmation(lang === 'en' ? 'Accept this milling request and take responsibility for it?' : 'Tanggapin at akuin ang request na ito?', () => onAcceptService(s.id), { tone: 'success', confirmLabel: lang === 'en' ? 'Accept Request' : 'Tanggapin' })}
                       className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-emerald-600/10 flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <RefreshCw className="w-4 h-4 animate-spin" style={{ animationDuration: '3s' }} /> {lang === 'en' ? 'Start Milling' : 'Simulan ang Paggiling'}
@@ -225,11 +226,11 @@ export default function MillerDashboard({
               {activeBatches.map((s) => (
                 <div
                   key={s.id}
-                  className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-emerald-100 dark:border-emerald-900/50 bg-emerald-50/10 dark:bg-emerald-950/10 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all duration-300"
+                  className="bg-emerald-50/10 dark:bg-emerald-950/10 p-6 rounded-2xl border border-emerald-100 dark:border-emerald-900/50 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all duration-300"
                 >
-                  <div className="flex items-start gap-4 flex-grow">
-                    <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 flex items-center justify-center text-xl flex-shrink-0 font-display"><span className="inline-flex items-center gap-1.5 align-middle"><IconSettings size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></div>
-                    <div className="space-y-2 flex-grow">
+                  <div className="flex items-start gap-4 grow">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 flex items-center justify-center text-xl shrink-0 font-display"><span className="inline-flex items-center gap-1.5 align-middle"><IconSettings size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></div>
+                    <div className="space-y-2 grow">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h4 className="font-extrabold text-slate-900 dark:text-white text-lg font-display">{s.cropType}</h4>
                         <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 uppercase tracking-wider animate-pulse">
@@ -242,7 +243,7 @@ export default function MillerDashboard({
 
                       {/* Equipment parameters */}
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-md pt-2">
-                        <div className="bg-white dark:bg-slate-850 border border-slate-100 dark:border-slate-800 p-2.5 rounded-xl flex items-center gap-2">
+                        <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2.5 rounded-xl flex items-center gap-2">
                           <RefreshCw className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                           <div>
                             <span className="text-[9px] text-slate-400 dark:text-slate-500 block font-semibold uppercase">MILL SPEED</span>
@@ -250,7 +251,7 @@ export default function MillerDashboard({
                           </div>
                         </div>
 
-                        <div className="bg-white dark:bg-slate-850 border border-slate-100 dark:border-slate-800 p-2.5 rounded-xl flex items-center gap-2">
+                        <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2.5 rounded-xl flex items-center gap-2">
                           <Droplets className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                           <div>
                             <span className="text-[9px] text-slate-400 dark:text-slate-500 block font-semibold uppercase">MOISTURE</span>
@@ -258,7 +259,7 @@ export default function MillerDashboard({
                           </div>
                         </div>
 
-                        <div className="bg-white dark:bg-slate-850 border border-slate-100 dark:border-slate-800 p-2.5 rounded-xl flex items-center gap-2 col-span-2 sm:col-span-1">
+                        <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2.5 rounded-xl flex items-center gap-2 col-span-2 sm:col-span-1">
                           <Percent className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                           <div>
                             <span className="text-[9px] text-slate-400 dark:text-slate-500 block font-semibold uppercase">RECOVERY RATE</span>
@@ -272,7 +273,7 @@ export default function MillerDashboard({
                   <div className="flex flex-col items-stretch md:items-end justify-center">
                     <button
                       id={`complete-milling-${s.id}`}
-                      onClick={() => { if (window.confirm(lang === 'en' ? 'Mark this milling request as completed? This will close the job.' : 'Markahan itong completed? Isasara nito ang trabaho.')) onCompleteService(s.id); }}
+                      onClick={() => askConfirmation(lang === 'en' ? 'Mark this milling request as completed? This will close the job.' : 'Markahan itong completed? Isasara nito ang trabaho.', () => onCompleteService(s.id), { tone: 'success', confirmLabel: lang === 'en' ? 'Mark Completed' : 'Markahan na Tapos' })}
                       className="py-3 px-5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-600/10 transition-all flex items-center justify-center gap-2 cursor-pointer animate-pulse"
                     >
                       <CheckCircle className="w-4 h-4" /> {lang === 'en' ? 'Complete Milling' : 'Tapusin ang Paggiling'}

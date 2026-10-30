@@ -45,12 +45,12 @@ export default function PalayHub({ onAddDryingRequest, farmerLocation = '' }: Pa
   ];
 
   return (
-    <div id="palay-hub-root" className="bg-gradient-to-br from-amber-50/40 via-white to-emerald-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-emerald-950/20 rounded-3xl border border-amber-100 dark:border-emerald-900/30 p-6 shadow-xl transition-all duration-300">
+    <div id="palay-hub-root" className="bg-linear-to-br from-amber-50/40 via-white to-emerald-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-emerald-950/20 rounded-3xl border border-amber-100 dark:border-emerald-900/30 p-6 shadow-xl transition-all duration-300">
       
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-slate-100 dark:border-slate-800 pb-5">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-600/10 text-xl font-bold text-white"><span className="inline-flex items-center gap-1.5 align-middle"><IconWheat size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></div>
+          <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-amber-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-600/10 text-xl font-bold text-white"><span className="inline-flex items-center gap-1.5 align-middle"><IconWheat size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></div>
           <div>
             <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5 font-display">
               {lang === 'en' ? 'Sentrong Palay' : 'Sentrong Palay'} <span className="text-xs bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-extrabold px-2 py-0.5 rounded-full">Kawing Hub</span>
@@ -101,31 +101,31 @@ export default function PalayHub({ onAddDryingRequest, farmerLocation = '' }: Pa
                 title: lang === 'en' ? 'Harvesting (Pag-ani)' : 'Pag-ani (Harvesting)',
                 desc: lang === 'en' ? 'Harvest when 80-85% of grains are straw-colored. Avoid delays to prevent shattering and quality degradation.' : 'Mag-ani kapag 80-85% ng butil ay kulay-dayami na. Huwag patagalin upang hindi malagas ang palay.',
                 tips: 'MC at Harvest: 20-25% (Dry Season), 25-30% (Wet Season)',
-                bg: 'from-amber-50 to-amber-100/50 dark:from-slate-850 dark:to-slate-800'
+                bg: 'from-amber-50 to-amber-100/50 dark:from-slate-800 dark:to-slate-800'
               },
               {
                 step: '02',
                 title: lang === 'en' ? 'Threshing (Paghahalo)' : 'Pag-giik (Threshing)',
                 desc: lang === 'en' ? 'Thresh within 24 hours of cutting to prevent heat build-up which turns grains yellow and bitter.' : 'I-giik ang palay sa loob ng 24 oras upang hindi ito uminit, na nagiging sanhi ng pagka-dilaw at pagkasira ng butil.',
                 tips: 'Avoid piling wet straw for more than a day.',
-                bg: 'from-emerald-50 to-emerald-100/50 dark:from-slate-850 dark:to-slate-800'
+                bg: 'from-emerald-50 to-emerald-100/50 dark:from-slate-800 dark:to-slate-800'
               },
               {
                 step: '03',
                 title: lang === 'en' ? 'Drying (Pagpapatuyo)' : 'Pagpapatuyo (Drying)',
                 desc: lang === 'en' ? 'Dry down to 14% MC immediately. Use clean solar tarps (sapa) or dispatch to our mechanical dryers.' : 'Patuyuin hanggang 14% MC agad. Gumamit ng malinis na lona o mag-book ng mekanikal na dryer rito sa Kawing.',
                 tips: 'Never sun-dry on bare concrete highways!',
-                bg: 'from-amber-50 to-amber-100/50 dark:from-slate-850 dark:to-slate-800'
+                bg: 'from-amber-50 to-amber-100/50 dark:from-slate-800 dark:to-slate-800'
               },
               {
                 step: '04',
                 title: lang === 'en' ? 'Storage (Pag-imbak)' : 'Pag-imbak (Storage)',
                 desc: lang === 'en' ? 'Store dried sacks in clean warehouses. Keep off the floor using wooden pallets and allow ventilation.' : 'I-imbak sa malinis na bodega. Ilagay sa kahoy na pallets upang lumayo sa basa at umagos ang hangin.',
                 tips: 'Maintain 13-14% MC to prevent grain pests.',
-                bg: 'from-emerald-50 to-emerald-100/50 dark:from-slate-850 dark:to-slate-800'
+                bg: 'from-emerald-50 to-emerald-100/50 dark:from-slate-800 dark:to-slate-800'
               }
             ].map((g, idx) => (
-              <div key={idx} className={`bg-gradient-to-br ${g.bg} p-5 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between space-y-4`}>
+              <div key={idx} className={`bg-linear-to-br ${g.bg} p-5 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between space-y-4`}>
                 <div>
                   <span className="text-2xl font-black text-emerald-600/20 dark:text-emerald-400/20 block font-display">{g.step}</span>
                   <h4 className="font-extrabold text-sm text-slate-800 dark:text-white mt-1 font-display">{g.title}</h4>

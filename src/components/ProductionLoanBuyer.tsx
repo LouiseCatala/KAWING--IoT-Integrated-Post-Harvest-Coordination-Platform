@@ -6,6 +6,9 @@ import { Landmark, AlertTriangle, CheckCircle2, Clock, XCircle, FileText, Settin
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import AnimatedButton from './AnimatedButton';
+import { alertDialog, askConfirmation } from '../lib/appDialog';
+
+const alert = (message: string) => { void alertDialog(message, { tone: 'info' }); };
 
 interface ProductionLoanBuyerProps {
   user: UserAccount;
@@ -194,25 +197,26 @@ export default function ProductionLoanBuyer({
   };
 
   const handleDeleteLoanService = () => {
-    const confirmed = window.confirm(
+    askConfirmation(
       lang === 'en'
         ? 'Delete this published loan service? Farmers will no longer see or apply to it.'
-        : 'Burahin ang naka-publish na loan service? Hindi na ito makikita o maa-apply-an ng mga magsasaka.'
+        : 'Burahin ang naka-publish na loan service? Hindi na ito makikita o maa-apply-an ng mga magsasaka.',
+      () => {
+        onUpdateUser(user.name, { ...user, loanConfig: undefined });
+        setMinAmount('');
+        setMaxAmount('');
+        setInterestRate('');
+        setAvailableFund('');
+        setRepaymentPeriod('');
+        setRepaymentMethod('');
+        setContactNumber('');
+        setTermsAndConditions('');
+        setAdditionalRequirements('');
+        setNotes('');
+        setActiveTab('incoming');
+      },
+      { title: lang === 'en' ? 'Delete loan service?' : 'Burahin ang loan service?', tone: 'danger', confirmLabel: lang === 'en' ? 'Delete Service' : 'Burahin' },
     );
-    if (!confirmed) return;
-
-    onUpdateUser(user.name, { ...user, loanConfig: undefined });
-    setMinAmount('');
-    setMaxAmount('');
-    setInterestRate('');
-    setAvailableFund('');
-    setRepaymentPeriod('');
-    setRepaymentMethod('');
-    setContactNumber('');
-    setTermsAndConditions('');
-    setAdditionalRequirements('');
-    setNotes('');
-    setActiveTab('incoming');
   };
 
   const handleOpenActionModal = (req: ProductionLoanRequest, type: 'approve' | 'decline') => {
@@ -577,7 +581,7 @@ export default function ProductionLoanBuyer({
 
                   <div className="flex items-center justify-end gap-2 pt-2">
                     <button
-                      onClick={() => { if (window.confirm(lang === 'en' ? `Mark ${req.farmerName}'s loan as fully completed?` : `Markahan na fully completed ang loan ni ${req.farmerName}?`)) onUpdateLoanStatus(req.id, 'Completed'); }}
+                      onClick={() => askConfirmation(lang === 'en' ? `Mark ${req.farmerName}'s loan as fully completed?` : `Markahan na fully completed ang loan ni ${req.farmerName}?`, () => onUpdateLoanStatus(req.id, 'Completed'), { tone: 'success', confirmLabel: lang === 'en' ? 'Complete Loan' : 'Kumpletuhin' })}
                       className="px-4 py-2 rounded-xl text-xs font-bold bg-green-600 hover:bg-green-500 text-white shadow-md shadow-green-600/20 transition-all cursor-pointer flex items-center gap-1.5"
                     >
                       <CheckCircle2 className="w-4 h-4" />

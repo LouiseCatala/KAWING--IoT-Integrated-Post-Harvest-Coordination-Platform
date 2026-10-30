@@ -243,6 +243,8 @@ export default function Sidebar({
     onUpdateUser?.(user.name, { ...user, buyerLogisticsEnabled: true });
     setShowBuyerLogisticsEnable(false);
     setBuyerLogisticsOpen(true);
+    onSelectTab('posted_services');
+    onCloseMobile?.();
   };
 
   const content = (

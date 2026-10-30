@@ -246,7 +246,9 @@ export default function AnnouncementsBoard({
             </span>
           </div>
 
-          {filterCategory !== 'alerts' && filteredAnnouncements.map((ann) => (
+          {filterCategory !== 'alerts' && filteredAnnouncements.length > 0 && (
+          <div className={`space-y-4 ${filteredAnnouncements.length > 7 ? 'max-h-[560px] overflow-y-auto overscroll-contain pr-2 scrollbar-thin' : ''}`}>
+          {filteredAnnouncements.map((ann) => (
             <motion.button
               type="button"
               key={ann.id}
@@ -272,6 +274,8 @@ export default function AnnouncementsBoard({
               </div>
             </motion.button>
           ))}
+          </div>
+          )}
 
           {filteredAnnouncements.length === 0 && filterCategory !== 'alerts' && (
             <div className="p-8 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">

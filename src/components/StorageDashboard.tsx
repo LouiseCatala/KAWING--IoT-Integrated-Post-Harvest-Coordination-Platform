@@ -5,6 +5,7 @@ import { HardDrive, Percent, Package, MapPin, Calendar, ShieldCheck, Check } fro
 import { useApp } from '../context/AppContext';
 import Sidebar from './Sidebar';
 import AnnouncementsBoard from './AnnouncementsBoard';
+import { askConfirmation } from '../lib/appDialog';
 
 interface StorageDashboardProps {
   user: UserAccount;
@@ -166,14 +167,14 @@ export default function StorageDashboard({
                   <div className="bg-slate-50 dark:bg-slate-900/50 p-4 border-t border-slate-100 dark:border-slate-800 flex gap-3">
                     <button
                       id={`reject-storage-${s.id}`}
-                      onClick={() => { if (window.confirm(lang === 'en' ? 'Reject this storage request?' : 'Tanggihan ang request na ito?')) onRejectService(s.id); }}
+                      onClick={() => askConfirmation(lang === 'en' ? 'Reject this storage request?' : 'Tanggihan ang request na ito?', () => onRejectService(s.id), { tone: 'danger', confirmLabel: lang === 'en' ? 'Reject Request' : 'Tanggihan' })}
                       className="flex-1 py-2.5 border border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-950/20 text-red-600 dark:text-red-400 font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer font-sans"
                     >
                       {lang === 'en' ? 'Reject' : 'Tanggihan'}
                     </button>
                     <button
                       id={`accept-storage-${s.id}`}
-                      onClick={() => { if (window.confirm(lang === 'en' ? 'Accept this storage request and take responsibility for it?' : 'Tanggapin at akuin ang request na ito?')) onAcceptService(s.id); }}
+                      onClick={() => askConfirmation(lang === 'en' ? 'Accept this storage request and take responsibility for it?' : 'Tanggapin at akuin ang request na ito?', () => onAcceptService(s.id), { tone: 'success', confirmLabel: lang === 'en' ? 'Accept Request' : 'Tanggapin' })}
                       className="flex-1 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-purple-600/10 flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Check className="w-4 h-4" /> {t('btn_confirm_booking')}
@@ -227,7 +228,7 @@ export default function StorageDashboard({
                   <div className="flex flex-col items-stretch md:items-end justify-center">
                     <button
                       id={`complete-storage-${s.id}`}
-                      onClick={() => { if (window.confirm(lang === 'en' ? 'Mark this storage request as completed? This will close the job.' : 'Markahan itong completed? Isasara nito ang trabaho.')) onCompleteService(s.id); }}
+                      onClick={() => askConfirmation(lang === 'en' ? 'Mark this storage request as completed? This will close the job.' : 'Markahan itong completed? Isasara nito ang trabaho.', () => onCompleteService(s.id), { tone: 'success', confirmLabel: lang === 'en' ? 'Mark Completed' : 'Markahan na Tapos' })}
                       className="py-3 px-5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-600/10 transition-all flex items-center justify-center gap-2 cursor-pointer animate-pulse"
                     >
                       <ShieldCheck className="w-4 h-4" /> {t('btn_pickup_complete')}

@@ -16,6 +16,7 @@ import { useLiveDatabase } from './lib/useLiveDatabase';
 import { equal, type DatabaseSnapshot } from './lib/databaseSync';
 import { hasApprovedBusinessCapability } from './lib/businessCapabilities';
 import { createSubmissionGuard, newRecordId } from './lib/submissionGuard';
+import { alertDialog } from './lib/appDialog';
 
 const DEFAULT_SETTINGS: AppSettings = { daReferencePrice: 22.8 };
 
@@ -518,7 +519,7 @@ export default function App() {
     const applicant = registeredUsers.find(user => user.name === name);
     if (!applicant) return;
     if (!applicant.email?.trim() || !applicant.contactNumber?.trim() || !applicant.address?.trim()) {
-      window.alert('Email, contact number, and full address are required for approval.');
+      void alertDialog('Email, contact number, and full address are required for approval.', { tone: 'info' });
       return;
     }
     // Approve verified status or add user to active pool
@@ -619,7 +620,7 @@ export default function App() {
     const originalUser = registeredUsers.find(u => u.name === originalName);
     const updatedEmail = updated.email?.trim().toLowerCase();
     if (updatedEmail && registeredUsers.some(u => u !== originalUser && u.email?.trim().toLowerCase() === updatedEmail)) {
-      window.alert('That email address is already used by another account. Please enter a different email address.');
+      void alertDialog('That email address is already used by another account. Please enter a different email address.', { tone: 'warning' });
       return;
     }
     const isSelf = activeUser?.email?.toLowerCase() === updated.email?.toLowerCase();

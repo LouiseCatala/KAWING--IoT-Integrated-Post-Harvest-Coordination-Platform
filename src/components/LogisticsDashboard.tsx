@@ -4,6 +4,7 @@ import { CheckCircle2, Clock, HardDrive, MapPin, Package, Plus, Settings, Truck,
 import Sidebar from './Sidebar';
 import AnnouncementsBoard from './AnnouncementsBoard';
 import { useApp } from '../context/AppContext';
+import { askConfirmation, confirmDialog } from '../lib/appDialog';
 
 interface Props {
   user: UserAccount;
@@ -72,11 +73,11 @@ export default function LogisticsDashboard(props: Props) {
     setTimeout(() => setSaveMessage(''), 3500);
   };
 
-  const publishOffer = () => {
+  const publishOffer = async () => {
     if (!selectedService || !offer.title.trim() || !offer.capacity.trim() || !offer.rateInfo.trim() || !offer.locationCoverage.trim()) return;
-    if (!window.confirm(lang === 'en'
+    if (!await confirmDialog(lang === 'en'
       ? `Publish this ${SERVICE_META[selectedService].label} service?\n\n${offer.title.trim()}\nCapacity: ${offer.capacity.trim()}\nRate: ${offer.rateInfo.trim()}`
-      : `I-publish ang ${SERVICE_META[selectedService].tl} service na ito?\n\n${offer.title.trim()}\nKapasidad: ${offer.capacity.trim()}\nPresyo: ${offer.rateInfo.trim()}`)) return;
+      : `I-publish ang ${SERVICE_META[selectedService].tl} service na ito?\n\n${offer.title.trim()}\nKapasidad: ${offer.capacity.trim()}\nPresyo: ${offer.rateInfo.trim()}`, { title: lang === 'en' ? 'Publish service?' : 'I-publish ang serbisyo?', tone: 'success', confirmLabel: lang === 'en' ? 'Publish Service' : 'I-publish' })) return;
     props.onAddOfferedService({
       serviceType: selectedService,
       title: offer.title.trim(),
@@ -104,8 +105,8 @@ export default function LogisticsDashboard(props: Props) {
         <span className="flex gap-2"><Clock className="w-4 h-4" />{request.preferredDate || request.createdAt}</span>
         <span>{lang === 'en' ? 'Farmer' : 'Magsasaka'}: <strong>{request.farmerName}</strong></span>
       </div>
-      {mode === 'available' && <div className="flex gap-3"><button onClick={() => { if (window.confirm(lang === 'en' ? 'Reject this service request?' : 'Tanggihan ang service request na ito?')) props.onRejectService(request.id); }} className="flex-1 rounded-xl border border-red-500 py-2 text-sm font-bold text-red-500 cursor-pointer">{lang === 'en' ? 'Reject' : 'Tanggihan'}</button><button onClick={() => { if (window.confirm(lang === 'en' ? 'Accept this request and take responsibility for the job?' : 'Tanggapin at akuin ang request na ito?')) props.onAcceptService(request.id); }} className="flex-1 rounded-xl bg-emerald-600 py-2 text-sm font-bold text-white cursor-pointer">{lang === 'en' ? 'Accept Request' : 'Tanggapin'}</button></div>}
-      {mode === 'active' && <button onClick={() => { if (window.confirm(lang === 'en' ? 'Mark this service job as completed? This will close the job.' : 'Markahan itong completed? Isasara nito ang trabaho.')) props.onCompleteService(request.id); }} className="w-full rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white cursor-pointer flex items-center justify-center gap-2"><CheckCircle2 className="w-4 h-4" />{lang === 'en' ? 'Mark Completed' : 'Markahan na Tapos'}</button>}
+      {mode === 'available' && <div className="flex gap-3"><button onClick={() => askConfirmation(lang === 'en' ? 'Reject this service request?' : 'Tanggihan ang service request na ito?', () => props.onRejectService(request.id), { tone: 'danger', confirmLabel: lang === 'en' ? 'Reject Request' : 'Tanggihan' })} className="flex-1 rounded-xl border border-red-500 py-2 text-sm font-bold text-red-500 cursor-pointer">{lang === 'en' ? 'Reject' : 'Tanggihan'}</button><button onClick={() => askConfirmation(lang === 'en' ? 'Accept this request and take responsibility for the job?' : 'Tanggapin at akuin ang request na ito?', () => props.onAcceptService(request.id), { tone: 'success', confirmLabel: lang === 'en' ? 'Accept Request' : 'Tanggapin' })} className="flex-1 rounded-xl bg-emerald-600 py-2 text-sm font-bold text-white cursor-pointer">{lang === 'en' ? 'Accept Request' : 'Tanggapin'}</button></div>}
+      {mode === 'active' && <button onClick={() => askConfirmation(lang === 'en' ? 'Mark this service job as completed? This will close the job.' : 'Markahan itong completed? Isasara nito ang trabaho.', () => props.onCompleteService(request.id), { tone: 'success', confirmLabel: lang === 'en' ? 'Mark Completed' : 'Markahan na Tapos' })} className="w-full rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white cursor-pointer flex items-center justify-center gap-2"><CheckCircle2 className="w-4 h-4" />{lang === 'en' ? 'Mark Completed' : 'Markahan na Tapos'}</button>}
     </div>
   );
 
@@ -134,7 +135,7 @@ export default function LogisticsDashboard(props: Props) {
             <div className="grid sm:grid-cols-3 gap-4">{[['Available Requests',available.length],['Active Jobs',active.length],['Completed',completed.length]].map(([label,count]) => <div key={String(label)} className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5"><p className="text-xs text-slate-500">{label}</p><strong className="text-2xl text-slate-900 dark:text-white">{count}</strong></div>)}</div>
             <section className="space-y-3"><h2 className="font-extrabold text-slate-900 dark:text-white">{lang === 'en' ? 'Available Requests' : 'Mga Available na Request'}</h2>{available.length ? <div className="grid lg:grid-cols-2 gap-4">{available.map((r) => renderRequest(r,'available'))}</div> : <p className="rounded-2xl bg-white dark:bg-slate-900 p-8 text-center text-slate-500">No available requests.</p>}</section>
             {active.length > 0 && <section className="space-y-3"><h2 className="font-extrabold text-slate-900 dark:text-white">Active Jobs</h2><div className="grid lg:grid-cols-2 gap-4">{active.map((r) => renderRequest(r,'active'))}</div></section>}
-            {myOffers.filter((item) => item.serviceType === selectedService).length > 0 && <section className="space-y-3"><h2 className="font-extrabold text-slate-900 dark:text-white">My Published Offers</h2>{myOffers.filter((item) => item.serviceType === selectedService).map((item) => <div key={item.id} className="rounded-xl bg-white dark:bg-slate-900 border p-4 flex items-center justify-between gap-3"><div><strong className="text-slate-900 dark:text-white">{item.title}</strong><p className="text-xs text-slate-500">{item.capacity} • {item.rateInfo}</p></div><div className="flex gap-2"><button onClick={() => { if (!item.isAvailable || window.confirm(lang === 'en' ? `Pause “${item.title}”? Farmers will temporarily stop seeing it.` : `I-pause ang “${item.title}”? Pansamantalang hindi ito makikita ng mga farmer.`)) props.onToggleOfferedServiceStatus(item.id); }} className="rounded-lg border px-3 py-2 text-xs font-bold cursor-pointer">{item.isAvailable ? 'Pause' : 'Activate'}</button><button onClick={() => { if (window.confirm(lang === 'en' ? `Delete “${item.title}” permanently?` : `Permanenteng burahin ang “${item.title}”?`)) props.onDeleteOfferedService(item.id); }} className="rounded-lg border border-red-400 px-3 py-2 text-xs font-bold text-red-500 cursor-pointer">Delete</button></div></div>)}</section>}
+            {myOffers.filter((item) => item.serviceType === selectedService).length > 0 && <section className="space-y-3"><h2 className="font-extrabold text-slate-900 dark:text-white">My Published Offers</h2>{myOffers.filter((item) => item.serviceType === selectedService).map((item) => <div key={item.id} className="rounded-xl bg-white dark:bg-slate-900 border p-4 flex items-center justify-between gap-3"><div><strong className="text-slate-900 dark:text-white">{item.title}</strong><p className="text-xs text-slate-500">{item.capacity} • {item.rateInfo}</p></div><div className="flex gap-2"><button onClick={() => { if (!item.isAvailable) props.onToggleOfferedServiceStatus(item.id); else askConfirmation(lang === 'en' ? `Pause “${item.title}”? Farmers will temporarily stop seeing it.` : `I-pause ang “${item.title}”? Pansamantalang hindi ito makikita ng mga farmer.`, () => props.onToggleOfferedServiceStatus(item.id), { confirmLabel: lang === 'en' ? 'Pause Service' : 'I-pause' }); }} className="rounded-lg border px-3 py-2 text-xs font-bold cursor-pointer">{item.isAvailable ? 'Pause' : 'Activate'}</button><button onClick={() => askConfirmation(lang === 'en' ? `Delete “${item.title}” permanently?` : `Permanenteng burahin ang “${item.title}”?`, () => props.onDeleteOfferedService(item.id), { tone: 'danger', confirmLabel: lang === 'en' ? 'Delete Service' : 'Burahin' })} className="rounded-lg border border-red-400 px-3 py-2 text-xs font-bold text-red-500 cursor-pointer">Delete</button></div></div>)}</section>}
           </>}
         </div>; })()}
       </main>
@@ -143,7 +144,7 @@ export default function LogisticsDashboard(props: Props) {
       const profile = serviceDrafts[serviceToggleConfirmation] || EMPTY_PROFILE;
       const meta = SERVICE_META[serviceToggleConfirmation];
       const enabling = !profile.enabled;
-      return <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="service-toggle-title">
+      return <div className="fixed inset-0 z-100 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="service-toggle-title">
         <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
               <button type="button" aria-label="Close popup" onClick={() => setServiceToggleConfirmation(null)} className="float-right relative z-10 flex h-9 w-9 items-center justify-center rounded-full text-xl hover:bg-slate-500/20">&times;</button>
           <div className={`mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full ${enabling ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950' : 'bg-amber-100 text-amber-600 dark:bg-amber-950'}`}>{enabling ? <CheckCircle2 className="h-6 w-6" /> : <XCircle className="h-6 w-6" />}</div>

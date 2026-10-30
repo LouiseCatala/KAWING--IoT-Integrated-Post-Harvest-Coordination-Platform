@@ -12,6 +12,7 @@ import ProductionLoanBuyer from './ProductionLoanBuyer';
 import { ProductionLoanRequest, ProductionLoanStatus } from '../types';
 import buyerBackground from '../assets/images/buyer_background.jpg';
 import { hasApprovedBusinessCapability } from '../lib/businessCapabilities';
+import { alertDialog, askConfirmation, confirmDialog } from '../lib/appDialog';
 
 interface BuyerDashboardProps {
   user: UserAccount;
@@ -179,14 +180,14 @@ export default function BuyerDashboard({
     setShowOfferModal(true);
   };
 
-  const handleSendOffer = (e: React.FormEvent) => {
+  const handleSendOffer = async (e: React.FormEvent) => {
     e.preventDefault();
     const daRef = marketReferencePrice;
     if (!selectedHarvest || !buyerName || !buyerPhone || !govIdData || !offerPrice || offerPrice < daRef || !agreedTerms) return;
     const offerTotal = offerPrice * quantityWanted;
-    if (!window.confirm(lang === 'en'
+    if (!await confirmDialog(lang === 'en'
       ? `Send this price offer to ${selectedHarvest.farmerName}?\n\nPrice: ₱${offerPrice.toFixed(2)}/kg\nQuantity: ${quantityWanted.toLocaleString()} kg\nTotal: ₱${offerTotal.toLocaleString()}`
-      : `Ipadala ang price offer na ito kay ${selectedHarvest.farmerName}?\n\nPresyo: ₱${offerPrice.toFixed(2)}/kg\nDami: ${quantityWanted.toLocaleString()} kg\nKabuuan: ₱${offerTotal.toLocaleString()}`)) return;
+      : `Ipadala ang price offer na ito kay ${selectedHarvest.farmerName}?\n\nPresyo: ₱${offerPrice.toFixed(2)}/kg\nDami: ${quantityWanted.toLocaleString()} kg\nKabuuan: ₱${offerTotal.toLocaleString()}`, { title: lang === 'en' ? 'Send price offer?' : 'Ipadala ang offer?', tone: 'success', confirmLabel: lang === 'en' ? 'Send Offer' : 'Ipadala' })) return;
 
     if (editingOffer) {
       onUpdateOffer(editingOffer.id, {
@@ -253,7 +254,7 @@ export default function BuyerDashboard({
               {activeTab === 'farmer_offers' && (lang === 'en' ? "Farmers' Harvest Offers" : 'Mga Alok na Ani ng Farmers')}
               {activeTab === 'announcements' && (lang === 'en' ? 'Updates & Platform Announcements' : 'Mga Anunsyo at Update')}
               {activeTab === 'offers' && (lang === 'en' ? 'My Submitted Price Offers' : 'Aking Mga Naipadalang Offer')}
-              {activeTab === 'posted_services' && (lang === 'en' ? 'My Posted Truck & Logistics Services' : 'Aking Inalok na Serbisyo at Truck')}
+              {activeTab === 'posted_services' && (lang === 'en' ? 'My Posted Logistics Services' : 'Aking Mga Serbisyong Logistics')}
               {activeTab === 'logistics_jobs' && (lang === 'en' ? 'Available Logistics Jobs' : 'Mga Byahe at Transport Jobs')}
               {activeTab === 'services' && (lang === 'en' ? 'Matched Logistics Services' : 'Nakatakdang Byahero & Processing')}
             </h1>
@@ -262,7 +263,7 @@ export default function BuyerDashboard({
               {activeTab === 'farmer_offers' && (lang === 'en' ? 'Review harvests offered directly to you by farmers.' : 'Suriin ang mga ani na direktang inalok sa iyo ng mga farmer.')}
               {activeTab === 'announcements' && (lang === 'en' ? 'DA reference price benchmarks and platform notices.' : 'Mga opisyal na presyo ng DA at abiso sa sistema.')}
               {activeTab === 'offers' && (lang === 'en' ? 'Track farmer responses and manage your purchase bids.' : 'Suriin ang status ng inyong mga alok na presyo.')}
-              {activeTab === 'posted_services' && (lang === 'en' ? 'Post available trucks or hauling services directly for local farmers to see.' : 'Mag-post ng bakanteng truck o serbisyo sa paghakot para makita ng mga magsasaka.')}
+              {activeTab === 'posted_services' && (lang === 'en' ? 'Post and manage transportation, storage, drying, and milling services.' : 'Mag-post at pamahalaan ang transportasyon, imbakan, pagpapatuyo, at paggiling.')}
               {activeTab === 'logistics_jobs' && (lang === 'en' ? 'View farmer transport requests and hauling needs.' : 'Tingnan ang mga hiling na biyahe ng mga magsasaka.')}
               {activeTab === 'services' && (lang === 'en' ? 'Connect with registered truck haulers and millers.' : 'Kumonekta sa mga nakatakdang byahero at gilingan.')}
             </p>
@@ -377,7 +378,7 @@ export default function BuyerDashboard({
               </p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="flex h-[calc(100dvh-10.5rem)] min-h-[20rem] flex-col gap-2 overflow-hidden">
               <div className="hidden grid-cols-[minmax(170px,1.4fr)_minmax(140px,1fr)_minmax(120px,0.8fr)_minmax(170px,1.1fr)_minmax(120px,0.8fr)_minmax(100px,0.65fr)] items-center gap-4 px-5 pb-1 text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 lg:grid">
                 <span>{lang === 'en' ? 'Farmer' : 'Magsasaka'}</span>
                 <span>{lang === 'en' ? 'Variety' : 'Uri ng Palay'}</span>
@@ -386,6 +387,7 @@ export default function BuyerDashboard({
                 <span>{lang === 'en' ? 'Total kg' : 'Kabuuang kg'}</span>
                 <span className="sr-only">{lang === 'en' ? 'Details' : 'Detalye'}</span>
               </div>
+              <div className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain pr-1.5 scrollbar-thin">
               {availableHarvests.map((h) => {
                 const moistureInfo = getMoistureClassification(h.moistureLevel);
                 return (
@@ -440,6 +442,7 @@ export default function BuyerDashboard({
                 </motion.button>
               );
               })}
+              </div>
             </div>
           )
         )}
@@ -463,7 +466,7 @@ export default function BuyerDashboard({
                 className={`px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
                   offerStatusFilter === 'pending'
                     ? 'bg-amber-600 text-white shadow-xs'
-                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-amber-400'
+                    : 'border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/60'
                 }`}
               ><span className="inline-flex items-center gap-1.5 align-middle mr-1.5"><IconHourglass size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>{lang === 'en' ? 'Waiting for Farmer' : 'Naghihintay sa Farmer'} ({pendingOffersCount})
               </button>
@@ -472,7 +475,7 @@ export default function BuyerDashboard({
                 className={`px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
                   offerStatusFilter === 'accepted'
                     ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-emerald-400'
+                    : 'border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-950/60'
                 }`}
               ><span className="inline-flex items-center gap-1.5 align-middle mr-1.5"><IconCircleCheck size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>{lang === 'en' ? 'Approved Connections' : 'Aprubadong Koneksyon'} ({acceptedOffersCount})
               </button>
@@ -536,6 +539,19 @@ export default function BuyerDashboard({
                     {o.status === 'accepted' ? (
                       <div className="space-y-2.5 w-full">
                         <div className="p-2.5 bg-emerald-600 text-white rounded-xl font-bold text-xs text-center shadow-xs"><span className="inline-flex items-center gap-1.5 align-middle"><IconConfetti size={16} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Congratulations! Your offer has been accepted. Continue tracking the transaction in KAWING."}</span></div>
+                        <div className="rounded-xl border-2 border-emerald-300 bg-emerald-50 p-4 dark:border-emerald-700 dark:bg-emerald-950/30">
+                          <p className="text-center text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300">{lang === 'en' ? 'Farmer contact' : 'Kontak ng farmer'}</p>
+                          <p className="mt-1 text-center text-sm font-extrabold text-slate-900 dark:text-white">{o.farmerName}</p>
+                          <div className="mt-3 flex items-center gap-3 border-t border-emerald-200 pt-3 dark:border-emerald-800">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                              <Phone className="h-5 w-5" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Contact number' : 'Numero ng kontak'}</p>
+                              <p className="text-xl font-black tracking-wide text-slate-900 dark:text-white">{o.farmerPhone || (lang === 'en' ? 'No phone provided' : 'Walang numero')}</p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     ) : o.status === 'pending' ? (
                       <div className="space-y-2 w-full">
@@ -707,14 +723,14 @@ export default function BuyerDashboard({
 
                       <div className="flex gap-3">
                         <button
-                          onClick={() => { if (window.confirm(lang === 'en' ? 'Accept this hauling request and take responsibility for the trip?' : 'Tanggapin at akuin ang hauling request na ito?')) onAcceptService(req.id); }}
+                          onClick={() => askConfirmation(lang === 'en' ? 'Accept this hauling request and take responsibility for the trip?' : 'Tanggapin at akuin ang hauling request na ito?', () => onAcceptService(req.id), { tone: 'success', confirmLabel: lang === 'en' ? 'Accept Request' : 'Tanggapin' })}
                           className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl transition-all shadow-md shadow-emerald-600/20 cursor-pointer flex items-center justify-center gap-1.5"
                         >
                           <CheckCircle2 className="w-4 h-4" />
                           <span>{lang === 'en' ? 'Accept & Haul Trip' : 'Tanggapin ang Biyahe'}</span>
                         </button>
                         <button
-                          onClick={() => { if (window.confirm(lang === 'en' ? 'Decline this hauling request?' : 'Tanggihan ang hauling request na ito?')) onRejectService(req.id); }}
+                          onClick={() => askConfirmation(lang === 'en' ? 'Decline this hauling request?' : 'Tanggihan ang hauling request na ito?', () => onRejectService(req.id), { tone: 'danger', confirmLabel: lang === 'en' ? 'Decline Request' : 'Tanggihan' })}
                           className="py-3 px-4 bg-slate-100 hover:bg-red-50 dark:bg-slate-800 dark:hover:bg-red-950/30 text-slate-600 hover:text-red-600 dark:text-slate-400 font-bold text-xs rounded-xl transition-all cursor-pointer"
                         >
                           {lang === 'en' ? 'Decline' : 'Tanggihan'}
@@ -782,7 +798,7 @@ export default function BuyerDashboard({
                       <div className="space-y-3">
                         {onCompleteService && (
                           <button
-                            onClick={() => { if (window.confirm(lang === 'en' ? 'Mark this delivery as completed? This will close the trip.' : 'Markahan itong completed? Isasara nito ang biyahe.')) onCompleteService(req.id); }}
+                            onClick={() => askConfirmation(lang === 'en' ? 'Mark this delivery as completed? This will close the trip.' : 'Markahan itong completed? Isasara nito ang biyahe.', () => onCompleteService(req.id), { tone: 'success', confirmLabel: lang === 'en' ? 'Mark Completed' : 'Markahan na Tapos' })}
                             className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl transition-all shadow-md shadow-emerald-600/20 cursor-pointer flex items-center justify-center gap-2"
                           >
                             <CheckCircle className="w-4 h-4" />
@@ -850,21 +866,21 @@ export default function BuyerDashboard({
               if (myServices.length === 0) {
                 return (
                   <div className="bg-white dark:bg-slate-900 text-center py-16 px-4 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                    <div className="w-16 h-16 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><span className="inline-flex items-center gap-1.5 align-middle"><IconTruck size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></div>
+                    <div className="w-16 h-16 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><span className="inline-flex items-center gap-1.5 align-middle"><IconSettings size={28} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white">
                       {lang === 'en' ? 'No Posted Services Yet' : 'Wala Pa Akong Inalok na Serbisyo'}
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
                       {lang === 'en'
-                        ? 'Post your hauling service so local farmers can request a trip.'
-                        : 'I-post ang hauling service mo para makahiling ng biyahe ang mga magsasaka.'}
+                        ? 'Post a logistics service so local farmers can request the support they need.'
+                        : 'Mag-post ng logistics service para makahiling ang mga magsasaka ng serbisyong kailangan nila.'}
                     </p>
                     <button
                       onClick={() => setShowPostServiceModal(true)}
                       className="mt-5 px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-xs rounded-xl transition-all shadow-md shadow-cyan-600/20 cursor-pointer inline-flex items-center gap-2"
                     >
-                      <Truck className="w-4 h-4" />
-                      <span>{lang === 'en' ? 'Post Your Truck Service Now' : 'I-post ang Serbisyo ng Truck Mo'}</span>
+                      <Plus className="w-4 h-4" />
+                      <span>{lang === 'en' ? 'Post Logistics Service' : 'Mag-post ng Logistics Service'}</span>
                     </button>
                   </div>
                 );
@@ -880,9 +896,12 @@ export default function BuyerDashboard({
                       <div>
                         <div className="flex items-start justify-between gap-2 mb-3">
                           <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-cyan-50 text-cyan-700 dark:bg-cyan-950/50 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800 uppercase tracking-wider flex items-center gap-1.5">
-                            <Truck className="w-3 h-3" />
+                            {s.serviceType === 'transport' ? <IconTruck size={14} stroke={2} /> :
+                             s.serviceType === 'storage' ? <IconBuildingFactory size={14} stroke={2} /> :
+                             s.serviceType === 'drying' ? <IconSun size={14} stroke={2} /> :
+                             <IconSettings size={14} stroke={2} />}
                             {s.serviceType === 'transport' ? (lang === 'en' ? 'Truck & Hauling' : 'Truck at Hakot') :
-                             s.serviceType === 'storage' ? (lang === 'en' ? 'Cold Storage' : 'Bodega') :
+                             s.serviceType === 'storage' ? (lang === 'en' ? 'Storage & Warehouse' : 'Imbakan at Bodega') :
                              s.serviceType === 'drying' ? (lang === 'en' ? 'Drying Facility' : 'Patuyuan') :
                              (lang === 'en' ? 'Rice Mill' : 'Gilingan')}
                           </span>
@@ -928,7 +947,7 @@ export default function BuyerDashboard({
                         {onDeleteOfferedService && (
                           <button
                             type="button"
-                            onClick={() => { if (window.confirm(lang === 'en' ? `Delete the service post “${s.title}”? Farmers will no longer see it.` : `Burahin ang service post na “${s.title}”? Hindi na ito makikita ng mga farmer.`)) onDeleteOfferedService(s.id); }}
+                            onClick={() => askConfirmation(lang === 'en' ? `Delete the service post “${s.title}”? Farmers will no longer see it.` : `Burahin ang service post na “${s.title}”? Hindi na ito makikita ng mga farmer.`, () => onDeleteOfferedService(s.id), { tone: 'danger', confirmLabel: lang === 'en' ? 'Delete Service' : 'Burahin' })}
                             className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all cursor-pointer"
                             title="Delete service post"
                           >
@@ -947,7 +966,7 @@ export default function BuyerDashboard({
       </main>
       </div>
 
-      {/* Modal for Posting Buyer Service / Truck */}
+      {/* Modal for posting a logistics service */}
       {showPostServiceModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs overflow-y-auto">
           <motion.div
@@ -960,10 +979,10 @@ export default function BuyerDashboard({
                 <span className="text-2xl p-2 bg-white/10 rounded-xl"><span className="inline-flex items-center gap-1.5 align-middle"><IconTruck size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></span>
                 <div>
                   <h3 className="font-extrabold text-base font-display">
-                    {lang === 'en' ? 'Post Truck or Logistics Service' : 'Mag-post ng Truck o Serbisyo sa Hakot'}
+                    {lang === 'en' ? 'Post Logistics Service' : 'Mag-post ng Logistics Service'}
                   </h3>
                   <p className="text-xs text-cyan-100 font-medium">
-                    {lang === 'en' ? 'Make your truck or transport available to local farmers' : 'Ialok ang iyong truck para magamit ng mga magsasaka'}
+                    {lang === 'en' ? 'Offer transportation, storage, drying, or milling to local farmers' : 'Ialok ang transportasyon, imbakan, pagpapatuyo, o paggiling sa mga magsasaka'}
                   </p>
                 </div>
               </div>
@@ -976,19 +995,19 @@ export default function BuyerDashboard({
             </div>
 
             <form
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
                 if (!serviceType) {
-                  alert(lang === 'en' ? 'Please select a service category first.' : 'Pumili muna ng kategorya ng serbisyo.');
+                  void alertDialog(lang === 'en' ? 'Please select a service category first.' : 'Pumili muna ng kategorya ng serbisyo.', { tone: 'info' });
                   return;
                 }
                 if (!serviceTitle.trim() || !capacity.trim() || !locationCoverage.trim()) {
-                  alert(lang === 'en' ? 'Please fill in required fields.' : 'Mangyaring punan ang kinakailangang impormasyon.');
+                  void alertDialog(lang === 'en' ? 'Please fill in required fields.' : 'Mangyaring punan ang kinakailangang impormasyon.', { tone: 'info' });
                   return;
                 }
-                if (!window.confirm(lang === 'en'
+                if (!await confirmDialog(lang === 'en'
                   ? `Publish this ${serviceType} service?\n\n${serviceTitle.trim()}\nCapacity: ${capacity.trim()}\nCoverage: ${locationCoverage.trim()}`
-                  : `I-publish ang ${serviceType} service na ito?\n\n${serviceTitle.trim()}\nKapasidad: ${capacity.trim()}\nSakop: ${locationCoverage.trim()}`)) return;
+                  : `I-publish ang ${serviceType} service na ito?\n\n${serviceTitle.trim()}\nKapasidad: ${capacity.trim()}\nSakop: ${locationCoverage.trim()}`, { title: lang === 'en' ? 'Publish service?' : 'I-publish ang serbisyo?', tone: 'success', confirmLabel: lang === 'en' ? 'Publish Service' : 'I-publish' })) return;
                 if (onAddOfferedService) {
                   onAddOfferedService({
                     serviceType,
@@ -1124,7 +1143,7 @@ export default function BuyerDashboard({
 
                     <div>
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                        {lang === 'en' ? 'Load Capacity' : 'Kapasidad ng Sakay'} *
+                        {lang === 'en' ? 'Service Capacity' : 'Kapasidad ng Serbisyo'} *
                       </label>
                       <input
                         type="text"
@@ -1145,7 +1164,7 @@ export default function BuyerDashboard({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                        {lang === 'en' ? 'Coverage Area / Location' : 'Lugar ng Biyahe / Sakop'} *
+                        {lang === 'en' ? 'Coverage Area / Location' : 'Lugar / Sakop ng Serbisyo'} *
                       </label>
                       <input
                         type="text"
