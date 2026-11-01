@@ -544,7 +544,7 @@ export default function App() {
               },
             }
           : u.businessCapabilities;
-        return { ...u, isApproved: true, rating: 5.0, logisticsServices, businessCapabilities }; // verified starter rating
+        return { ...u, isApproved: true, logisticsServices, businessCapabilities };
       }
       return u;
     });
@@ -718,6 +718,28 @@ export default function App() {
     });
   };
 
+  const notifyOpenServiceRequest = (request: ServiceRequest) => {
+    if (request.type === 'buyer' || request.operatorEmail) return;
+    const category = request.type;
+    registeredUsers.filter(account => account.email && account.isApproved !== false && account.email !== request.farmerEmail && (
+      hasApprovedBusinessCapability(account, category)
+      || (category === 'transport' && (account.role === 'buyer' || account.role === 'agricultural_business') && account.buyerLogisticsEnabled)
+    )).forEach(account => {
+      const business = account.role === 'buyer' || account.role === 'agricultural_business';
+      // The business jobs screen currently displays transport only.
+      if (business && category !== 'transport') return;
+      addNotification(account.email!, 'New Logistics Job', `${request.farmerName} requested ${category} for ${request.cropType}.`, 'info', false, {
+        Page: business ? 'logistics_jobs' : account.role === 'logistics' ? `service_${category}` : 'available',
+      });
+    });
+  };
+
+  const notifyAdminPage = (page: string, title: string, message: string) => {
+    registeredUsers.filter(account => account.role === 'admin' && account.email).forEach(account =>
+      addNotification(account.email!, title, message, 'info', false, { Page: page })
+    );
+  };
+
   const handleMarkNotificationRead = (id: string) => {
     setNotifications(prev => {
       const updated = prev.map(n => n.id === id ? { ...n, isRead: true } : n);
@@ -834,11 +856,15 @@ export default function App() {
       }));
 
       if (newRequests.length > 0) {
+        newRequests.forEach(request => notifyAdminPage('services', 'New Service Request', `${request.farmerName} requested ${request.type}.`));
         const updatedServices = [...newRequests, ...serviceRequests];
         setServiceRequests(updatedServices);
         localStorage.setItem('kawing_services', JSON.stringify(updatedServices));
         newRequests.forEach(request => {
-          if (!request.operatorEmail) return;
+          if (!request.operatorEmail) {
+            notifyOpenServiceRequest(request);
+            return;
+          }
           const serviceLabel = request.type === 'transport' ? 'Trucking' : request.type === 'storage' ? 'Storage' : request.type === 'drying' ? 'Drying' : 'Milling';
           addNotification(
             request.operatorEmail,
@@ -923,8 +949,10 @@ export default function App() {
     };
 
     const updated = [newRequest, ...serviceRequests];
+    notifyAdminPage('services', 'New Service Request', `${newRequest.farmerName} requested ${newRequest.type}.`);
     setServiceRequests(updated);
     localStorage.setItem('kawing_services', JSON.stringify(updated));
+    notifyOpenServiceRequest(newRequest);
 
     // Also update the harvest status to "in_progress" to indicate logistics active
     const updatedHarvests = harvests.map(h => {
@@ -1012,6 +1040,7 @@ export default function App() {
     };
 
     const updatedOffers = [newOffer, ...offers];
+    notifyAdminPage('transactions', 'New Price Offer', `${newOffer.buyerName} sent an offer for ${newOffer.cropType}.`);
     setOffers(updatedOffers);
     localStorage.setItem('kawing_offers', JSON.stringify(updatedOffers));
 
@@ -1187,6 +1216,9 @@ export default function App() {
     setOfferedServices(updated);
     localStorage.setItem('kawing_offered_services', JSON.stringify(updated));
 
+    registeredUsers.filter(account => account.role === 'farmer' && account.isApproved !== false && account.email).forEach(account =>
+      addNotification(account.email!, 'New Logistics Service', `${os.companyName || os.providerName} posted ${os.title}.`, 'info', false, { Page: 'services' })
+    );
     addNotification(
       activeUser.email || '',
       'Serbisyo Na-Post!',
@@ -1204,6 +1236,15 @@ export default function App() {
     });
     setOfferedServices(updated);
     localStorage.setItem('kawing_offered_services', JSON.stringify(updated));
+  };
+
+  const handleUpdateOfferedService = (id: string, updates: Partial<OfferedService>) => {
+    if (!activeUser) return;
+    setOfferedServices(current => current.map(service =>
+      service.id === id && service.providerEmail === activeUser.email
+        ? { ...service, ...updates, id: service.id, providerEmail: service.providerEmail, createdAt: service.createdAt }
+        : service
+    ));
   };
 
   const handleDeleteOfferedService = (id: string) => {
@@ -1445,6 +1486,7 @@ export default function App() {
             productionLoans={productionLoans}
             marketReferencePrice={settings.daReferencePrice}
             onAddOfferedService={handleAddOfferedService}
+            onUpdateOfferedService={handleUpdateOfferedService}
             onToggleOfferedServiceStatus={handleToggleOfferedServiceStatus}
             onDeleteOfferedService={handleDeleteOfferedService}
             onAcceptService={handleAcceptService}

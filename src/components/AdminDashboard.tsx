@@ -99,6 +99,25 @@ export default function AdminDashboard({
     setActiveTab('users');
   };
 
+  const adminNotificationPage = (notification: AppNotification) => {
+    if (notification.emailDetails?.Page) return notification.emailDetails.Page;
+    const title = notification.title.toLowerCase();
+    if (/registration|verification|approval|applicant/.test(title)) return 'users';
+    if (/announcement|anunsyo/.test(title)) return 'announcements';
+    if (/offer|transaction|deal/.test(title)) return 'transactions';
+    if (/service|serbisyo|request|logistics/.test(title)) return 'services';
+    if (/harvest|ani/.test(title)) return 'harvests';
+    if (/feedback|rating/.test(title)) return 'feedback';
+    if (/spoilage|risk/.test(title)) return 'spoilage';
+    if (/faq/.test(title)) return 'grainy-faqs';
+    if (/price|setting/.test(title)) return 'settings';
+    return 'reports';
+  };
+  const pageBadge = (page: string) => {
+    const count = unreadAdminNotifications.filter(notification => adminNotificationPage(notification) === page).length;
+    return count > 0 ? <span className="ml-2 shrink-0 rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white">{count > 99 ? '99+' : count}</span> : null;
+  };
+
   // 1. Centralized Active Tab Routing
   const [activeTab, setActiveTab] = useState<
     | 'users'
@@ -113,6 +132,10 @@ export default function AdminDashboard({
     | 'settings'
     | 'grainy-faqs'
   >('users');
+  useEffect(() => {
+    unreadAdminNotifications.filter(notification => adminNotificationPage(notification) === activeTab)
+      .forEach(notification => onMarkNotificationRead(notification.id));
+  }, [activeTab, notifications]);
 
   // 2. Centralized State to make the administrative panel 100% interactive
   const [usersList, setUsersList] = useState<UserAccount[]>(() => registeredUsers);
@@ -266,6 +289,7 @@ export default function AdminDashboard({
               <div className="flex items-center gap-3 min-w-0">
                 <Sprout className="w-4 h-4 shrink-0" />
                 <span className="truncate">{lang === 'en' ? 'Harvest Records' : 'Talaan ng Ani'}</span>
+                {pageBadge('harvests')}
               </div>
             </button>
 
@@ -282,6 +306,7 @@ export default function AdminDashboard({
               <div className="flex items-center gap-3 min-w-0">
                 <Truck className="w-4 h-4 shrink-0" />
                 <span className="truncate">{lang === 'en' ? 'Service Requests' : 'Hiling na Serbisyo'}</span>
+                {pageBadge('services')}
               </div>
               <span className="text-[10px] font-bold text-slate-400 shrink-0">{serviceRequests.length}</span>
             </button>
@@ -299,6 +324,7 @@ export default function AdminDashboard({
               <div className="flex items-center gap-3 min-w-0">
                 <History className="w-4 h-4 shrink-0" />
                 <span className="truncate">{lang === 'en' ? 'Connections & Deals' : 'Koneksyon at Kasunduan'}</span>
+                {pageBadge('transactions')}
               </div>
             </button>
 
@@ -316,6 +342,7 @@ export default function AdminDashboard({
               <div className="flex items-center gap-3 min-w-0">
                 <BarChart3 className="w-4 h-4 shrink-0" />
                 <span className="truncate">{lang === 'en' ? 'Reports & Analytics' : 'Suri at Ulat'}</span>
+                {pageBadge('reports')}
               </div>
             </button>
 
@@ -332,6 +359,7 @@ export default function AdminDashboard({
               <div className="flex items-center gap-3 min-w-0">
                 <Star className="w-4 h-4 shrink-0" />
                 <span className="truncate">{lang === 'en' ? 'Feedback & Ratings' : 'Puna at Marka'}</span>
+                {pageBadge('feedback')}
               </div>
             </button>
 
@@ -348,6 +376,7 @@ export default function AdminDashboard({
               <div className="flex items-center gap-3 min-w-0">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span className="truncate">{lang === 'en' ? 'Spoilage Alerts' : 'Babala sa Pagkasira'}</span>
+                {pageBadge('spoilage')}
               </div>
               <span className="text-[9px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold animate-pulse shrink-0">RISK</span>
             </button>
@@ -367,7 +396,7 @@ export default function AdminDashboard({
                 <Megaphone className="w-4 h-4 shrink-0" />
                 <span className="truncate">{lang === 'en' ? 'Announcements' : 'Mga Pahayag (Advisory)'}</span>
               </div>
-              <span className="text-[10px] bg-red-100 dark:bg-red-950/20 text-red-600 px-1.5 py-0.5 rounded font-bold shrink-0">ALERTS</span>
+              {pageBadge('announcements')}
             </button>
 
             {/* 11. DA reference price and settings */}
@@ -384,6 +413,7 @@ export default function AdminDashboard({
               <div className="flex items-center gap-3 min-w-0">
                 <Settings className="w-4 h-4 shrink-0" />
                 <span className="truncate">{lang === 'en' ? 'DA Price & Settings' : 'DA Presyo at Settings'}</span>
+                {pageBadge('settings')}
               </div>
               <span className="text-[9px] bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded font-black shrink-0">DA</span>
             </button>

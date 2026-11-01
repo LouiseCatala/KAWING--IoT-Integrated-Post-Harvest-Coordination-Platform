@@ -6,8 +6,10 @@ import { Plus, Calendar, MapPin, AlertTriangle, TrendingUp, RefreshCw, Check, X,
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { getMoistureClassification } from '../lib/moisture';
-import { hasApprovedBusinessCapability } from '../lib/businessCapabilities';
+import { getBusinessCapability, hasApprovedBusinessCapability } from '../lib/businessCapabilities';
 import Sidebar from './Sidebar';
+import TransactionRating from './TransactionRating';
+import RatingSummary from './RatingSummary';
 import AnimatedButton from './AnimatedButton';
 import AnnouncementsBoard from './AnnouncementsBoard';
 import ProductionLoanFarmer from './ProductionLoanFarmer';
@@ -239,6 +241,14 @@ export default function FarmerDashboard({
   const myServices = serviceRequests.filter(s => s.farmerEmail === user.email);
   const myIncomingOffers = offers.filter(o => o.farmerEmail === user.email);
   const verifiedBuyers = registeredUsers.filter(buyer => hasApprovedBusinessCapability(buyer, 'buyer'));
+  const visiblePostedServices = offeredServices.filter(service => {
+    const provider = registeredUsers.find(account => account.email === service.providerEmail);
+    if (!provider || provider.isApproved === false || service.isAvailable === false) return false;
+    const capability = getBusinessCapability(provider, service.serviceType);
+    return capability
+      ? hasApprovedBusinessCapability(provider, service.serviceType) && capability.isAvailable !== false
+      : hasApprovedBusinessCapability(provider, 'buyer');
+  });
   const partnerEntries: Array<{
     id: string;
     kind: 'buyer' | 'service';
@@ -247,6 +257,7 @@ export default function FarmerDashboard({
     user: UserAccount;
     label: string;
     icon: React.ReactNode;
+    listing?: OfferedService;
   }> = [
     ...verifiedBuyers.map((buyer) => ({
       id: `buyer-${buyer.email || buyer.name}`,
@@ -265,7 +276,8 @@ export default function FarmerDashboard({
         { category: 'milling' as const, role: 'miller' as const, label: lang === 'en' ? 'Rice Milling' : 'Gilingan', icon: <span className="inline-flex items-center gap-1.5 align-middle"><IconWheat size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span> },
       ];
       return serviceDefinitions
-        .filter(({ category }) => hasApprovedBusinessCapability(provider, category))
+        .filter(({ category }) => hasApprovedBusinessCapability(provider, category)
+          && !visiblePostedServices.some(service => service.providerEmail === provider.email && service.serviceType === category))
         .map(({ category, role, label, icon }) => ({
           id: `${category}-${provider.email || provider.name}`,
           kind: 'service' as const,
@@ -277,19 +289,33 @@ export default function FarmerDashboard({
         }));
     }),
   ];
+  visiblePostedServices.forEach(service => {
+    const provider = registeredUsers.find(account => account.email === service.providerEmail)!;
+    const serviceRoles = { transport: 'truck', storage: 'storage', drying: 'dryer', milling: 'miller' } as const;
+    const serviceIcons = { transport: IconTruck, storage: IconPackage, drying: IconWind, milling: IconWheat };
+    partnerEntries.push({
+      id: `listing-${service.id}`,
+      kind: 'service',
+      category: service.serviceType,
+      serviceRole: serviceRoles[service.serviceType],
+      user: provider,
+      listing: service,
+      label: { transport: 'Trucking', storage: 'Storage', drying: 'Drying', milling: 'Milling' }[service.serviceType],
+      icon: React.createElement(serviceIcons[service.serviceType], { size: 24, stroke: 2 }),
+    });
+  });
   // Only expose services backed by an enabled, approved logistics provider or
   // by an active service listing published by a buyer.
   const availableServiceTypes = new Set<'transport' | 'storage' | 'drying' | 'milling'>([
     ...partnerEntries
       .filter((entry) => entry.kind === 'service')
       .map((entry) => entry.category as 'transport' | 'storage' | 'drying' | 'milling'),
-    ...(offeredServices || [])
-      .filter((service) => service.isAvailable !== false && registeredUsers.some(provider => provider.email === service.providerEmail && hasApprovedBusinessCapability(provider, service.serviceType)))
+    ...visiblePostedServices
       .map((service) => service.serviceType),
   ]);
   const visiblePartnerEntries = partnerEntries.filter((entry) => {
     const matchesFilter = partnerFilter === 'all' || entry.category === partnerFilter;
-    const searchText = `${entry.user.businessName || ''} ${entry.user.name} ${entry.user.address || ''} ${entry.label}`.toLowerCase();
+    const searchText = `${entry.user.businessName || ''} ${entry.user.name} ${entry.user.address || ''} ${entry.label} ${entry.listing?.title || ''} ${entry.listing?.locationCoverage || ''}`.toLowerCase();
     return matchesFilter && searchText.includes(partnerSearch.trim().toLowerCase());
   });
 
@@ -666,12 +692,13 @@ export default function FarmerDashboard({
                       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-xl group-hover:bg-emerald-950">{entry.icon}</span>
                       <span className="min-w-0 flex-1">
                         <span className="flex flex-wrap items-center gap-2">
-                          <strong className="truncate text-sm text-slate-900 dark:text-white">{entry.user.businessName || entry.user.name}</strong>
+                          <strong className="truncate text-sm text-slate-900 dark:text-white">{entry.listing?.title || entry.user.businessName || entry.user.name}</strong>
                           <span className="rounded-full bg-emerald-950 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-emerald-400">{entry.label}</span>
                         </span>
+                        {entry.listing && <span className="mt-1 block text-xs font-semibold text-cyan-700 dark:text-cyan-300">{entry.listing.companyName || entry.user.businessName || entry.user.name} · {entry.listing.rateInfo || (lang === 'en' ? 'Ask for rate' : 'Magtanong ng presyo')}</span>}
                         <span className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
                           <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{entry.user.address || 'Location available in details'}</span>
-                          <span className="flex items-center gap-1 text-amber-700 dark:text-amber-400"><Star className="h-3.5 w-3.5 fill-current" />{entry.user.rating?.toFixed(1) || 'New'}</span>
+                          <span className="flex items-center gap-1 text-amber-700 dark:text-amber-400"><Star className="h-3.5 w-3.5 fill-current" /><RatingSummary email={entry.user.email} /></span>
                         </span>
                       </span>
                       <span className="shrink-0 text-xs font-extrabold text-emerald-400">{lang === 'en' ? 'View details' : 'Tingnan'}<span className="inline-flex items-center gap-1.5 align-middle ml-1.5"><IconArrowRight size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></span>
@@ -880,7 +907,7 @@ export default function FarmerDashboard({
                                   </span>
                                   <div className="flex items-center gap-1 text-[11px] font-extrabold text-amber-500 bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded">
                                     <Star className="w-3 h-3 fill-current" />
-                                    <span>{(operator.rating || 4.8).toFixed(1)}</span>
+                                    <RatingSummary email={operator.email} />
                                   </div>
                                 </div>
 
@@ -994,7 +1021,7 @@ export default function FarmerDashboard({
                         <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300 mb-3 bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
                           {service.truckType && (
                             <div className="flex justify-between">
-                              <span className="text-slate-400 font-medium">{lang === 'en' ? 'Truck' : 'Sasakyan'}:</span>
+                              <span className="text-slate-400 font-medium">{service.serviceType === 'transport' ? (lang === 'en' ? 'Vehicle Type' : 'Uri ng Sasakyan') : service.serviceType === 'storage' ? (lang === 'en' ? 'Facility Type' : 'Uri ng Pasilidad') : (lang === 'en' ? 'Equipment Type' : 'Uri ng Kagamitan')}:</span>
                               <span className="font-bold text-slate-800 dark:text-slate-200">{service.truckType}</span>
                             </div>
                           )}
@@ -1082,7 +1109,7 @@ export default function FarmerDashboard({
                           </div>
                           {buyer.businessName && <p className="text-xs text-slate-500 dark:text-slate-400">{buyer.name}</p>}
                           <div className="mt-1 flex items-center gap-1 text-xs text-amber-500 font-bold">
-                            <Star className="w-3.5 h-3.5 fill-current" /> {buyer.rating?.toFixed(1) || 'New'}
+                            <Star className="w-3.5 h-3.5 fill-current" /> <RatingSummary email={buyer.email} />
                           </div>
                         </div>
                       </div>
@@ -1524,7 +1551,7 @@ export default function FarmerDashboard({
                                         </div>
                                         <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[9px] font-black uppercase text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">Verified</span>
                                       </div>
-                                      <div className="mt-3 flex items-center gap-3 border-t border-emerald-200 pt-3 dark:border-emerald-800">
+                                      <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-emerald-200 pt-3 dark:border-emerald-800">
                                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
                                           <Phone className="h-5 w-5" />
                                         </div>
@@ -1532,6 +1559,7 @@ export default function FarmerDashboard({
                                           <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Contact number' : 'Numero ng kontak'}</p>
                                           <p className="text-xl font-black tracking-wide text-slate-900 dark:text-white">{o.buyerPhone || (lang === 'en' ? 'No phone provided' : 'Walang numero')}</p>
                                         </div>
+                                        <TransactionRating offerId={o.id} />
                                       </div>
                                     </div>
                                   </div>
@@ -1580,16 +1608,16 @@ export default function FarmerDashboard({
             <div className="overflow-y-auto p-5 sm:p-7">
               {isEditingHarvestPost ? (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Rice Variety *
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Rice Variety <span className="text-red-500">*</span>
                     <input value={harvestEditDraft.riceVariety || ''} onChange={e => setHarvestEditDraft({ ...harvestEditDraft, riceVariety: e.target.value })} className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-emerald-500" />
                   </label>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Harvest Date *
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Harvest Date <span className="text-red-500">*</span>
                     <input type="date" value={harvestEditDraft.harvestDate} onChange={e => setHarvestEditDraft({ ...harvestEditDraft, harvestDate: e.target.value })} className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-emerald-500" />
                   </label>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Total Weight (kg) *
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Total Weight (kg) <span className="text-red-500">*</span>
                     <input type="number" min="1" value={harvestEditDraft.estimatedWeightKg || harvestEditDraft.quantity} onChange={e => setHarvestEditDraft({ ...harvestEditDraft, estimatedWeightKg: Number(e.target.value), quantity: Number(e.target.value) })} className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-emerald-500" />
                   </label>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Price per kg (₱) *
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Price per kg (₱) <span className="text-red-500">*</span>
                     <input type="number" min="1" step="0.01" value={harvestEditDraft.targetPrice || ''} onChange={e => setHarvestEditDraft({ ...harvestEditDraft, targetPrice: Number(e.target.value) })} className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-emerald-500" />
                   </label>
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Selling Method
@@ -2261,7 +2289,7 @@ export default function FarmerDashboard({
               {/* Moisture content is supplied exclusively by a fresh PalaySense reading. */}
               <div className={`post-harvest-moisture rounded-2xl border p-4 shadow-md transition-colors duration-300 ${postMoistureCardClass}`}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <label className="text-sm font-display font-black uppercase tracking-wide"><span className="inline-flex items-center gap-1.5 align-middle mr-1.5"><IconDroplet size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Moisture Content (%)"}</span><span className="text-inherit">*</span>
+                  <label className="text-sm font-display font-black uppercase tracking-wide"><span className="inline-flex items-center gap-1.5 align-middle mr-1.5"><IconDroplet size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Moisture Content (%)"}</span><span className="text-red-500">*</span>
                   </label>
                   <span className={`${palaySenseStatus !== 'connected' && palaySenseStatus !== 'error' ? 'invisible' : ''} shrink-0 rounded-lg border px-2.5 py-1.5 text-[9px] font-black uppercase tracking-wider ${palaySenseStatus === 'connected' ? 'border-emerald-400 bg-emerald-100 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : 'border-red-400 bg-red-100 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300'}`}>
                     {palaySenseStatus === 'connected' ? <span className="inline-flex items-center gap-1.5 align-middle"><span aria-hidden="true" className="inline-block h-2 w-2 shrink-0 rounded-full bg-emerald-500" />{"PalaySense Connected"}</span> : palaySenseStatus === 'error' ? <span className="inline-flex items-center gap-1.5 align-middle"><span aria-hidden="true" className="inline-block h-2 w-2 shrink-0 rounded-full bg-red-500" />{"Connection Error"}</span> : ''}
@@ -2494,7 +2522,7 @@ export default function FarmerDashboard({
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-2xl bg-slate-100 dark:bg-slate-800 p-4">
                   <p className="text-[10px] font-bold uppercase text-slate-400">Rating</p>
-                  <p className="mt-1 flex items-center gap-1 font-extrabold text-amber-400"><Star className="h-4 w-4 fill-current" />{selectedBuyerModal.rating?.toFixed(1) || 'New'}</p>
+                  <p className="mt-1 flex items-center gap-1 font-extrabold text-amber-400"><Star className="h-4 w-4 fill-current" /><RatingSummary email={selectedBuyerModal.email} /></p>
                 </div>
                 <div className="rounded-2xl bg-slate-100 dark:bg-slate-800 p-4">
                   <p className="text-[10px] font-bold uppercase text-slate-400">Status</p>
@@ -2578,11 +2606,19 @@ export default function FarmerDashboard({
             {/* Body Details */}
             <div className="p-4 md:p-6 space-y-4 text-left overflow-y-auto max-h-[70vh]">
               {/* Rating & Verified Badge */}
+              {offeredServices.filter(service => service.providerEmail === selectedOperatorModal.email && service.isAvailable !== false).map(service => (
+                <div key={service.id} className="rounded-xl border border-cyan-200 bg-cyan-50 p-4 dark:border-cyan-800 dark:bg-cyan-950/30">
+                  <h4 className="font-bold text-slate-900 dark:text-white">{service.title}</h4>
+                  <p className="mt-1 font-extrabold text-cyan-700 dark:text-cyan-300">{service.rateInfo || (lang === 'en' ? 'Rate not specified' : 'Walang nakatakdang bayad')}</p>
+                  <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{service.capacity} — {service.locationCoverage}</p>
+                  {service.providerPhone && <p className="mt-2 font-semibold text-slate-900 dark:text-white">{service.providerPhone}</p>}
+                </div>
+              ))}
               <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-100 dark:border-slate-700">
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1 text-amber-500 font-extrabold text-sm">
                     <Star className="w-4 h-4 fill-current" />
-                    <span>{(selectedOperatorModal.rating || 4.8).toFixed(1)}</span>
+                    <RatingSummary email={selectedOperatorModal.email} />
                   </div>
                   <span className="text-slate-700 dark:text-slate-300 dark:text-slate-600 text-xs">|</span>
                   <span className="text-xs font-bold text-slate-600 dark:text-slate-300">

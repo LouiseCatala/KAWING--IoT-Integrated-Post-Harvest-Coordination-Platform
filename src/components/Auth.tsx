@@ -386,7 +386,6 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
         serviceCoverageArea: role === 'agricultural_business' && selectedLogisticsServices.length > 0 ? serviceCoverageArea.trim() : undefined,
         operatingAddress: role === 'agricultural_business' ? operatingAddress.trim() : undefined,
         documents: uploadedDocs,
-        rating: 5.0,
         businessCapabilities: role === 'agricultural_business'
           ? Object.fromEntries([
             ['buyer', { enabled: true, approvalStatus: 'pending', isAvailable: false }],

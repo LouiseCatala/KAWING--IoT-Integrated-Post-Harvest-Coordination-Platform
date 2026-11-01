@@ -3,6 +3,7 @@ declare(strict_types=1);
 require __DIR__ . '/config.php';
 require __DIR__ . '/mailer.php';
 require __DIR__ . '/realtime.php';
+require __DIR__ . '/ratings.php';
 
 $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
 $path = trim((string) ($_GET['route'] ?? ''), '/');
@@ -144,6 +145,7 @@ $saveDatabase = static function (array $data) use ($pdo, $replaceRows): void {
 
 try {
     if (($path === '' || $path === 'health') && $method === 'GET') respond(['status' => 'ok', 'runtime' => 'php-mysql', 'timestamp' => gmdate(DATE_ATOM)]);
+    if ($path === 'ratings' && in_array($method, ['GET', 'POST'], true)) handleRatings($pdo, $method, $sessionIdentity());
     if ($path === 'registrations' && $method === 'POST') {
         $body = jsonBody();
         $name = trim((string) ($body['name'] ?? ''));

@@ -6,12 +6,13 @@ import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { getMoistureClassification } from '../lib/moisture';
 import Sidebar from './Sidebar';
+import TransactionRating from './TransactionRating';
 import AnimatedButton from './AnimatedButton';
 import AnnouncementsBoard from './AnnouncementsBoard';
 import ProductionLoanBuyer from './ProductionLoanBuyer';
 import { ProductionLoanRequest, ProductionLoanStatus } from '../types';
 import buyerBackground from '../assets/images/buyer_background.jpg';
-import { hasApprovedBusinessCapability } from '../lib/businessCapabilities';
+import { hasApprovedBusinessCapability, hasBusinessCapability } from '../lib/businessCapabilities';
 import { alertDialog, askConfirmation, confirmDialog } from '../lib/appDialog';
 
 interface BuyerDashboardProps {
@@ -24,6 +25,7 @@ interface BuyerDashboardProps {
   marketReferencePrice: number;
   onAddOfferedService?: (service: Omit<OfferedService, 'id' | 'providerEmail' | 'providerName' | 'providerRole' | 'createdAt'>) => void;
   onToggleOfferedServiceStatus?: (id: string) => void;
+  onUpdateOfferedService?: (id: string, updates: Partial<OfferedService>) => void;
   onDeleteOfferedService?: (id: string) => void;
   onAddOffer: (harvestId: string, phone: string, name: string, govIdData: string, offerPrice?: number, priceUnit?: string, notes?: string, extraOfferData?: any) => void;
   onUpdateOffer: (offerId: string, updates: Partial<Offer>) => void;
@@ -50,6 +52,7 @@ export default function BuyerDashboard({
   productionLoans = [],
   marketReferencePrice,
   onAddOfferedService,
+  onUpdateOfferedService,
   onToggleOfferedServiceStatus,
   onDeleteOfferedService,
   onAddOffer,
@@ -70,6 +73,9 @@ export default function BuyerDashboard({
   const { t, lang } = useApp();
   const canBuy = hasApprovedBusinessCapability(user, 'buyer');
   const approvedServices = (['transport', 'storage', 'drying', 'milling'] as const).filter(capability => hasApprovedBusinessCapability(user, capability));
+  const listedServiceTypes = (['transport', 'storage', 'drying', 'milling'] as const).filter(type =>
+    hasBusinessCapability(user, type) || offeredServices.some(service => service.providerEmail === user.email && service.serviceType === type)
+  );
   const [activeTab, setActiveTab] = useState<'announcements' | 'browse' | 'farmer_offers' | 'offers' | 'logistics_jobs' | 'posted_services' | 'services' | 'requests' | 'palay' | 'loans'>(canBuy ? 'browse' : 'announcements');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -88,6 +94,22 @@ export default function BuyerDashboard({
   const [capacity, setCapacity] = useState('');
   const [locationCoverage, setLocationCoverage] = useState('');
   const [rateInfo, setRateInfo] = useState('');
+  const [rateBasis, setRateBasis] = useState('per transaction');
+  const [editingService, setEditingService] = useState<OfferedService | null>(null);
+  const openServiceForm = (service?: OfferedService) => {
+    setEditingService(service || null);
+    setServiceType(service?.serviceType || '');
+    setServiceTitle(service?.title || '');
+    setTruckType(service?.truckType || '');
+    setCapacity(service?.capacity || '');
+    setLocationCoverage(service?.locationCoverage || '');
+    const rate = service?.rateInfo.match(/^₱?([\d.]+)\s*(per .+)?$/);
+    setRateInfo(rate?.[1] || '');
+    setRateBasis(rate?.[2] || 'per transaction');
+    setServiceNotes(service?.notes || '');
+    setContactPhone(service?.providerPhone || user.contactNumber || '');
+    setShowPostServiceModal(true);
+  };
   const [serviceNotes, setServiceNotes] = useState('');
   const [contactPhone, setContactPhone] = useState(user.contactNumber || '0917-555-0100');
 
@@ -106,6 +128,7 @@ export default function BuyerDashboard({
   
   // Logistics Jobs Filter for Buyers with Trucks
   const [logisticsFilter, setLogisticsFilter] = useState<'available' | 'active' | 'completed'>('available');
+  const [bookingFilter, setBookingFilter] = useState<'all' | ServiceRequest['status']>('all');
   const [buyerPhone, setBuyerPhone] = useState(user.contactNumber || '0917-555-0100');
   const [buyerName, setBuyerName] = useState(user.name || '');
   const [companyName, setCompanyName] = useState(user.businessName || (user.name ? `${user.name} Trading Co.` : 'Agri-Trading Co.'));
@@ -147,9 +170,17 @@ export default function BuyerDashboard({
 
   // Filter transport requests for Buyers who own trucks / logistics
   const transportRequests = serviceRequests.filter(s => s.type === 'transport');
-  const availableTransportRequests = transportRequests.filter(s => s.status === 'pending');
+  const availableTransportRequests = transportRequests.filter(
+    request => request.status === 'pending' && (!request.operatorEmail || request.operatorEmail === user.email)
+  );
   const myAcceptedTransportJobs = transportRequests.filter(s => s.status === 'matched' && s.operatorEmail === user.email);
   const myCompletedTransportJobs = transportRequests.filter(s => s.status === 'completed' && s.operatorEmail === user.email);
+  const myServiceBookings = serviceRequests.filter(
+    request => request.type !== 'buyer' && request.operatorEmail === user.email
+  );
+  const visibleServiceBookings = bookingFilter === 'all'
+    ? myServiceBookings
+    : myServiceBookings.filter(request => request.status === bookingFilter);
 
   const handleOpenOffer = (harvest: Harvest) => {
     setEditingOffer(null);
@@ -256,7 +287,7 @@ export default function BuyerDashboard({
               {activeTab === 'offers' && (lang === 'en' ? 'My Submitted Price Offers' : 'Aking Mga Naipadalang Offer')}
               {activeTab === 'posted_services' && (lang === 'en' ? 'My Posted Logistics Services' : 'Aking Mga Serbisyong Logistics')}
               {activeTab === 'logistics_jobs' && (lang === 'en' ? 'Available Logistics Jobs' : 'Mga Byahe at Transport Jobs')}
-              {activeTab === 'services' && (lang === 'en' ? 'Matched Logistics Services' : 'Nakatakdang Byahero & Processing')}
+              {activeTab === 'services' && (lang === 'en' ? 'Service Bookings' : 'Mga Booking ng Serbisyo')}
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               {activeTab === 'browse' && (lang === 'en' ? 'Browse fresh and dry palay listings from local farmers.' : 'Mag-browse ng mga sariwa at tuyong palay mula sa mga magsasaka.')}
@@ -265,19 +296,19 @@ export default function BuyerDashboard({
               {activeTab === 'offers' && (lang === 'en' ? 'Track farmer responses and manage your purchase bids.' : 'Suriin ang status ng inyong mga alok na presyo.')}
               {activeTab === 'posted_services' && (lang === 'en' ? 'Post and manage transportation, storage, drying, and milling services.' : 'Mag-post at pamahalaan ang transportasyon, imbakan, pagpapatuyo, at paggiling.')}
               {activeTab === 'logistics_jobs' && (lang === 'en' ? 'View farmer transport requests and hauling needs.' : 'Tingnan ang mga hiling na biyahe ng mga magsasaka.')}
-              {activeTab === 'services' && (lang === 'en' ? 'Connect with registered truck haulers and millers.' : 'Kumonekta sa mga nakatakdang byahero at gilingan.')}
+              {activeTab === 'services' && (lang === 'en' ? 'Review and manage farmer bookings for your posted services.' : 'Suriin at pamahalaan ang mga booking ng farmer para sa iyong mga serbisyo.')}
             </p>
           </div>
 
           <div className="flex flex-col min-[390px]:flex-row items-stretch min-[390px]:items-center gap-2.5 self-stretch sm:self-auto">
-            {approvedServices.length > 0 && <AnimatedButton
-              onClick={() => setShowPostServiceModal(true)}
-              variant="outline"
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold rounded-xl border-cyan-500 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-950/20"
+            {(approvedServices.length > 0 || activeTab === 'posted_services') && <button
+              type="button"
+              onClick={() => openServiceForm()}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 text-xs sm:text-sm font-bold rounded-xl bg-blue-600 text-white shadow-sm hover:bg-blue-500 transition-colors"
             >
               <Truck className="w-4 h-4" />
-              {lang === 'en' ? '+ Post a Service / Offer Truck' : '+ Mag-post ng Truck / Serbisyo'}
-            </AnimatedButton>}
+              {lang === 'en' ? 'Post Logistics Service' : 'Mag-post ng Logistics Service'}
+            </button>}
 
             {activeTab === 'browse' && (
               <div className="relative w-full sm:w-64">
@@ -542,7 +573,7 @@ export default function BuyerDashboard({
                         <div className="rounded-xl border-2 border-emerald-300 bg-emerald-50 p-4 dark:border-emerald-700 dark:bg-emerald-950/30">
                           <p className="text-center text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300">{lang === 'en' ? 'Farmer contact' : 'Kontak ng farmer'}</p>
                           <p className="mt-1 text-center text-sm font-extrabold text-slate-900 dark:text-white">{o.farmerName}</p>
-                          <div className="mt-3 flex items-center gap-3 border-t border-emerald-200 pt-3 dark:border-emerald-800">
+                          <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-emerald-200 pt-3 dark:border-emerald-800">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
                               <Phone className="h-5 w-5" />
                             </div>
@@ -550,6 +581,7 @@ export default function BuyerDashboard({
                               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Contact number' : 'Numero ng kontak'}</p>
                               <p className="text-xl font-black tracking-wide text-slate-900 dark:text-white">{o.farmerPhone || (lang === 'en' ? 'No phone provided' : 'Walang numero')}</p>
                             </div>
+                            <TransactionRating offerId={o.id} />
                           </div>
                         </div>
                       </div>
@@ -580,23 +612,24 @@ export default function BuyerDashboard({
 
         {activeTab === 'logistics_jobs' && (
           <div className="space-y-6">
-            {/* Header Availability Banner for Buyers with Trucks */}
+            {/* Services selected on the account or published by this provider. */}
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-start sm:items-center gap-3">
-                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl shrink-0">
-                  <Truck className="w-6 h-6 animate-pulse" />
-                </div>
                 <div>
-                  <h2 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2 font-display">
-                    <span>{lang === 'en' ? 'Buyer Hauling & Transport Services' : 'Serbisyo sa Pagbiyahe at Transport ng Buyer'}</span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 uppercase">
-                      Truck Owner
-                    </span>
-                  </h2>
+                  {listedServiceTypes.length > 0 && (
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                      {listedServiceTypes.map(type => (
+                        <span key={type} className="inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                          {React.createElement(({ transport: IconTruck, storage: IconPackage, drying: IconSun, milling: IconWheat })[type], { size: 18, stroke: 2, 'aria-hidden': true })}
+                          {({ transport: lang === 'en' ? 'Transportation / Trucking' : 'Transportasyon', storage: lang === 'en' ? 'Storage & Warehouse' : 'Imbakan', drying: lang === 'en' ? 'Drying' : 'Patuyuan', milling: lang === 'en' ? 'Milling' : 'Gilingan' })[type]}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">
                     {lang === 'en'
-                      ? 'Have a truck? Accept farmer requests to haul palay to mills, storage, or buying stations.'
-                      : 'May truck? Tumanggap ng hiling na maghakot ng palay sa gilingan, imbakan, o buying station.'}
+                      ? 'Accept farmer requests to haul palay to mills, storage, or buying stations.'
+                      : 'Tumanggap ng hiling na maghakot ng palay sa gilingan, imbakan, o buying station.'}
                   </p>
                 </div>
               </div>
@@ -859,6 +892,163 @@ export default function BuyerDashboard({
           </div>
         )}
 
+        {activeTab === 'services' && (
+          <div className="space-y-5">
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {([
+                ['all', lang === 'en' ? 'All Bookings' : 'Lahat'],
+                ['pending', lang === 'en' ? 'Pending' : 'Naghihintay'],
+                ['matched', lang === 'en' ? 'Accepted' : 'Tinanggap'],
+                ['completed', lang === 'en' ? 'Completed' : 'Tapos'],
+                ['rejected', lang === 'en' ? 'Declined' : 'Tinanggihan'],
+              ] as const).map(([status, label]) => {
+                const count = status === 'all'
+                  ? myServiceBookings.length
+                  : myServiceBookings.filter(request => request.status === status).length;
+                return (
+                  <button
+                    key={status}
+                    type="button"
+                    onClick={() => setBookingFilter(status)}
+                    className={`flex shrink-0 items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-extrabold transition-colors ${
+                      bookingFilter === status
+                        ? 'border-cyan-600 bg-cyan-600 text-white shadow-sm'
+                        : 'border-slate-200 bg-white text-slate-600 hover:border-cyan-400 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300'
+                    }`}
+                  >
+                    {label}
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] ${bookingFilter === status ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-800'}`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {visibleServiceBookings.length === 0 ? (
+              <div className="rounded-3xl border border-slate-200 bg-white px-5 py-16 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-cyan-50 text-cyan-600 dark:bg-cyan-950/40 dark:text-cyan-400">
+                  <IconCalendar size={30} stroke={2} />
+                </div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                  {lang === 'en' ? 'No Service Bookings Yet' : 'Wala Pang Booking ng Serbisyo'}
+                </h3>
+                <p className="mx-auto mt-1 max-w-lg text-sm text-slate-500 dark:text-slate-400">
+                  {lang === 'en'
+                    ? 'Requests sent directly to your posted transportation, storage, drying, or milling services will appear here.'
+                    : 'Dito lalabas ang mga request na direktang ipinadala sa iyong transportasyon, imbakan, patuyuan, o gilingan.'}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+                {visibleServiceBookings.map(request => {
+                  const serviceLabel = request.type === 'transport'
+                    ? (lang === 'en' ? 'Transportation' : 'Transportasyon')
+                    : request.type === 'storage'
+                      ? (lang === 'en' ? 'Storage' : 'Imbakan')
+                      : request.type === 'drying'
+                        ? (lang === 'en' ? 'Drying' : 'Patuyuan')
+                        : (lang === 'en' ? 'Milling' : 'Gilingan');
+                  const statusLabel = request.status === 'pending'
+                    ? (lang === 'en' ? 'Pending Review' : 'Naghihintay')
+                    : request.status === 'matched'
+                      ? (lang === 'en' ? 'Accepted Booking' : 'Tinanggap')
+                      : request.status === 'completed'
+                        ? (lang === 'en' ? 'Completed' : 'Tapos')
+                        : (lang === 'en' ? 'Declined' : 'Tinanggihan');
+                  const statusClass = request.status === 'pending'
+                    ? 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300'
+                    : request.status === 'matched'
+                      ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300'
+                      : request.status === 'completed'
+                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+                        : 'border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300';
+
+                  return (
+                    <article key={request.id} className="flex flex-col rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-600 dark:bg-cyan-950/40 dark:text-cyan-400">
+                            {request.type === 'transport' ? <IconTruck size={25} stroke={2} />
+                              : request.type === 'storage' ? <IconBuildingFactory size={25} stroke={2} />
+                              : request.type === 'drying' ? <IconSun size={25} stroke={2} />
+                              : <IconSettings size={25} stroke={2} />}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400">{serviceLabel}</p>
+                            <h3 className="truncate text-base font-extrabold text-slate-900 dark:text-white">{request.cropType}</h3>
+                          </div>
+                        </div>
+                        <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-extrabold uppercase ${statusClass}`}>{statusLabel}</span>
+                      </div>
+
+                      <div className="mt-5 grid grid-cols-2 gap-x-5 gap-y-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 text-xs dark:border-slate-700/70 dark:bg-slate-800/50">
+                        <div>
+                          <p className="text-slate-400">{lang === 'en' ? 'Farmer' : 'Magsasaka'}</p>
+                          <p className="mt-0.5 font-bold text-slate-900 dark:text-white">{request.farmerName}</p>
+                        </div>
+                        <div>
+                          <p className="text-slate-400">{lang === 'en' ? 'Quantity' : 'Dami'}</p>
+                          <p className="mt-0.5 font-bold text-slate-900 dark:text-white">{request.quantity.toLocaleString()} {request.unit}</p>
+                        </div>
+                        <div>
+                          <p className="text-slate-400">{lang === 'en' ? 'Preferred Schedule' : 'Iskedyul'}</p>
+                          <p className="mt-0.5 font-bold text-slate-900 dark:text-white">{request.preferredDate || 'Not specified'} {request.preferredTime || ''}</p>
+                        </div>
+                        <div>
+                          <p className="text-slate-400">{lang === 'en' ? 'Requested' : 'Hiniling'}</p>
+                          <p className="mt-0.5 font-bold text-slate-900 dark:text-white">{new Date(request.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <div className="col-span-2">
+                          <p className="text-slate-400">{lang === 'en' ? 'Location' : 'Lugar'}</p>
+                          <p className="mt-0.5 flex items-start gap-1.5 font-semibold text-slate-800 dark:text-slate-200"><IconMapPin size={15} stroke={2} className="mt-0.5 shrink-0 text-cyan-500" />{request.location}</p>
+                        </div>
+                        {request.additionalNotes && (
+                          <div className="col-span-2 border-t border-slate-200 pt-3 dark:border-slate-700">
+                            <p className="text-slate-400">{lang === 'en' ? 'Farmer Notes' : 'Tala ng Magsasaka'}</p>
+                            <p className="mt-1 text-slate-700 dark:text-slate-300">{request.additionalNotes}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {(request.status === 'matched' || request.status === 'completed') && (
+                        <div className="mt-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950/30">
+                          <p className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">{lang === 'en' ? 'Farmer Contact' : 'Contact ng Magsasaka'}</p>
+                          <div className="mt-2 flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-white"><Phone className="h-5 w-5" /></div>
+                            <div>
+                              <p className="font-extrabold text-slate-900 dark:text-white">{request.farmerName}</p>
+                              <p className="text-lg font-black tracking-wide text-emerald-700 dark:text-emerald-300">{request.farmerPhone || (lang === 'en' ? 'Not provided' : 'Walang numero')}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="mt-auto flex gap-3 pt-4">
+                        {request.status === 'pending' && (
+                          <>
+                            <button type="button" onClick={() => askConfirmation(lang === 'en' ? 'Accept this service booking?' : 'Tanggapin ang booking na ito?', () => onAcceptService(request.id), { tone: 'success', confirmLabel: lang === 'en' ? 'Accept Booking' : 'Tanggapin' })} className="flex-1 rounded-xl bg-emerald-600 px-4 py-3 text-xs font-extrabold text-white shadow-sm transition-colors hover:bg-emerald-500">
+                              {lang === 'en' ? 'Accept Booking' : 'Tanggapin'}
+                            </button>
+                            <button type="button" onClick={() => askConfirmation(lang === 'en' ? 'Decline this service booking?' : 'Tanggihan ang booking na ito?', () => onRejectService(request.id), { tone: 'danger', confirmLabel: lang === 'en' ? 'Decline Booking' : 'Tanggihan' })} className="rounded-xl border border-red-300 px-4 py-3 text-xs font-extrabold text-red-600 transition-colors hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30">
+                              {lang === 'en' ? 'Decline' : 'Tanggihan'}
+                            </button>
+                          </>
+                        )}
+                        {request.status === 'matched' && onCompleteService && (
+                          <button type="button" onClick={() => askConfirmation(lang === 'en' ? 'Mark this service booking as completed?' : 'Markahan ang booking bilang tapos?', () => onCompleteService(request.id), { tone: 'success', confirmLabel: lang === 'en' ? 'Complete Service' : 'Tapusin' })} className="w-full rounded-xl bg-blue-600 px-4 py-3 text-xs font-extrabold text-white shadow-sm transition-colors hover:bg-blue-500">
+                            {lang === 'en' ? 'Mark Service Completed' : 'Markahan na Tapos'}
+                          </button>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === 'posted_services' && (
           <div className="space-y-6">
             {(() => {
@@ -876,7 +1066,7 @@ export default function BuyerDashboard({
                         : 'Mag-post ng logistics service para makahiling ang mga magsasaka ng serbisyong kailangan nila.'}
                     </p>
                     <button
-                      onClick={() => setShowPostServiceModal(true)}
+                      onClick={() => openServiceForm()}
                       className="mt-5 px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-xs rounded-xl transition-all shadow-md shadow-cyan-600/20 cursor-pointer inline-flex items-center gap-2"
                     >
                       <Plus className="w-4 h-4" />
@@ -887,15 +1077,18 @@ export default function BuyerDashboard({
               }
 
               return (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
                   {myServices.map((s) => (
                     <div
                       key={s.id}
-                      className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-sm flex flex-col justify-between hover:border-cyan-300 dark:hover:border-cyan-700 transition-all"
+                      className="min-w-0 overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col hover:border-blue-300 dark:hover:border-blue-700 transition-colors"
                     >
                       <div>
-                        <div className="flex items-start justify-between gap-2 mb-3">
-                          <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-cyan-50 text-cyan-700 dark:bg-cyan-950/50 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800 uppercase tracking-wider flex items-center gap-1.5">
+                        <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-1">
+                          <h4 className="min-w-0 flex-1 break-words text-base font-extrabold text-slate-900 dark:text-white font-display">
+                            {s.title}
+                          </h4>
+                          <span className="max-w-[48%] text-[10px] leading-snug font-medium px-2 py-1 rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 flex items-center gap-1.5 [&>svg]:shrink-0">
                             {s.serviceType === 'transport' ? <IconTruck size={14} stroke={2} /> :
                              s.serviceType === 'storage' ? <IconBuildingFactory size={14} stroke={2} /> :
                              s.serviceType === 'drying' ? <IconSun size={14} stroke={2} /> :
@@ -907,17 +1100,20 @@ export default function BuyerDashboard({
                           </span>
                         </div>
 
-                        <h4 className="text-base font-extrabold text-slate-900 dark:text-white font-display mb-1">
-                          {s.title}
-                        </h4>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mb-4">
+                        <p className="px-4 text-xs text-slate-500 dark:text-slate-400 font-medium mb-3">
                           {s.companyName || user.businessName || user.name}
                         </p>
 
-                        <div className="space-y-2 text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50 mb-4">
+                        {s.rateInfo && (
+                          <div className="mx-4 mb-3 flex items-center justify-between gap-3 border-y border-slate-100 py-3 dark:border-slate-800">
+                            <span className="text-xs text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Service rate' : 'Bayad sa serbisyo'}</span>
+                            <span className="text-right text-base font-semibold text-slate-900 dark:text-white">{s.rateInfo}</span>
+                          </div>
+                        )}
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-3 px-4 pb-3 text-xs text-slate-600 dark:text-slate-300 [&>div]:min-w-0 [&>div]:break-words [&>div]:flex-col [&>div]:items-start [&>div]:justify-start [&>div]:gap-1 [&>div>span:first-child]:text-slate-500 dark:[&>div>span:first-child]:text-slate-400">
                           {s.truckType && (
                             <div className="flex justify-between items-center">
-                              <span className="text-slate-400 font-medium">{lang === 'en' ? 'Vehicle Type' : 'Uri ng Sasakyan'}:</span>
+                              <span className="text-slate-400 font-medium">{s.serviceType === 'transport' ? (lang === 'en' ? 'Vehicle Type' : 'Uri ng Sasakyan') : s.serviceType === 'storage' ? (lang === 'en' ? 'Facility Type' : 'Uri ng Pasilidad') : (lang === 'en' ? 'Equipment Type' : 'Uri ng Kagamitan')}:</span>
                               <span className="font-bold text-slate-800 dark:text-slate-200">{s.truckType}</span>
                             </div>
                           )}
@@ -925,33 +1121,36 @@ export default function BuyerDashboard({
                             <span className="text-slate-400 font-medium">{lang === 'en' ? 'Capacity' : 'Kapasidad'}:</span>
                             <span className="font-extrabold text-emerald-600 dark:text-emerald-400">{s.capacity}</span>
                           </div>
-                          <div className="flex justify-between items-start gap-2">
+                          <div className="col-span-2 flex justify-between items-start gap-2">
                             <span className="text-slate-400 font-medium shrink-0">{lang === 'en' ? 'Service Area' : 'Lugar ng Biyahe'}:</span>
-                            <span className="font-semibold text-slate-800 dark:text-slate-200 text-right">{s.locationCoverage}</span>
+                            <span className="font-semibold text-slate-800 dark:text-slate-200">{s.locationCoverage}</span>
                           </div>
-                          {s.rateInfo && (
-                            <div className="flex justify-between items-start gap-2 pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
-                              <span className="text-slate-400 font-medium shrink-0">{lang === 'en' ? 'Rates / Fee' : 'Bayad / Libre'}:</span>
-                              <span className="font-bold text-cyan-600 dark:text-cyan-400 text-right">{s.rateInfo}</span>
-                            </div>
-                          )}
+                          <div className="flex justify-between gap-3">
+                            <span>{lang === 'en' ? 'Contact Number' : 'Numero ng Telepono'}</span>
+                            <span className="font-bold text-slate-900 dark:text-white">{s.providerPhone || '—'}</span>
+                          </div>
+                          <div className="flex justify-between gap-3">
+                            <span>{lang === 'en' ? 'Posted' : 'Na-post'}</span>
+                            <span>{new Date(s.createdAt).toLocaleDateString()}</span>
+                          </div>
                           {s.notes && (
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 italic pt-2 border-t border-slate-200/40 dark:border-slate-700/40">
-                              "{s.notes}"
+                            <p className="col-span-2 text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200/40 dark:border-slate-700/40 break-words">
+                              {s.notes}
                             </p>
                           )}
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-end gap-2 pt-2">
+                      <div className="grid grid-cols-2 gap-2 px-4 pb-4 pt-1">
+                        {onUpdateOfferedService && <button type="button" onClick={() => openServiceForm(s)} className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300 dark:hover:bg-blue-950/60 transition-colors cursor-pointer">{lang === 'en' ? 'Edit Service' : 'I-edit ang Serbisyo'}</button>}
                         {onDeleteOfferedService && (
                           <button
                             type="button"
                             onClick={() => askConfirmation(lang === 'en' ? `Delete the service post “${s.title}”? Farmers will no longer see it.` : `Burahin ang service post na “${s.title}”? Hindi na ito makikita ng mga farmer.`, () => onDeleteOfferedService(s.id), { tone: 'danger', confirmLabel: lang === 'en' ? 'Delete Service' : 'Burahin' })}
-                            className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all cursor-pointer"
+                            className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300 dark:hover:bg-red-950/60 transition-colors cursor-pointer"
                             title="Delete service post"
                           >
-                            <X className="w-4 h-4" />
+                            {lang === 'en' ? 'Delete Service' : 'Burahin ang Serbisyo'}
                           </button>
                         )}
                       </div>
@@ -972,14 +1171,14 @@ export default function BuyerDashboard({
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="max-h-[calc(100dvh-1.5rem)] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl md:rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden my-auto flex flex-col"
+            className="max-h-[calc(100dvh-1rem)] md:max-h-[96vh] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl md:rounded-3xl w-full max-w-xl sm:max-w-6xl shadow-2xl overflow-hidden my-auto flex flex-col"
           >
             <div className="px-6 py-4 flex items-center justify-between bg-cyan-600 dark:bg-cyan-700 text-white shrink-0">
               <div className="flex items-center gap-3">
                 <span className="text-2xl p-2 bg-white/10 rounded-xl"><span className="inline-flex items-center gap-1.5 align-middle"><IconTruck size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></span>
                 <div>
                   <h3 className="font-extrabold text-base font-display">
-                    {lang === 'en' ? 'Post Logistics Service' : 'Mag-post ng Logistics Service'}
+                    {editingService ? (lang === 'en' ? 'Edit Logistics Service' : 'I-edit ang Logistics Service') : (lang === 'en' ? 'Post Logistics Service' : 'Mag-post ng Logistics Service')}
                   </h3>
                   <p className="text-xs text-cyan-100 font-medium">
                     {lang === 'en' ? 'Offer transportation, storage, drying, or milling to local farmers' : 'Ialok ang transportasyon, imbakan, pagpapatuyo, o paggiling sa mga magsasaka'}
@@ -1005,37 +1204,53 @@ export default function BuyerDashboard({
                   void alertDialog(lang === 'en' ? 'Please fill in required fields.' : 'Mangyaring punan ang kinakailangang impormasyon.', { tone: 'info' });
                   return;
                 }
-                if (!await confirmDialog(lang === 'en'
+                if (editingService && !await confirmDialog(
+                  lang === 'en'
+                    ? `Save your changes to “${serviceTitle.trim()}”? Farmers will see the updated service details.`
+                    : `I-save ang mga pagbabago sa “${serviceTitle.trim()}”? Makikita ng mga magsasaka ang bagong detalye.`,
+                  {
+                    title: lang === 'en' ? 'Save changes?' : 'I-save ang mga pagbabago?',
+                    tone: 'info',
+                    confirmLabel: lang === 'en' ? 'Save Changes' : 'I-save',
+                  }
+                )) return;
+                if (!editingService && !await confirmDialog(lang === 'en'
                   ? `Publish this ${serviceType} service?\n\n${serviceTitle.trim()}\nCapacity: ${capacity.trim()}\nCoverage: ${locationCoverage.trim()}`
                   : `I-publish ang ${serviceType} service na ito?\n\n${serviceTitle.trim()}\nKapasidad: ${capacity.trim()}\nSakop: ${locationCoverage.trim()}`, { title: lang === 'en' ? 'Publish service?' : 'I-publish ang serbisyo?', tone: 'success', confirmLabel: lang === 'en' ? 'Publish Service' : 'I-publish' })) return;
-                if (onAddOfferedService) {
-                  onAddOfferedService({
+                if (onAddOfferedService || onUpdateOfferedService) {
+                  const serviceData = {
                     serviceType,
                     title: serviceTitle.trim(),
                     truckType: truckType.trim(),
                     capacity: capacity.trim(),
                     locationCoverage: locationCoverage.trim(),
-                    rateInfo: rateInfo.trim(),
+                    rateInfo: rateInfo.trim() ? `₱${rateInfo.trim()} ${rateBasis}` : '',
                     notes: serviceNotes.trim(),
                     providerPhone: contactPhone.trim(),
                     companyName: companyName || user.businessName || user.name,
-                    isAvailable: true,
-                  });
+                    isAvailable: editingService?.isAvailable ?? true,
+                  };
+                  if (editingService) onUpdateOfferedService?.(editingService.id, serviceData);
+                  else onAddOfferedService?.(serviceData);
                 }
                 setShowPostServiceModal(false);
               }}
-              className="p-4 md:p-6 space-y-5 overflow-y-auto max-h-[78vh]"
+              className="flex min-h-0 flex-1 flex-col"
             >
+              <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4 md:p-6 lg:p-7">
               {/* Category Selector Cards */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-wider">
-                  {lang === 'en' ? 'Step 1: Choose Service Category First' : 'Hakbang 1: Pumili Muna ng Kategorya ng Serbisyo'} *
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3 dark:border-slate-700 dark:bg-slate-950/35">
+                <div className="mb-2.5 flex items-center justify-between gap-3">
+                <label className="block text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  {lang === 'en' ? 'Step 1: Choose Service Category First' : 'Hakbang 1: Pumili Muna ng Kategorya ng Serbisyo'} <span className="text-red-500">*</span>
                 </label>
+                <span className="hidden text-[10px] font-bold uppercase tracking-wider text-slate-400 sm:block">{lang === 'en' ? 'Select one' : 'Pumili ng isa'}</span>
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   <button
                     type="button"
                     onClick={() => handleSelectServiceCategory('transport')}
-                    className={`p-3 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1.5 ${
+                    className={`min-h-20 p-2.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1 ${
                       serviceType === 'transport'
                         ? 'bg-cyan-500 text-white border-cyan-500 shadow-md shadow-cyan-500/20 font-bold scale-[1.02]'
                         : 'bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-cyan-400'
@@ -1050,7 +1265,7 @@ export default function BuyerDashboard({
                   <button
                     type="button"
                     onClick={() => handleSelectServiceCategory('storage')}
-                    className={`p-3 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1.5 ${
+                    className={`min-h-20 p-2.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1 ${
                       serviceType === 'storage'
                         ? 'bg-cyan-500 text-white border-cyan-500 shadow-md shadow-cyan-500/20 font-bold scale-[1.02]'
                         : 'bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-cyan-400'
@@ -1065,7 +1280,7 @@ export default function BuyerDashboard({
                   <button
                     type="button"
                     onClick={() => handleSelectServiceCategory('drying')}
-                    className={`p-3 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1.5 ${
+                    className={`min-h-20 p-2.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1 ${
                       serviceType === 'drying'
                         ? 'bg-cyan-500 text-white border-cyan-500 shadow-md shadow-cyan-500/20 font-bold scale-[1.02]'
                         : 'bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-cyan-400'
@@ -1080,7 +1295,7 @@ export default function BuyerDashboard({
                   <button
                     type="button"
                     onClick={() => handleSelectServiceCategory('milling')}
-                    className={`p-3 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1.5 ${
+                    className={`min-h-20 p-2.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1 ${
                       serviceType === 'milling'
                         ? 'bg-cyan-500 text-white border-cyan-500 shadow-md shadow-cyan-500/20 font-bold scale-[1.02]'
                         : 'bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-cyan-400'
@@ -1101,11 +1316,15 @@ export default function BuyerDashboard({
                   initial={{ opacity: 0, y: 15, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.35, ease: 'easeOut' }}
-                  className="space-y-4 pt-3 border-t border-slate-100 dark:border-slate-800"
+                  className="grid grid-cols-1 gap-5 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-950/25 md:p-5 lg:grid-cols-2"
                 >
-                  <div>
+                  <div className="lg:col-span-2">
+                    <div className="mb-3 flex items-center gap-2 border-b border-slate-200 pb-3 dark:border-slate-700">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-100 text-xs font-black text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300">2</span>
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-200">{lang === 'en' ? 'Service information' : 'Impormasyon ng serbisyo'}</h4>
+                    </div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      {lang === 'en' ? 'Service Title' : 'Pamagat ng Serbisyo'} *
+                      {lang === 'en' ? 'Service Title' : 'Pamagat ng Serbisyo'} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -1122,7 +1341,7 @@ export default function BuyerDashboard({
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:col-span-2">
                     <div>
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                         {lang === 'en' ? 'Vehicle / Equipment / Facility Type' : 'Uri ng Sasakyan / Equipment'}
@@ -1143,7 +1362,7 @@ export default function BuyerDashboard({
 
                     <div>
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                        {lang === 'en' ? 'Service Capacity' : 'Kapasidad ng Serbisyo'} *
+                        {lang === 'en' ? 'Service Capacity' : 'Kapasidad ng Serbisyo'} <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -1161,10 +1380,10 @@ export default function BuyerDashboard({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:col-span-2">
                     <div>
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                        {lang === 'en' ? 'Coverage Area / Location' : 'Lugar / Sakop ng Serbisyo'} *
+                        {lang === 'en' ? 'Coverage Area / Location' : 'Lugar / Sakop ng Serbisyo'} <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -1183,7 +1402,7 @@ export default function BuyerDashboard({
 
                     <div>
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                        {lang === 'en' ? 'Contact Number' : 'Numero sa Telepono'} *
+                        {lang === 'en' ? 'Contact Number' : 'Numero sa Telepono'} <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -1200,18 +1419,31 @@ export default function BuyerDashboard({
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                       {lang === 'en' ? 'Fee / Rate Policy' : 'Kapasidad / Libreng Sundo Policy'}
                     </label>
-                    <input
-                      type="text"
-                      value={rateInfo}
-                      onChange={(e) => setRateInfo(e.target.value)}
-                      placeholder={
-                        serviceType === 'transport' ? 'e.g. FREE Farm Pickup on 2,000kg+ purchases' :
-                        serviceType === 'storage' ? 'e.g. ₱0.50 per sack / week' :
-                        serviceType === 'drying' ? 'e.g. ₱45.00 per sack (14% moisture target)' :
-                        'e.g. ₱2.00 per kg palay input'
-                      }
-                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-cyan-500 focus:outline-none"
-                    />
+                    <div className="flex w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 focus-within:ring-2 focus-within:ring-cyan-500 dark:border-slate-700 dark:bg-slate-800">
+                      <span className="flex items-center border-r border-slate-200 px-3.5 text-sm font-extrabold text-emerald-600 dark:border-slate-700 dark:text-emerald-400">
+                        ₱
+                      </span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        inputMode="decimal"
+                        value={rateInfo}
+                        onChange={(e) => setRateInfo(e.target.value)}
+                        placeholder="0.00"
+                        className="min-w-0 flex-1 bg-transparent px-3.5 py-2.5 text-xs font-medium text-slate-900 outline-none dark:text-white"
+                      />
+                      <span className="flex items-center border-l border-slate-200 px-3.5 text-xs font-bold text-slate-500 dark:border-slate-700 dark:text-slate-300">
+                        Peso
+                      </span>
+                    </div>
+                    <label className="mt-2 block text-xs font-bold text-slate-700 dark:text-slate-300">
+                      {lang === 'en' ? 'Rate Basis' : 'Batayan ng Bayad'}
+                      <select value={rateBasis} onChange={e => setRateBasis(e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                        {['per kg', 'per sack', 'per day', 'per week', 'per month', 'per trip', 'per batch', 'per transaction'].map(basis => <option key={basis} value={basis}>{basis}</option>)}
+                      </select>
+                    </label>
+                    {editingService && !/^₱?[\d.]+\s*(per .+)?$/.test(editingService.rateInfo) && editingService.rateInfo && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Previous rate: {editingService.rateInfo}</p>}
                   </div>
 
                   <div>
@@ -1233,8 +1465,9 @@ export default function BuyerDashboard({
                   </div>
                 </motion.div>
               )}
+              </div>
 
-              <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex shrink-0 items-center justify-end gap-3 border-t border-slate-200 bg-white px-4 py-4 dark:border-slate-800 dark:bg-slate-900 md:px-7">
                 <button
                   type="button"
                   onClick={() => setShowPostServiceModal(false)}
@@ -1252,7 +1485,7 @@ export default function BuyerDashboard({
                   }`}
                 >
                   <Check className="w-4 h-4" />
-                  <span>{lang === 'en' ? 'Post Service Now' : 'I-post ang Serbisyo'}</span>
+                  <span>{editingService ? (lang === 'en' ? 'Save Changes' : 'I-save ang Pagbabago') : (lang === 'en' ? 'Post Service Now' : 'I-post ang Serbisyo')}</span>
                 </button>
               </div>
             </form>
@@ -1572,7 +1805,7 @@ export default function BuyerDashboard({
           <div role="dialog" aria-modal="true" className="w-full max-w-md rounded-3xl border border-red-900 bg-white dark:bg-slate-900 p-6 text-slate-900 dark:text-white shadow-2xl">
             <h2 className="text-xl font-black">Cancel Price Offer</h2>
             <div className="mt-4 rounded-xl bg-slate-100 dark:bg-slate-800 p-4 text-sm"><b>{cancelOfferTarget.cropType}</b><p className="mt-1 text-slate-400">₱{cancelOfferTarget.offerPrice.toFixed(2)}/kg • {(cancelOfferTarget.quantityWanted || cancelOfferTarget.quantity).toLocaleString()} kg</p></div>
-            <label className="mt-4 block text-xs font-bold text-slate-700 dark:text-slate-300">Reason for cancellation *</label>
+            <label className="mt-4 block text-xs font-bold text-slate-700 dark:text-slate-300">Reason for cancellation <span className="text-red-500">*</span></label>
             <textarea autoFocus required value={cancelOfferReason} onChange={(e) => setCancelOfferReason(e.target.value)} placeholder="Tell the farmer why you are cancelling…" className="mt-2 min-h-24 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-3 text-sm outline-none focus:border-red-500" />
             <p className="mt-2 text-xs text-amber-300">The farmer will be notified and this pending offer cannot be restored.</p>
             <div className="mt-5 flex gap-3"><button type="button" onClick={() => setCancelOfferTarget(null)} className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 py-3 text-sm font-bold">Keep Offer</button><button type="button" disabled={!cancelOfferReason.trim()} onClick={() => { onCancelOffer(cancelOfferTarget.id, cancelOfferReason.trim()); setCancelOfferTarget(null); }} className="flex-1 rounded-xl bg-red-600 py-3 text-sm font-black disabled:opacity-50">Cancel Offer</button></div>

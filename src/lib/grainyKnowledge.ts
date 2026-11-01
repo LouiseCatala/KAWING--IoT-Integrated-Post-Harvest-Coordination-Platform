@@ -17,7 +17,7 @@ DEVELOPERS AND PROJECT CREDITS
 
 ACCOUNT ROLES AND NAVIGATION
 - Farmer: KAWING Partner Hub, Announcements Board, Farm Loans, My Harvest Posts, Price Offers Received, Help & FAQs.
-- Agricultural Business (and legacy Buyer): Buy Harvests, My Price Offers, Announcements Board, Loan Management, and Logistics > My Posted Services, Available Jobs, My Booked Services.
+- Agricultural Business (and legacy Buyer): Buy Harvests, My Price Offers, Announcements Board, Loan Management, and Logistics > My Posted Services, Available Jobs, Service Bookings.
 - Logistics provider: Announcements Board, Trucking, Storage, Drying, Milling, Manage My Services, Help & FAQs. One logistics account can own one or more services, and service ownership can be edited later.
 - Admin: account verification, announcements, user management, harvest monitoring, service-request monitoring, transaction and offer monitoring, analytics, reports, and DA price/settings management.
 

@@ -96,7 +96,7 @@ export default function Sidebar({
             children: [
               { id: 'posted_services', labelEn: 'My Posted Services', labelTl: 'Aking Mga Serbisyo', icon: <Store className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> },
               { id: 'logistics_jobs', labelEn: 'Available Jobs', labelTl: 'Mga Available na Trabaho', icon: <Truck className="w-4 h-4 text-amber-500 dark:text-amber-400" /> },
-              { id: 'services', labelEn: 'My Booked Services', labelTl: 'Aking Naka-book na Serbisyo', icon: <CheckCircle2 className="w-4 h-4 text-blue-600 dark:text-blue-400" /> },
+              { id: 'services', labelEn: 'Service Bookings', labelTl: 'Mga Booking ng Serbisyo', icon: <CheckCircle2 className="w-4 h-4 text-blue-600 dark:text-blue-400" /> },
             ],
           },
         ];
@@ -176,6 +176,9 @@ export default function Sidebar({
   );
 
   const notificationTab = (notification: AppNotification): string => {
+    const explicitTab = notification.emailDetails?.Page;
+    if (explicitTab && navItems.flatMap(item => [item, ...(item.children || [])]).some(item => item.id === explicitTab)) return explicitTab;
+    const title = notification.title.toLowerCase();
     const text = `${notification.title} ${notification.message}`.toLowerCase();
     const isAnnouncement = Boolean(notification.emailDetails?.Announcement) || /announcement|anunsyo/.test(text);
     if (isAnnouncement) return 'announcements';
@@ -190,13 +193,19 @@ export default function Sidebar({
 
     if (user.role === 'farmer') {
       if (/loan|pautang/.test(text)) return 'loans';
+      if (/service|serbisyo|kahilingan|logistics/.test(title)) return 'services';
+      if (/ani na-post|harvest posted/.test(title)) return 'harvests';
       if (/offer|alok|buyer|mamimili/.test(text)) return 'interests';
       if (/service|serbisyo|kahilingan|transport|storage|drying|milling/.test(text)) return 'services';
       return 'harvests';
     }
 
     if (user.role === 'buyer' || user.role === 'agricultural_business') {
+      if (notification.emailDetails?.Status === 'New Booking Request' || /booking request directly|new .*service request/.test(text)) return 'services';
+      if (/logistics job/.test(text)) return 'logistics_jobs';
+      if (/serbisyo na-post|service posted/.test(text)) return 'posted_services';
       if (/loan|pautang/.test(text)) return 'loans';
+      if (/offer|alok|tinanggihan ang impormasyon/.test(title) && !/new harvest/.test(title)) return 'offers';
       if (/harvest|ani|palay/.test(text) && !/offer accepted|offer update|tinanggap|tinanggihan/.test(text)) return 'marketplace';
       if (/offer|alok/.test(text)) return 'offers';
       if (/new .*service request|logistics job/.test(text)) return 'logistics_jobs';

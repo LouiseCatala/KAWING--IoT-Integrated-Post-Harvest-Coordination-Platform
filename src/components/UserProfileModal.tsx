@@ -4,6 +4,7 @@ import { UserAccount } from '../types';
 import { User, Phone, MapPin, Building, ShieldCheck, Star, Mail, FileText, X, Edit3, Camera, Check } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
+import RatingSummary from './RatingSummary';
 
 interface UserProfileModalProps {
   user: UserAccount;
@@ -155,12 +156,10 @@ export default function UserProfileModal({
               </p>
 
               <div className="flex items-center gap-3 mt-2 text-xs">
-                {user.rating && (
                   <span className="inline-flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400">
                     <Star className="w-3.5 h-3.5 fill-current" />
-                    {user.rating.toFixed(1)} {lang === 'en' ? 'Rating' : 'Marka'}
+                    <RatingSummary email={user.email} />
                   </span>
-                )}
                 <span className="text-slate-400">•</span>
                 <span className="text-slate-500 font-mono text-[11px]">
                   {user.email || 'user@kawing.com'}

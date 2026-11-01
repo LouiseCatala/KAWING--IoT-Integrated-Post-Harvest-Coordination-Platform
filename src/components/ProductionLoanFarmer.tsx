@@ -624,7 +624,7 @@ export default function ProductionLoanFarmer({
                 <label className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
                   <span>
                     {lang === 'en' ? 'Requested Loan Amount (₱)' : 'Hiling na Halaga ng Pautang (₱)'}
-                    <span className="text-rose-500"> *</span>
+                    <span className="text-red-500"> *</span>
                   </span>
                   <span className="text-emerald-600 dark:text-emerald-400 font-normal">
                     Min ₱{selectedBuyer.loanConfig?.minAmount.toLocaleString()}
@@ -647,7 +647,7 @@ export default function ProductionLoanFarmer({
               <div className="space-y-1.5">
                 <label className="font-bold text-slate-800 dark:text-slate-200">
                   {lang === 'en' ? 'Farm Area Covered by Loan (hectares)' : 'Lawak ng Sakahan na Paggagamitan ng Loan (hectares)'}
-                  <span className="text-rose-500"> *</span>
+                  <span className="text-red-500"> *</span>
                 </label>
                 <div className="relative">
                   <input
@@ -668,7 +668,7 @@ export default function ProductionLoanFarmer({
               <div className="space-y-1.5">
                 <label className="font-bold text-slate-800 dark:text-slate-200">
                   {lang === 'en' ? 'Purpose of Loan (Rice-Related Only)' : 'Layunin ng Pautang (Para sa Palay Lamang)'}
-                  <span className="text-rose-500"> *</span>
+                  <span className="text-red-500"> *</span>
                 </label>
                 <select
                   required
@@ -687,7 +687,7 @@ export default function ProductionLoanFarmer({
                 <div className="space-y-1.5 animate-fadeIn">
                   <label className="font-bold text-slate-800 dark:text-slate-200">
                     {lang === 'en' ? 'Specify Rice Production Purpose' : 'Tiyaking Layunin para sa Pagtatanim ng Palay'}
-                    <span className="text-rose-500"> *</span>
+                    <span className="text-red-500"> *</span>
                   </label>
                   <input
                     type="text"
@@ -704,7 +704,7 @@ export default function ProductionLoanFarmer({
               <div className="space-y-1.5">
                 <label className="font-bold text-slate-800 dark:text-slate-200">
                   {lang === 'en' ? 'Rice Planting / Harvest Season' : 'Panahon ng Pagtatanim / Pag-aani'}
-                  <span className="text-rose-500"> *</span>
+                  <span className="text-red-500"> *</span>
                 </label>
                 <select
                   required
@@ -722,7 +722,7 @@ export default function ProductionLoanFarmer({
               <div className="space-y-1.5">
                 <label className="font-bold text-slate-800 dark:text-slate-200">
                   {lang === 'en' ? 'Preferred Repayment Period' : 'Gusto na Termino ng Pagbabayad'}
-                  <span className="text-rose-500"> *</span>
+                  <span className="text-red-500"> *</span>
                 </label>
                 <input
                   type="text"
