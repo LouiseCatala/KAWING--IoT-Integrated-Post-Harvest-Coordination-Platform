@@ -300,7 +300,7 @@ export default function Sidebar({
       </div>
 
       {/* Nav Menu Items */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 space-y-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="sidebar-section-heading mb-2 flex items-center justify-between px-2">
           <span className="sidebar-expanded-only text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest font-display">
             {lang === 'en' ? 'Features & Workspace' : 'Mga Tampok at Serbisyo'}

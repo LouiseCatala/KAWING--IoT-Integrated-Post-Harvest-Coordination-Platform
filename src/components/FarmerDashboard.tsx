@@ -673,7 +673,7 @@ export default function FarmerDashboard({
                 <span className="text-xs font-bold text-slate-500">{visiblePartnerEntries.length} available</span>
               </div>
 
-              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1.5 scrollbar-thin">
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {visiblePartnerEntries.length === 0 ? (
                 <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-5 py-16 text-center text-sm text-slate-400">
                   {lang === 'en' ? 'No matching buyers or service providers are available yet.' : 'Wala pang available na buyer o service provider sa napiling filter.'}
