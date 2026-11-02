@@ -656,7 +656,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
   };
 
   return (
-    <div id="auth-page" className="relative min-h-screen text-slate-900 dark:text-slate-100 flex flex-col justify-center py-6 md:py-12 px-3 md:px-4 sm:px-6 lg:px-8 font-sans transition-colors duration-300 overflow-x-hidden overflow-y-auto md:overflow-hidden">
+    <div id="auth-page" className={`relative text-slate-900 dark:text-slate-100 flex flex-col justify-center px-3 md:px-4 sm:px-6 lg:px-8 font-sans transition-colors duration-300 overflow-x-hidden ${isLogin ? 'h-dvh overflow-y-hidden py-3 sm:py-4' : 'min-h-screen overflow-y-auto py-6 md:py-12'}`}>
       
       {/* Mount Arayat Background Image Overlay */}
       <div className="fixed inset-0 z-0 pointer-events-none">
@@ -670,13 +670,13 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
 
       <div className="relative z-10 w-full">
       {/* Top Floating Controls Bar */}
-      <div className="absolute -top-8 right-0 sm:-top-6 flex items-center gap-2 z-20 flex-wrap justify-end">
+      <div className={`absolute right-0 flex items-center z-20 flex-wrap justify-end ${isLogin ? '-top-2 gap-1 sm:top-0 sm:gap-2' : '-top-8 gap-2 sm:-top-6'}`}>
         <ThemeToggle variant="floating" />
         {onBack && (
           <button
             id="back-to-lobby-btn"
             onClick={onBack}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-bold bg-white/80 dark:bg-slate-900/80 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 shadow-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+            className={`flex items-center gap-1.5 rounded-full font-bold bg-white/80 dark:bg-slate-900/80 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 shadow-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer ${isLogin ? 'px-2.5 py-2 text-xs sm:px-3.5 sm:text-sm' : 'px-3.5 py-2 text-sm'}`}
             title={lang === 'en' ? 'Back to Lobby' : 'Bumalik sa Lobby'}
           >
             <ArrowLeft className="w-4 h-4 shrink-0 text-emerald-400" />
@@ -687,7 +687,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
         <button
           id="lang-toggle-btn"
           onClick={toggleLanguage}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-bold bg-white/80 dark:bg-slate-900/80 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 shadow-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+          className={`flex items-center gap-1.5 rounded-full font-bold bg-white/80 dark:bg-slate-900/80 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 shadow-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer ${isLogin ? 'px-2.5 py-2 text-xs sm:px-3.5 sm:text-sm' : 'px-3.5 py-2 text-sm'}`}
         >
           <Globe className="w-4 h-4 shrink-0 text-emerald-400" />
           <span>{lang === 'en' ? 'Tagalog (TL)' : 'English (EN)'}</span>
@@ -696,7 +696,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="relative flex items-center justify-center w-20 h-20 rounded-full bg-emerald-600 dark:bg-emerald-700 shadow-xl shadow-emerald-500/20 overflow-hidden border-2 border-emerald-400/40">
+          <div className={`relative flex items-center justify-center rounded-full bg-emerald-600 dark:bg-emerald-700 shadow-xl shadow-emerald-500/20 overflow-hidden border-2 border-emerald-400/40 ${isLogin ? 'w-14 h-14 sm:w-16 sm:h-16' : 'w-20 h-20'}`}>
             <img
               src={kawingLogo}
               alt="Kawing Logo"
@@ -707,10 +707,10 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
             />
           </div>
         </div>
-        <h2 className="mt-4 text-center text-3xl font-extrabold tracking-tight text-white font-display drop-shadow-md">
+        <h2 className={`${isLogin ? 'mt-2 text-2xl' : 'mt-4 text-3xl'} text-center font-extrabold tracking-tight text-white font-display drop-shadow-md`}>
           {isLogin ? (lang === 'en' ? 'Log in to Kawing' : 'Mag-login sa Kawing') : (lang === 'en' ? 'Create your Account' : 'Gumawa ng Account')}
         </h2>
-        <p className="mt-2 text-center text-sm text-slate-300 font-medium">
+        <p className={`${isLogin ? 'mt-1' : 'mt-2'} text-center text-sm text-slate-300 font-medium`}>
           {isLogin 
             ? (lang === 'en' ? "Don't have an account?" : 'Wala pang account?') 
             : (lang === 'en' ? 'Already have an account?' : 'Mayroon nang account?')}
@@ -738,10 +738,10 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
+      <div className={`${isLogin ? 'mt-4' : 'mt-8'} sm:mx-auto sm:w-full sm:max-w-xl`}>
         <motion.div
           layout
-          className="bg-white/90 dark:bg-slate-900/95 text-slate-900 dark:text-slate-100 py-6 md:py-8 px-4 shadow-2xl rounded-2xl md:rounded-3xl sm:px-10 border border-slate-200 dark:border-slate-800 backdrop-blur-xl"
+          className={`bg-white/90 dark:bg-slate-900/95 text-slate-900 dark:text-slate-100 px-4 shadow-2xl rounded-2xl md:rounded-3xl sm:px-10 border border-slate-200 dark:border-slate-800 backdrop-blur-xl ${isLogin ? 'py-4 sm:py-5' : 'py-6 md:py-8'}`}
         >
           {errorMsg && (
             <motion.div
@@ -775,7 +775,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
 
 
 
-          <form className="space-y-5" onSubmit={handleSubmit} autoComplete="off" data-lpignore="true" data-1p-ignore="true">
+          <form className={isLogin ? 'space-y-3' : 'space-y-5'} onSubmit={handleSubmit} autoComplete="off" data-lpignore="true" data-1p-ignore="true">
             {!isLogin && (
               <div className="grid grid-cols-3 gap-2" aria-label="Registration progress">
                 {[
@@ -901,7 +901,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
 
             {/* INLINE COLOR CAPTCHA (Login Only) */}
             {isLogin && (
-              <div className="space-y-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-100/60 dark:bg-slate-800/60 p-4">
+              <div className="space-y-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-100/60 dark:bg-slate-800/60 p-3">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="text-sm font-bold text-slate-900 dark:text-white">
@@ -913,7 +913,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                   </div>
                   <div
                     aria-label={lang === 'en' ? 'Circle color to identify' : 'Kulay ng bilog na kikilalanin'}
-                    className={`h-14 w-14 shrink-0 rounded-full shadow-lg ring-4 ring-slate-700 ${CAPTCHA_COLORS[captchaColorIndex].className}`}
+                    className={`h-11 w-11 shrink-0 rounded-full shadow-lg ring-[3px] ring-slate-700 sm:h-12 sm:w-12 ${CAPTCHA_COLORS[captchaColorIndex].className}`}
                   />
                 </div>
 
@@ -924,7 +924,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                       type="button"
                       disabled={captchaVerified}
                       onClick={() => handleVerifyCaptchaClick(color.id)}
-                      className="flex items-center justify-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2.5 text-xs font-bold text-slate-900 dark:text-slate-100 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 disabled:opacity-70 transition-all cursor-pointer"
+                      className="flex items-center justify-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-bold text-slate-900 dark:text-slate-100 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 disabled:opacity-70 transition-all cursor-pointer"
                     >
                       <span className={`h-4 w-4 rounded-full border border-white/20 ${color.className}`} />
                       {lang === 'en' ? color.labelEn : color.labelTl}
@@ -1495,7 +1495,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                 id="auth-submit-btn"
                 variant="primary"
                 disabled={isLogin && (!captchaVerified || loginRetrySeconds > 0)}
-                className="w-full py-4 text-sm tracking-wide"
+                className={`w-full text-sm tracking-wide ${isLogin ? 'py-3' : 'py-4'}`}
               >
                 {isLogin 
                   ? loginRetrySeconds > 0

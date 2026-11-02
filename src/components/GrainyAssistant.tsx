@@ -191,17 +191,19 @@ export default function GrainyAssistant({ user }: { user: UserAccount }) {
     setLoading(true);
     let reply = '';
     let fallbackReason = lang === 'en' ? 'The AI connection could not be verified. Showing saved help.' : 'Hindi ma-verify ang AI connection. Naka-save na tulong ang ipinapakita.';
-    let selectedModel: 'gemini-3.1-flash-lite' | 'gpt-5-nano' | 'local' = 'local';
+    type GrainyModel = 'gemini-3.5-flash-lite' | 'gemini-3.1-flash-lite' | 'gemini-3.6-flash' | 'gemini-3-flash-preview' | 'local';
+    let selectedModel: GrainyModel = 'local';
     try {
       const usageResponse = await fetch('/api/grainy/usage', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email }),
+        body: JSON.stringify({ email: user.email, question }),
       });
       if (usageResponse.ok) {
         const usage = await usageResponse.json() as { model?: string };
-        if (usage.model === 'gemini-3.1-flash-lite' || usage.model === 'gpt-5-nano' || usage.model === 'local') {
-          selectedModel = usage.model;
+        const supportedModels: GrainyModel[] = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.6-flash', 'gemini-3-flash-preview', 'local'];
+        if (supportedModels.includes(usage.model as GrainyModel)) {
+          selectedModel = usage.model as GrainyModel;
           if (usage.model === 'local') fallbackReason = lang === 'en' ? 'Your daily AI allowance has been reached. Showing saved help.' : 'Naabot na ang daily AI allowance. Naka-save na tulong ang ipinapakita.';
         }
       }
@@ -210,23 +212,7 @@ export default function GrainyAssistant({ user }: { user: UserAccount }) {
     }
     try {
       if (selectedModel === 'local') throw new Error('Daily AI limit reached');
-      fallbackReason = lang === 'en' ? 'The AI provider is unavailable or needs authorization. Showing saved help.' : 'Hindi available o kailangan ng authorization ang AI provider. Naka-save na tulong ang ipinapakita.';
-      if (!window.puter?.ai?.chat) {
-        await new Promise<void>((resolve, reject) => {
-          const existing = document.querySelector<HTMLScriptElement>('script[data-kawing-puter]');
-          const script = existing ?? document.createElement('script');
-          script.addEventListener('load', () => resolve(), { once: true });
-          script.addEventListener('error', () => reject(new Error('Puter.js could not be loaded')), { once: true });
-
-          if (!existing) {
-            script.src = 'https://js.puter.com/v2/';
-            script.async = true;
-            script.dataset.kawingPuter = 'true';
-            document.head.appendChild(script);
-          }
-        });
-      }
-      if (!window.puter?.ai?.chat) throw new Error('Puter.js is unavailable');
+      fallbackReason = lang === 'en' ? 'The AI provider is unavailable. Showing saved help.' : 'Hindi available ang AI provider. Naka-save na tulong ang ipinapakita.';
       const conversation = [
         {
           role: 'system',
@@ -238,11 +224,14 @@ export default function GrainyAssistant({ user }: { user: UserAccount }) {
         })),
         { role: 'user', content: question },
       ];
-      const response = await window.puter.ai.chat(conversation, {
-        model: selectedModel,
-        temperature: 0.2,
-        max_tokens: 1000,
-      }) as { message?: { content?: unknown }; text?: unknown } | string;
+      const aiResponse = await fetch('/api/grainy/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ email: user.email, conversation, model: selectedModel }),
+      });
+      if (!aiResponse.ok) throw new Error('KAWING AI is unavailable');
+      const response = await aiResponse.json() as { message?: { content?: unknown }; text?: unknown } | string;
       const content = typeof response === 'string' ? response : response?.message?.content ?? response?.text;
       reply = typeof content === 'string'
         ? content
@@ -296,7 +285,7 @@ export default function GrainyAssistant({ user }: { user: UserAccount }) {
 
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[90]" aria-live="polite">
+    <div className="pointer-events-none fixed inset-0 z-90" aria-live="polite">
       <AnimatePresence>
         {isPeeking && (
           <motion.button
@@ -308,7 +297,7 @@ export default function GrainyAssistant({ user }: { user: UserAccount }) {
             initial={{ opacity: 0, y: reducedMotion ? 0 : 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="pointer-events-auto absolute bottom-[175px] right-4 z-20 w-[255px] max-w-[calc(100vw-2rem)] rounded-2xl rounded-br-sm border border-emerald-200 bg-white px-6 py-5 text-left text-base font-semibold leading-7 text-emerald-950 shadow-lg cursor-pointer hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-500 dark:border-emerald-700 dark:bg-slate-900 dark:text-emerald-100 dark:hover:bg-slate-800 sm:bottom-[245px] sm:right-10"
+            className="pointer-events-auto absolute bottom-43.75 right-4 z-20 w-63.75 max-w-[calc(100vw-2rem)] rounded-2xl rounded-br-sm border border-emerald-200 bg-white px-6 py-5 text-left text-base font-semibold leading-7 text-emerald-950 shadow-lg cursor-pointer hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-500 dark:border-emerald-700 dark:bg-slate-900 dark:text-emerald-100 dark:hover:bg-slate-800 sm:bottom-61.25 sm:right-10"
           >
             <span className="block min-h-14" aria-hidden="true">
               {peekText}
@@ -321,9 +310,9 @@ export default function GrainyAssistant({ user }: { user: UserAccount }) {
             initial={{ opacity: 0, y: 18, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 15, scale: 0.97 }}
-            className="pointer-events-auto absolute bottom-[180px] right-3 z-20 max-h-[calc(100dvh-195px)] w-[calc(100vw-1.5rem)] max-w-sm overflow-hidden rounded-2xl md:rounded-3xl border border-emerald-700/30 bg-[#fffdf4] shadow-2xl sm:bottom-[310px] sm:right-6"
+            className="pointer-events-auto absolute bottom-45 right-3 z-20 max-h-[calc(100dvh-195px)] w-[calc(100vw-1.5rem)] max-w-sm overflow-hidden rounded-2xl md:rounded-3xl border border-emerald-700/30 bg-[#fffdf4] shadow-2xl sm:bottom-77.5 sm:right-6"
           >
-            <header className="flex items-center justify-between bg-gradient-to-r from-emerald-800 to-emerald-600 px-4 py-3 md:px-5 md:py-4 text-white">
+            <header className="flex items-center justify-between bg-linear-to-r from-emerald-800 to-emerald-600 px-4 py-3 md:px-5 md:py-4 text-white">
               <div><h2 className="font-extrabold">Grainy KAWING Assistant</h2><p className="text-xs text-emerald-100">Your friendly post-harvest guide</p></div>
               <div className="flex items-center gap-2">
                 <button type="button" onClick={close} className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 hover:bg-white/20" aria-label="Close Grainy assistant"><X className="h-4 w-4" /></button>
@@ -369,7 +358,7 @@ export default function GrainyAssistant({ user }: { user: UserAccount }) {
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: reducedMotion ? 0 : 80 }}
         transition={{ duration: reducedMotion ? 0 : 0.35 }}
-        className={`absolute z-10 overflow-visible ${isPeeking ? '-bottom-[1px] -right-[89px] h-[201px] w-[270px] sm:-right-[93px] sm:h-[290px] sm:w-[390px]' : 'bottom-1 right-2 h-[275px] w-[270px] sm:-right-19 sm:h-[425px] sm:w-[415px]'} transition-[width,height,bottom,right] duration-300`}
+        className={`absolute z-10 overflow-visible ${isPeeking ? '-bottom-px -right-22.25 h-50.25 w-67.5 sm:-right-23.25 sm:h-72.5 sm:w-97.5' : 'bottom-1 right-2 h-68.75 w-67.5 sm:-right-19 sm:h-106.25 sm:w-103.75'} transition-[width,height,bottom,right] duration-300`}
       >
         {isPeeking && (
           <motion.button
@@ -396,7 +385,7 @@ export default function GrainyAssistant({ user }: { user: UserAccount }) {
             src={grainyIdle}
             alt="Grainy peeking from the corner"
             aria-label="Grainy, the KAWING agricultural assistant"
-            className="pointer-events-none absolute bottom-0 right-0 h-auto w-[270px] max-w-none object-contain drop-shadow-[0_8px_10px_rgba(0,0,0,0.28)] sm:w-[390px]"
+            className="pointer-events-none absolute bottom-0 right-0 h-auto w-67.5 max-w-none object-contain drop-shadow-[0_8px_10px_rgba(0,0,0,0.28)] sm:w-97.5"
             animate={{ y: 0, x: 0, rotate: 0 }}
             transition={{ duration: reducedMotion ? 0 : 0.35 }}
           />

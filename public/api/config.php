@@ -68,6 +68,7 @@ $googleClientSecret = (string) $readSetting('google_client_secret', 'GOOGLE_CLIE
 $appUrl = rtrim((string) $readSetting('app_url', 'APP_URL', ''), '/');
 $sseEnabled = filter_var($readSetting('sse_enabled', 'KAWING_SSE_ENABLED', PHP_SAPI !== 'cli-server'), FILTER_VALIDATE_BOOL);
 $adminApiKey = (string) $readSetting('admin_api_key', 'ADMIN_API_KEY', '');
+$geminiApiKey = (string) $readSetting('gemini_api_key', 'GEMINI_API_KEY', '');
 $fishAudioApiKey = (string) $readSetting('fish_audio_api_key', 'FISH_AUDIO_API_KEY', '');
 $fishAudioReferenceId = (string) $readSetting('fish_audio_reference_id', 'FISH_AUDIO_REFERENCE_ID', '');
 $caBundle = is_file($privateRoot . '/certs/cacert.pem') ? $privateRoot . '/certs/cacert.pem' : '';

@@ -1,6 +1,7 @@
 import { IconAlertTriangle, IconLoader2, IconLogout } from '@tabler/icons-react';
 import React, { useState, useEffect, useRef } from 'react';
 import Splash from './components/Splash';
+import StartupSkeleton from './components/StartupSkeleton';
 import Auth from './components/Auth';
 import FarmerDashboard from './components/FarmerDashboard';
 import BuyerDashboard from './components/BuyerDashboard';
@@ -1615,17 +1616,7 @@ export default function App() {
 
   // Do not flash a public page while server-side session restoration is pending.
   if (!isLoaded) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white" aria-label="Loading KAWING">
-        <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/20 bg-slate-900/70 px-5 py-4 shadow-xl">
-          <IconLoader2 size={24} stroke={2} className="animate-spin text-emerald-400" aria-hidden="true" />
-          <div>
-            <p className="font-display text-sm font-black tracking-wide">KAWING</p>
-            <p className="text-xs text-slate-400">Loading platform...</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <StartupSkeleton />;
   }
 
   // Main view router based on phase
