@@ -632,7 +632,7 @@ export default function FarmerDashboard({
             <section className="flex h-[calc(100dvh-13.5rem)] min-h-[24rem] flex-col gap-5 overflow-hidden">
               <div className="rounded-2xl border border-slate-200/70 dark:border-slate-700/70 bg-white dark:bg-slate-900 p-4 shadow-lg">
                 <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-wrap gap-2">
                     {([
                       ['all', lang === 'en' ? 'All Partners' : 'Lahat'],
                       ['buyer', lang === 'en' ? 'Buyers' : 'Mga Buyer'],
@@ -645,22 +645,24 @@ export default function FarmerDashboard({
                         key={filter}
                         type="button"
                         onClick={() => setPartnerFilter(filter)}
-                        className={`rounded-xl px-5 py-3 text-base font-extrabold transition-colors ${partnerFilter === filter ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                        className={`rounded-lg px-3.5 py-2.5 text-sm font-extrabold transition-colors ${partnerFilter === filter ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-950/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
                       >
-                        <span className="inline-flex items-center gap-2">
-                          {filter !== 'all' && filter !== 'buyer' && React.createElement(({ transport: IconTruck, storage: IconPackage, drying: IconWind, milling: IconWheat })[filter], { size: 20, stroke: 2, className: 'inline-block shrink-0', 'aria-hidden': true })}
+                        <span className="inline-flex items-center gap-1.5">
+                          {filter !== 'all' && filter !== 'buyer' && React.createElement(({ transport: IconTruck, storage: IconPackage, drying: IconWind, milling: IconWheat })[filter], { size: 17, stroke: 2, className: 'inline-block shrink-0', 'aria-hidden': true })}
                           <span>{label.trim()}</span>
                         </span>
                       </button>
                     ))}
                   </div>
-                  <label className="relative block w-full xl:w-80">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <label className="group relative block w-full xl:w-96">
+                    <span className="pointer-events-none absolute inset-y-1.5 left-1.5 flex w-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 transition-colors group-focus-within:bg-emerald-600 group-focus-within:text-white dark:bg-emerald-950 dark:text-emerald-300">
+                      <Search className="h-4.5 w-4.5" aria-hidden="true" />
+                    </span>
                     <input
                       value={partnerSearch}
                       onChange={(event) => setPartnerSearch(event.target.value)}
                       placeholder={lang === 'en' ? 'Search buyers or services...' : 'Maghanap ng buyer o serbisyo...'}
-                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 py-2.5 pl-10 pr-4 text-xs text-slate-900 dark:text-white outline-none focus:border-emerald-500"
+                      className="h-12 w-full rounded-xl border-2 border-emerald-500/70 bg-white py-2.5 pl-13 pr-4 text-sm font-semibold text-slate-900 shadow-sm outline-none transition-all placeholder:font-medium placeholder:text-slate-500 hover:border-emerald-500 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 dark:border-emerald-500/60 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-400"
                     />
                   </label>
                 </div>

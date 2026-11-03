@@ -1,4 +1,4 @@
-export const GRAINY_PEEK_INTERVAL = 25000;
+export const GRAINY_PEEK_INTERVAL = 30000;
 export const GRAINY_IDLE_DELAY = 10000;
 export const GRAINY_PEEK_DURATION = 8000;
 export const GRAINY_PEEK_GREETING = "Hi, I'm Grainy! Do you need help?";
