@@ -224,7 +224,7 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-extrabold text-slate-900 dark:text-white font-display">
-            {lang === 'en' ? 'Centralized Harvest Registry' : 'Sentral na Talaan ng Ani (Harvests)'}
+            {lang === 'en' ? 'Centralized Harvest Registry' : 'Sentral na Talaan ng Ani'}
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             {lang === 'en' 
@@ -513,7 +513,7 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
           </div>
         </div>
       </div>
-      {bulkDelete && <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true"><div className="w-full max-w-sm rounded-2xl bg-white dark:bg-slate-900 p-6 text-center shadow-2xl"><AlertTriangle className="mx-auto h-8 w-8 text-red-400" /><h3 className="mt-3 text-lg font-extrabold text-slate-900 dark:text-white">Delete harvest records?</h3><p className="mt-2 text-sm text-slate-700 dark:text-slate-300">Permanently delete {bulkDelete.length} record{bulkDelete.length === 1 ? '' : 's'}?</p><div className="mt-6 flex gap-3"><button type="button" onClick={() => setBulkDelete(null)} className="flex-1 rounded-xl border border-slate-300 dark:border-slate-600 py-2.5 text-sm font-bold text-slate-800 dark:text-slate-200">Cancel</button><button type="button" onClick={() => { onDeleteHarvests(bulkDelete); setSelectedIds([]); setBulkDelete(null); setSuccessMessage('Harvest records deleted successfully.'); }} className="flex-1 rounded-xl bg-red-600 py-2.5 text-sm font-bold text-white">Confirm</button></div></div></div>}
+      {bulkDelete && <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true"><div className="w-full max-w-sm rounded-2xl bg-white dark:bg-slate-900 p-6 text-center shadow-2xl"><AlertTriangle className="mx-auto h-8 w-8 text-red-400" /><h3 className="mt-3 text-lg font-extrabold text-slate-900 dark:text-white">{lang === 'en' ? 'Delete harvest records?' : 'Burahin ang mga tala ng ani?'}</h3><p className="mt-2 text-sm text-slate-700 dark:text-slate-300">{lang === 'en' ? `Permanently delete ${bulkDelete.length} record${bulkDelete.length === 1 ? '' : 's'}?` : `Permanenteng burahin ang ${bulkDelete.length} tala?`}</p><div className="mt-6 flex gap-3"><button type="button" onClick={() => setBulkDelete(null)} className="flex-1 rounded-xl border border-slate-300 dark:border-slate-600 py-2.5 text-sm font-bold text-slate-800 dark:text-slate-200">{lang === 'en' ? 'Cancel' : 'Kanselahin'}</button><button type="button" onClick={() => { onDeleteHarvests(bulkDelete); setSelectedIds([]); setBulkDelete(null); setSuccessMessage(lang === 'en' ? 'Harvest records deleted successfully.' : 'Matagumpay na nabura ang mga tala ng ani.'); }} className="flex-1 rounded-xl bg-red-600 py-2.5 text-sm font-bold text-white">{lang === 'en' ? 'Confirm' : 'Kumpirmahin'}</button></div></div></div>}
     </div>
   );
 }

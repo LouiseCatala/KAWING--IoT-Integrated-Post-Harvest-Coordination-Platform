@@ -56,7 +56,7 @@ export default function VerificationTab({
               : 'text-slate-400 hover:text-slate-600 dark:hover:text-white'
           }`}
         >
-          {lang === 'en' ? 'Pending Applications' : 'Mga Naghihintay (Pending)'}
+          {lang === 'en' ? 'Pending Applications' : 'Mga Naghihintay na Aplikasyon'}
           {pendingUsers.length > 0 && (
             <span className="ml-1.5 bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full font-extrabold font-mono">
               {pendingUsers.length}
@@ -371,8 +371,8 @@ export default function VerificationTab({
             <p className="mt-2 text-sm text-slate-500">Applicant: <b>{decision.user.name}</b></p>
             {decision.action !== 'approve' && <textarea autoFocus required value={decisionReason} onChange={(e) => setDecisionReason(e.target.value)} placeholder={decision.action === 'reject' ? 'Explain why the application is rejected…' : 'List the documents or information that must be corrected…'} className="mt-4 min-h-28 w-full rounded-xl border border-slate-300 bg-slate-50 p-3 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />}
             <div className="mt-5 flex gap-3">
-              <button type="button" onClick={() => setDecision(null)} className="flex-1 rounded-xl border border-slate-300 py-3 text-sm font-bold text-slate-700 dark:border-slate-700 dark:text-slate-300">Cancel</button>
-              <button type="button" disabled={decision.action !== 'approve' && !decisionReason.trim()} onClick={() => { if (decision.action === 'approve') onApprove(decision.user.name); else if (decision.action === 'reject') onReject(decision.user.name, decisionReason.trim()); else onRequestResubmission(decision.user.name, decisionReason.trim()); setDecision(null); }} className={`flex-1 rounded-xl py-3 text-sm font-black text-white disabled:opacity-50 ${decision.action === 'reject' ? 'bg-red-600' : 'bg-emerald-600'}`}>Confirm</button>
+              <button type="button" onClick={() => setDecision(null)} className="flex-1 rounded-xl border border-slate-300 py-3 text-sm font-bold text-slate-700 dark:border-slate-700 dark:text-slate-300">{lang === 'en' ? 'Cancel' : 'Kanselahin'}</button>
+              <button type="button" disabled={decision.action !== 'approve' && !decisionReason.trim()} onClick={() => { if (decision.action === 'approve') onApprove(decision.user.name); else if (decision.action === 'reject') onReject(decision.user.name, decisionReason.trim()); else onRequestResubmission(decision.user.name, decisionReason.trim()); setDecision(null); }} className={`flex-1 rounded-xl py-3 text-sm font-black text-white disabled:opacity-50 ${decision.action === 'reject' ? 'bg-red-600' : 'bg-emerald-600'}`}>{lang === 'en' ? 'Confirm' : 'Kumpirmahin'}</button>
             </div>
           </div>
         </div>

@@ -98,28 +98,28 @@ export default function PalayHub({ onAddDryingRequest, farmerLocation = '' }: Pa
             {[
               {
                 step: '01',
-                title: lang === 'en' ? 'Harvesting (Pag-ani)' : 'Pag-ani (Harvesting)',
+                title: lang === 'en' ? 'Harvesting' : 'Pag-ani',
                 desc: lang === 'en' ? 'Harvest when 80-85% of grains are straw-colored. Avoid delays to prevent shattering and quality degradation.' : 'Mag-ani kapag 80-85% ng butil ay kulay-dayami na. Huwag patagalin upang hindi malagas ang palay.',
                 tips: 'MC at Harvest: 20-25% (Dry Season), 25-30% (Wet Season)',
                 bg: 'from-amber-50 to-amber-100/50 dark:from-slate-800 dark:to-slate-800'
               },
               {
                 step: '02',
-                title: lang === 'en' ? 'Threshing (Paghahalo)' : 'Pag-giik (Threshing)',
+                title: lang === 'en' ? 'Threshing' : 'Pag-giik',
                 desc: lang === 'en' ? 'Thresh within 24 hours of cutting to prevent heat build-up which turns grains yellow and bitter.' : 'I-giik ang palay sa loob ng 24 oras upang hindi ito uminit, na nagiging sanhi ng pagka-dilaw at pagkasira ng butil.',
                 tips: 'Avoid piling wet straw for more than a day.',
                 bg: 'from-emerald-50 to-emerald-100/50 dark:from-slate-800 dark:to-slate-800'
               },
               {
                 step: '03',
-                title: lang === 'en' ? 'Drying (Pagpapatuyo)' : 'Pagpapatuyo (Drying)',
+                title: lang === 'en' ? 'Drying' : 'Pagpapatuyo',
                 desc: lang === 'en' ? 'Dry down to 14% MC immediately. Use clean solar tarps (sapa) or dispatch to our mechanical dryers.' : 'Patuyuin hanggang 14% MC agad. Gumamit ng malinis na lona o mag-book ng mekanikal na dryer rito sa Kawing.',
                 tips: 'Never sun-dry on bare concrete highways!',
                 bg: 'from-amber-50 to-amber-100/50 dark:from-slate-800 dark:to-slate-800'
               },
               {
                 step: '04',
-                title: lang === 'en' ? 'Storage (Pag-imbak)' : 'Pag-imbak (Storage)',
+                title: lang === 'en' ? 'Storage' : 'Pag-imbak',
                 desc: lang === 'en' ? 'Store dried sacks in clean warehouses. Keep off the floor using wooden pallets and allow ventilation.' : 'I-imbak sa malinis na bodega. Ilagay sa kahoy na pallets upang lumayo sa basa at umagos ang hangin.',
                 tips: 'Maintain 13-14% MC to prevent grain pests.',
                 bg: 'from-emerald-50 to-emerald-100/50 dark:from-slate-800 dark:to-slate-800'

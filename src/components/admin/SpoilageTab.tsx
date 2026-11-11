@@ -51,7 +51,7 @@ export default function SpoilageTab({ lang }: SpoilageTabProps) {
         <div>
           <h1 className="text-xl font-extrabold text-slate-900 dark:text-white font-display flex items-center gap-2">
             <ShieldAlert className="w-6 h-6 text-red-500 animate-pulse" />
-            <span>{lang === 'en' ? 'Kawing Spoilage Mitigation & Alert Command' : 'Sistema ng Babala sa Pagkasira ng Ani (Spoilage Alerts)'}</span>
+            <span>{lang === 'en' ? 'Kawing Spoilage Mitigation & Alert Command' : 'Sistema ng Babala sa Pagkasira ng Ani'}</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             {lang === 'en' ? 'Monitor spoilage risk from humidity, temperature, and transport delays.' : 'Subaybayan ang panganib sa ani mula sa moisture, init, at tagal ng biyahe.'}

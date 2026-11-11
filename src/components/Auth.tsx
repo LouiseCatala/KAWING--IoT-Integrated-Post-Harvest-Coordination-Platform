@@ -1141,7 +1141,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                         <User className="w-3.5 h-3.5 text-emerald-500" />
                         <span>{lang === 'en' ? 'Profile Photo' : 'Larawan sa Profile'}</span>
                       </span>
-                      <span className="text-[10px] text-slate-600 dark:text-slate-400 font-normal lowercase">(optional)</span>
+                      <span className="text-[10px] text-slate-600 dark:text-slate-400 font-normal lowercase">({lang === 'en' ? 'optional' : 'opsyonal'})</span>
                     </label>
                     <p className="text-[10px] text-slate-600 dark:text-slate-500 mb-2">
                       {lang === 'en' ? 'Clear photo or business icon' : 'Larawan ng mukha o logo'}

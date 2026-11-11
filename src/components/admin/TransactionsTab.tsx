@@ -384,8 +384,8 @@ export default function TransactionsTab({
               <thead>
                 <tr className="bg-emerald-50 dark:bg-emerald-950/30 border-b border-slate-150 dark:border-slate-800 font-bold text-emerald-800 dark:text-emerald-200">
                   <th className="p-4">Deal ID</th>
-                  <th className="p-4">{lang === 'en' ? 'Buyer Name' : 'Mamimili (Buyer)'}</th>
-                  <th className="p-4">{lang === 'en' ? 'Farmer Name' : 'Magsasaka (Farmer)'}</th>
+                  <th className="p-4">{lang === 'en' ? 'Buyer Name' : 'Pangalan ng Mamimili'}</th>
+                  <th className="p-4">{lang === 'en' ? 'Farmer Name' : 'Pangalan ng Magsasaka'}</th>
                   <th className="p-4">{lang === 'en' ? 'Interested Crop' : 'Interesadong Ani'}</th>
                   <th className="p-4">Direct Contacts</th>
                   <th className="p-4">Submitted Date</th>

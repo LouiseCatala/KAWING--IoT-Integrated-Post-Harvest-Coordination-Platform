@@ -313,7 +313,7 @@ export default function GrainyAssistant({ user }: { user: UserAccount }) {
             className="pointer-events-auto absolute bottom-45 right-3 z-20 max-h-[calc(100dvh-195px)] w-[calc(100vw-1.5rem)] max-w-sm overflow-hidden rounded-2xl md:rounded-3xl border border-emerald-700/30 bg-[#fffdf4] shadow-2xl sm:bottom-77.5 sm:right-6"
           >
             <header className="flex items-center justify-between bg-linear-to-r from-emerald-800 to-emerald-600 px-4 py-3 md:px-5 md:py-4 text-white">
-              <div><h2 className="font-extrabold">Grainy KAWING Assistant</h2><p className="text-xs text-emerald-100">Your friendly post-harvest guide</p></div>
+              <div><h2 className="font-extrabold">{lang === 'en' ? 'Grainy KAWING Assistant' : 'Grainy na Katulong ng KAWING'}</h2><p className="text-xs text-emerald-100">{lang === 'en' ? 'Your friendly post-harvest guide' : 'Ang iyong katuwang pagkatapos ng anihan'}</p></div>
               <div className="flex items-center gap-2">
                 <button type="button" onClick={close} className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 hover:bg-white/20" aria-label="Close Grainy assistant"><X className="h-4 w-4" /></button>
               </div>
@@ -339,7 +339,7 @@ export default function GrainyAssistant({ user }: { user: UserAccount }) {
                       </button>
                     )}
                   </div>)}
-                  {loading && <div className="flex w-fit items-center gap-2 rounded-2xl bg-white px-4 py-3 text-xs text-emerald-700"><Loader2 className="h-4 w-4 animate-spin" />Grainy is preparing the answer…</div>}
+                  {loading && <div className="flex w-fit items-center gap-2 rounded-2xl bg-white px-4 py-3 text-xs text-emerald-700"><Loader2 className="h-4 w-4 animate-spin" />{lang === 'en' ? 'Grainy is preparing the answer…' : 'Inihahanda ni Grainy ang sagot…'}</div>}
                   <div ref={chatEndRef} aria-hidden="true" />
                 </div>
                 <form onSubmit={send} className="flex gap-2 border-t border-emerald-100 bg-white p-3">

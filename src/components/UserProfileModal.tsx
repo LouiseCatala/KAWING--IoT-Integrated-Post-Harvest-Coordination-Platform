@@ -81,7 +81,7 @@ export default function UserProfileModal({
       case 'buyer': return lang === 'en' ? 'Grains Buyer / Trader' : 'Mamimili ng Palay at Bigas';
       case 'agricultural_business': return lang === 'en' ? 'Agricultural Business' : 'Negosyong Pang-agrikultura';
       case 'logistics': return lang === 'en' ? 'Logistics & Processing Provider' : 'Provider ng Logistics at Processing';
-      case 'truck': return lang === 'en' ? 'Logistics / Trucker' : 'Byahero ng Palay (Trucking)';
+      case 'truck': return lang === 'en' ? 'Logistics / Trucker' : 'Tagapaghatid ng Palay';
       case 'storage': return lang === 'en' ? 'Storage Operator' : 'Tagapamahala ng Imbakan';
       case 'dryer': return lang === 'en' ? 'Dryer Facility Operator' : 'Patuyuan ng Palay';
       case 'miller': return lang === 'en' ? 'Rice Mill Operator' : 'Gilingan ng Bigas';
@@ -197,7 +197,7 @@ export default function UserProfileModal({
                 <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-xl space-y-1">
                   <span className="text-[10px] font-extrabold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider block flex items-center gap-1">
                     <FileText className="w-3.5 h-3.5 text-emerald-600" />
-                    {lang === 'en' ? 'RSBSA Farmer Number (Registry ID)' : 'RSBSA Number (ID sa Talaan ng Farmer)'}
+                    {lang === 'en' ? 'RSBSA Farmer Number (Registry ID)' : 'Numero ng Magsasaka sa RSBSA'}
                   </span>
                   <strong className="text-xs font-bold font-mono text-emerald-900 dark:text-emerald-200 block">
                     {rsbsaNumber || 'RSBSA-03-4912-8821'}
@@ -246,7 +246,7 @@ export default function UserProfileModal({
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                     {lang === 'en' ? 'Government ID or RSBSA Proof' : 'Government ID o Katibayan ng RSBSA'}
                   </span>
-                  <span className="text-[10px] text-emerald-600 font-extrabold">Verified Document</span>
+                  <span className="text-[10px] text-emerald-600 font-extrabold">{lang === 'en' ? 'Verified Document' : 'Beripikadong Dokumento'}</span>
                 </div>
                 <div className="h-24 w-full rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-900 relative">
                   <img
@@ -337,7 +337,7 @@ export default function UserProfileModal({
               {user.role === 'farmer' ? (
                 <div className="space-y-1">
                   <label className="font-bold text-slate-700 dark:text-slate-300 block uppercase text-xs">
-                    {lang === 'en' ? 'RSBSA Number (Farmer Registry ID)' : 'RSBSA Number (ID sa Talaan ng Farmer)'}
+                    {lang === 'en' ? 'RSBSA Number (Farmer Registry ID)' : 'Numero ng Magsasaka sa RSBSA'}
                   </label>
                   <input
                     type="text"
@@ -366,7 +366,7 @@ export default function UserProfileModal({
               <div className="space-y-1.5">
                 <label className="font-bold text-slate-700 dark:text-slate-300 block uppercase text-xs flex items-center justify-between">
                   <span>{lang === 'en' ? 'Profile Photo' : 'Larawan sa Profile'}</span>
-                  <span className="text-slate-400 font-normal text-xs lowercase">(optional)</span>
+                  <span className="text-slate-400 font-normal text-xs lowercase">({lang === 'en' ? 'optional' : 'opsyonal'})</span>
                 </label>
                 <div className="flex items-center gap-3">
                   {avatarUrl && !avatarFailed && (
@@ -401,7 +401,7 @@ export default function UserProfileModal({
                       className="flex items-center justify-center gap-2 px-4 py-3 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-emerald-50/30 cursor-pointer transition-all w-full"
                     >
                       <Camera className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      <span>{avatarUrl ? (lang === 'en' ? 'Change Photo (Optional)' : 'Palitan ang Larawan (Optional)') : (lang === 'en' ? 'Upload Photo (Optional)' : 'Mag-upload ng Larawan (Optional)')}</span>
+                      <span>{avatarUrl ? (lang === 'en' ? 'Change Photo (Optional)' : 'Palitan ang Larawan (Opsyonal)') : (lang === 'en' ? 'Upload Photo (Optional)' : 'Mag-upload ng Larawan (Opsyonal)')}</span>
                     </label>
                   </div>
                 </div>

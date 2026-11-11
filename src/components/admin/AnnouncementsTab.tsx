@@ -123,7 +123,7 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
       {/* Header */}
       <div>
         <h1 className="text-xl font-extrabold text-slate-900 dark:text-white font-display">
-          {lang === 'en' ? 'KAWING Public Advisories & Announcements' : 'Mga Pahayag at Paunawa sa Sakahan (Advisory)'}
+          {lang === 'en' ? 'KAWING Public Advisories & Announcements' : 'Mga Pahayag at Paunawa sa Sakahan'}
         </h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
           {lang === 'en' ? 'Publish notices and farm advisories. Weather updates appear automatically.' : 'Mag-post ng mga paunawa at gabay sa pagsasaka. Awtomatiko ang weather updates.'}
@@ -222,7 +222,7 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
         {/* Right Column: Listings of Advisories */}
         <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4">
           <h3 className="text-sm font-extrabold text-slate-950 dark:text-white font-display mb-4">
-            {lang === 'en' ? 'Active Advisories Board' : 'Sentral na Advisory Board (Mga Naka-post)'}
+            {lang === 'en' ? 'Active Advisories Board' : 'Mga Aktibong Paunawa'}
           </h3>
 
           <div className="space-y-4">

@@ -18,6 +18,7 @@ import { equal, type DatabaseSnapshot } from './lib/databaseSync';
 import { hasApprovedBusinessCapability } from './lib/businessCapabilities';
 import { createSubmissionGuard, newRecordId } from './lib/submissionGuard';
 import { alertDialog } from './lib/appDialog';
+import { useApp } from './context/AppContext';
 
 const DEFAULT_SETTINGS: AppSettings = { daReferencePrice: 22.8 };
 
@@ -265,6 +266,7 @@ const DEFAULT_SERVICES: ServiceRequest[] = [
 ];
 
 export default function App() {
+  const { lang } = useApp();
   const claimSubmission = useRef(createSubmissionGuard()).current;
   const [phase, setPhase] = useState<'splash' | 'auth' | 'dashboard'>('splash');
   const [activeUser, setActiveUser] = useState<UserAccount | null>(null);
@@ -1662,16 +1664,12 @@ export default function App() {
 
             <div className="text-center space-y-2">
               <h3 className="text-xl font-black text-slate-900 dark:text-white">
-                Confirm Logout
+                {lang === 'en' ? 'Confirm Logout' : 'Kumpirmahin ang Pag-logout'}
               </h3>
-              <p className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">
-                Kumpirmahin ang Pag-logout
-              </p>
               <p className="text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed pt-1">
-                Are you sure you want to log out of your account?
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">
-                Sigurado ka bang nais mong lumabas sa iyong account sa Kawing?
+                {lang === 'en'
+                  ? 'Are you sure you want to log out of your account?'
+                  : 'Sigurado ka bang nais mong mag-logout sa iyong account?'}
               </p>
             </div>
 
@@ -1681,14 +1679,14 @@ export default function App() {
                 onClick={() => setShowLogoutConfirm(false)}
                 className="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-extrabold text-sm rounded-2xl transition-all cursor-pointer border border-slate-200 dark:border-slate-700"
               >
-                Cancel / No
+                {lang === 'en' ? 'Cancel' : 'Kanselahin'}
               </button>
               <button
                 type="button"
                 onClick={confirmLogout}
                 className="w-full py-3 px-4 bg-red-600 hover:bg-red-500 text-white font-extrabold text-sm rounded-2xl shadow-lg shadow-red-600/30 transition-all cursor-pointer"
               >
-                Yes, Logout
+                {lang === 'en' ? 'Yes, Log Out' : 'Oo, Mag-logout'}
               </button>
             </div>
           </div>
@@ -1698,11 +1696,11 @@ export default function App() {
         <div className="fixed inset-0 z-[1200] flex items-center justify-center overflow-y-auto bg-slate-950/75 p-3 backdrop-blur-sm md:p-4">
           <div role="alertdialog" aria-modal="true" className="w-full max-w-md rounded-2xl md:rounded-3xl border border-red-800 bg-white dark:bg-slate-900 p-5 md:p-7 text-slate-900 dark:text-white shadow-2xl">
             <div className="text-3xl"><span className="inline-flex items-center gap-1.5 align-middle"><IconAlertTriangle size={32} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></div>
-            <h2 className="mt-3 text-xl font-black">Changes were not saved</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-700 dark:text-slate-300">{syncError} Your changes are still on this screen but are not saved.</p>
+            <h2 className="mt-3 text-xl font-black">{lang === 'en' ? 'Changes were not saved' : 'Hindi nai-save ang mga pagbabago'}</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-700 dark:text-slate-300">{syncError} {lang === 'en' ? 'Your changes are still on this screen but are not saved.' : 'Nasa screen pa rin ang mga pagbabago ngunit hindi pa nai-save.'}</p>
             <div className="mt-6 flex flex-col min-[390px]:flex-row md:flex-row gap-3">
-              <button type="button" onClick={() => setSyncError('')} className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 py-3 text-sm font-bold">Dismiss</button>
-              <button type="button" onClick={() => { setSyncError(''); setSyncRetry(value => value + 1); }} className="flex-1 rounded-xl bg-emerald-600 py-3 text-sm font-black">Retry Save</button>
+              <button type="button" onClick={() => setSyncError('')} className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 py-3 text-sm font-bold">{lang === 'en' ? 'Dismiss' : 'Isara'}</button>
+              <button type="button" onClick={() => { setSyncError(''); setSyncRetry(value => value + 1); }} className="flex-1 rounded-xl bg-emerald-600 py-3 text-sm font-black">{lang === 'en' ? 'Retry Save' : 'Subukang I-save Muli'}</button>
             </div>
           </div>
         </div>

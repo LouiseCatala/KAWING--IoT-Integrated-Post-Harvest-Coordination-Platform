@@ -212,7 +212,7 @@ export default function SettingsTab({ user, lang, marketReferencePrice, onUpdate
               className="py-2 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <Save className="w-3.5 h-3.5" />
-              <span>Save Changes</span>
+              <span>{lang === 'en' ? 'Save Changes' : 'I-save ang mga Pagbabago'}</span>
             </button>
           </form>
         </div>
@@ -226,7 +226,7 @@ export default function SettingsTab({ user, lang, marketReferencePrice, onUpdate
 
           <form onSubmit={handleChangePassword} className="space-y-3.5">
             <div className="space-y-1">
-              <label className="block font-bold text-slate-500">Current Password</label>
+              <label className="block font-bold text-slate-500">{lang === 'en' ? 'Current Password' : 'Kasalukuyang Password'}</label>
               <input
                 type="password"
                 required
@@ -238,7 +238,7 @@ export default function SettingsTab({ user, lang, marketReferencePrice, onUpdate
               />
             </div>
             <div className="space-y-1">
-              <label className="block font-bold text-slate-500">New Password</label>
+              <label className="block font-bold text-slate-500">{lang === 'en' ? 'New Password' : 'Bagong Password'}</label>
               <input
                 type="password"
                 required
@@ -252,7 +252,7 @@ export default function SettingsTab({ user, lang, marketReferencePrice, onUpdate
             </div>
 
             <div className="space-y-1">
-              <label className="block font-bold text-slate-500">Confirm New Password</label>
+              <label className="block font-bold text-slate-500">{lang === 'en' ? 'Confirm New Password' : 'Kumpirmahin ang Bagong Password'}</label>
               <input
                 type="password"
                 required
@@ -265,7 +265,7 @@ export default function SettingsTab({ user, lang, marketReferencePrice, onUpdate
               />
             </div>
 
-            <p className="text-[10px] text-slate-500">Use at least 8 characters with a letter, number, and special character.</p>
+            <p className="text-[10px] text-slate-500">{lang === 'en' ? 'Use at least 8 characters with a letter, number, and special character.' : 'Gumamit ng hindi bababa sa 8 character na may letra, numero, at espesyal na simbolo.'}</p>
             {passwordError && (
               <div role="alert" className="rounded-xl border border-red-300 bg-red-50 p-3 font-bold text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">
                 {passwordError}
@@ -427,7 +427,7 @@ export default function SettingsTab({ user, lang, marketReferencePrice, onUpdate
           </div>
         </div>
       </div>
-      {clearDemoConfirm && <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true"><div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6"><h3 className="text-lg font-extrabold text-slate-900 dark:text-white">Clear all demo data?</h3><p className="mt-2 text-sm text-slate-700 dark:text-slate-300">This removes local demo data and reloads KAWING.</p><div className="mt-6 flex gap-3"><button type="button" onClick={() => setClearDemoConfirm(false)} className="flex-1 rounded-xl border border-slate-300 dark:border-slate-600 py-2.5 text-sm font-bold text-slate-800 dark:text-slate-200">Cancel</button><button type="button" onClick={async () => { try { const res = await fetch('/api/db/clear-demo', { method: 'POST' }); if (!res.ok) throw new Error(); } catch { localStorage.clear(); } window.location.reload(); }} className="flex-1 rounded-xl bg-red-600 py-2.5 text-sm font-bold text-white">Confirm</button></div></div></div>}
+      {clearDemoConfirm && <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true"><div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6"><h3 className="text-lg font-extrabold text-slate-900 dark:text-white">{lang === 'en' ? 'Clear all demo data?' : 'Burahin ang lahat ng demo data?'}</h3><p className="mt-2 text-sm text-slate-700 dark:text-slate-300">{lang === 'en' ? 'This removes local demo data and reloads KAWING.' : 'Buburahin nito ang lokal na demo data at ire-reload ang KAWING.'}</p><div className="mt-6 flex gap-3"><button type="button" onClick={() => setClearDemoConfirm(false)} className="flex-1 rounded-xl border border-slate-300 dark:border-slate-600 py-2.5 text-sm font-bold text-slate-800 dark:text-slate-200">{lang === 'en' ? 'Cancel' : 'Kanselahin'}</button><button type="button" onClick={async () => { try { const res = await fetch('/api/db/clear-demo', { method: 'POST' }); if (!res.ok) throw new Error(); } catch { localStorage.clear(); } window.location.reload(); }} className="flex-1 rounded-xl bg-red-600 py-2.5 text-sm font-bold text-white">{lang === 'en' ? 'Confirm' : 'Kumpirmahin'}</button></div></div></div>}
     </div>
   );
 }

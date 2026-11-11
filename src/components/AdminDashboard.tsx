@@ -385,7 +385,7 @@ export default function AdminDashboard({
             <span className="mt-3 border-t border-slate-200 dark:border-slate-800 px-3.5 pt-3 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Communication</span>
             <button
               onClick={() => setActiveTab('announcements')}
-              title={lang === 'en' ? 'Announcements' : 'Mga Pahayag (Advisory)'}
+              title={lang === 'en' ? 'Announcements' : 'Mga Pahayag'}
               className={`flex items-center justify-between px-3.5 py-2.5 text-xs font-bold rounded-2xl transition-all cursor-pointer relative ${
                 activeTab === 'announcements'
                   ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/10'
@@ -394,7 +394,7 @@ export default function AdminDashboard({
             >
               <div className="flex items-center gap-3 min-w-0">
                 <Megaphone className="w-4 h-4 shrink-0" />
-                <span className="truncate">{lang === 'en' ? 'Announcements' : 'Mga Pahayag (Advisory)'}</span>
+                <span className="truncate">{lang === 'en' ? 'Announcements' : 'Mga Pahayag'}</span>
               </div>
               {pageBadge('announcements')}
             </button>

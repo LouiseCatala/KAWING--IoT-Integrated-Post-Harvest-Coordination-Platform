@@ -358,11 +358,11 @@ export default function FarmerDashboard({
 
     if (reqServices.includes('transport')) {
       if (!reqPickupPlace.trim()) {
-        alert(lang === 'en' ? 'Please enter the Pick-up Place for transportation.' : 'Mangyaring ilagay ang Lugar ng Sakay (Pick-up Place).');
+        alert(lang === 'en' ? 'Please enter the Pick-up Place for transportation.' : 'Mangyaring ilagay ang lugar ng sakay.');
         return;
       }
       if (!reqDropPlace.trim()) {
-        alert(lang === 'en' ? 'Please enter the Drop Place for transportation.' : 'Mangyaring ilagay ang Lugar ng Bagsakan (Drop Place).');
+        alert(lang === 'en' ? 'Please enter the Drop Place for transportation.' : 'Mangyaring ilagay ang lugar ng bagsakan.');
         return;
       }
     }
@@ -1344,7 +1344,7 @@ export default function FarmerDashboard({
                               'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400'
                             }`}>
                               {s.status === 'pending' ? (lang === 'en' ? 'Awaiting Operator' : 'Naghihintay') :
-                               s.status === 'matched' ? (lang === 'en' ? 'Matched' : 'Naitugma na (Matched)') :
+                               s.status === 'matched' ? (lang === 'en' ? 'Matched' : 'Naitugma na') :
                                s.status === 'rejected' ? (lang === 'en' ? 'Declined' : 'Tinanggihan') :
                                (lang === 'en' ? 'Completed' : 'Nakumpleto')}
                             </span>
@@ -1678,12 +1678,12 @@ export default function FarmerDashboard({
               {confirmHarvestDelete ? (
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-sm font-bold text-red-300">Delete this harvest post permanently?</p>
-                  <div className="flex gap-2"><button type="button" onClick={() => setConfirmHarvestDelete(false)} className="rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-2 text-sm font-bold">Cancel</button><button type="button" onClick={() => { onDeleteHarvests([selectedHarvestPost.id]); closeHarvestManager(); }} className="rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-500">Yes, Delete</button></div>
+                  <div className="flex gap-2"><button type="button" onClick={() => setConfirmHarvestDelete(false)} className="rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-2 text-sm font-bold">{lang === 'en' ? 'Cancel' : 'Kanselahin'}</button><button type="button" onClick={() => { onDeleteHarvests([selectedHarvestPost.id]); closeHarvestManager(); }} className="rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-500">{lang === 'en' ? 'Yes, Delete' : 'Oo, Burahin'}</button></div>
                 </div>
               ) : isEditingHarvestPost ? (
-                <div className="flex justify-end gap-2"><button type="button" onClick={() => { setHarvestEditDraft({ ...selectedHarvestPost }); setIsEditingHarvestPost(false); }} className="rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-2.5 text-sm font-bold">Cancel</button><button type="button" onClick={saveHarvestChanges} className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-extrabold text-white hover:bg-emerald-500">Save Changes</button></div>
+                <div className="flex justify-end gap-2"><button type="button" onClick={() => { setHarvestEditDraft({ ...selectedHarvestPost }); setIsEditingHarvestPost(false); }} className="rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-2.5 text-sm font-bold">{lang === 'en' ? 'Cancel' : 'Kanselahin'}</button><button type="button" onClick={saveHarvestChanges} className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-extrabold text-white hover:bg-emerald-500">{lang === 'en' ? 'Save Changes' : 'I-save ang mga Pagbabago'}</button></div>
               ) : (
-                <div className="flex items-center justify-between gap-3"><button type="button" onClick={() => setConfirmHarvestDelete(true)} className="flex items-center gap-2 rounded-xl border border-red-500/40 px-4 py-2.5 text-sm font-bold text-red-400 hover:bg-red-500/10"><Trash2 className="h-4 w-4" /> Delete</button><button type="button" onClick={() => setIsEditingHarvestPost(true)} className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-extrabold text-white hover:bg-emerald-500">Edit Post</button></div>
+                <div className="flex items-center justify-between gap-3"><button type="button" onClick={() => setConfirmHarvestDelete(true)} className="flex items-center gap-2 rounded-xl border border-red-500/40 px-4 py-2.5 text-sm font-bold text-red-400 hover:bg-red-500/10"><Trash2 className="h-4 w-4" /> {lang === 'en' ? 'Delete' : 'Burahin'}</button><button type="button" onClick={() => setIsEditingHarvestPost(true)} className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-extrabold text-white hover:bg-emerald-500">{lang === 'en' ? 'Edit Post' : 'I-edit ang Post'}</button></div>
               )}
             </div>
           </motion.div>
@@ -1702,7 +1702,7 @@ export default function FarmerDashboard({
               <div className="flex items-center gap-2">
                 <Truck className="w-5 h-5" />
                 <div>
-                  <h3 className="font-bold text-base sm:text-lg font-display">{lang === 'en' ? 'Request Service' : 'Request Service (Para sa Magsasaka)'}</h3>
+                  <h3 className="font-bold text-base sm:text-lg font-display">{lang === 'en' ? 'Request Service' : 'Humiling ng Serbisyo'}</h3>
                   <p className="text-[11px] text-blue-100">{lang === 'en' ? 'Request post-harvest logistics & equipment' : 'Mag-request ng transportasyon, patuyuan, imbakan, o gilingan'}</p>
                 </div>
               </div>
@@ -1979,7 +1979,7 @@ export default function FarmerDashboard({
                     <div className="space-y-1">
                       <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block flex items-center gap-1">
                         <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                        <span>{lang === 'en' ? 'Pick-up Place' : 'Lugar ng Sakay (Pick-up Location)'} <span className="text-red-500">*</span>:</span>
+                        <span>{lang === 'en' ? 'Pick-up Place' : 'Lugar ng Sakay'} <span className="text-red-500">*</span>:</span>
                       </label>
                       <input
                         type="text"
@@ -1997,7 +1997,7 @@ export default function FarmerDashboard({
                     <div className="space-y-1">
                       <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block flex items-center gap-1">
                         <MapPin className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-                        <span>{lang === 'en' ? 'Drop Place' : 'Lugar ng Bagsakan (Drop Location)'} <span className="text-red-500">*</span>:</span>
+                        <span>{lang === 'en' ? 'Drop Place' : 'Lugar ng Bagsakan'} <span className="text-red-500">*</span>:</span>
                       </label>
                       <input
                         type="text"
@@ -2101,7 +2101,7 @@ export default function FarmerDashboard({
               <div className="flex min-w-0 items-center gap-2">
                 <span className="text-xl"><span className="inline-flex items-center gap-1.5 align-middle"><IconWheat size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></span>
                 <div className="min-w-0">
-                  <h3 className="font-bold text-base sm:text-lg font-display">{lang === 'en' ? 'Post Harvest' : 'Post Harvest (Para sa Buyer Marketplace)'}</h3>
+                  <h3 className="font-bold text-base sm:text-lg font-display">{lang === 'en' ? 'Post Harvest' : 'Mag-post ng Ani'}</h3>
                   <p className="text-[11px] text-emerald-100">
                     {targetHarvestBuyer
                       ? (lang === 'en' ? `Direct offer to ${targetHarvestBuyer.businessName || targetHarvestBuyer.name}` : `Direktang alok kay ${targetHarvestBuyer.businessName || targetHarvestBuyer.name}`)
@@ -2230,7 +2230,7 @@ export default function FarmerDashboard({
                 <div className="post-harvest-description space-y-1.5">
                   <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block flex items-center justify-between">
                     <span>Description</span>
-                    <span className="text-[10px] text-slate-400 font-normal lowercase">(optional)</span>
+                    <span className="text-[10px] text-slate-400 font-normal lowercase">({lang === 'en' ? 'optional' : 'opsyonal'})</span>
                   </label>
                   <textarea
                     rows={3}
@@ -2408,7 +2408,7 @@ export default function FarmerDashboard({
                     {postRemarks.trim() && <div className="border-t border-slate-200 pt-2 dark:border-slate-700"><span className="block text-slate-500">Notes</span><p className="mt-1 whitespace-pre-wrap font-medium text-slate-900 dark:text-white">{postRemarks}</p></div>}
                   </div>
                   <div className="mt-4 flex gap-2.5">
-                    <button type="button" onClick={() => setShowPostHarvestReview(false)} className="flex-1 rounded-xl border border-slate-300 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Cancel</button>
+                    <button type="button" onClick={() => setShowPostHarvestReview(false)} className="flex-1 rounded-xl border border-slate-300 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">{lang === 'en' ? 'Cancel' : 'Kanselahin'}</button>
                     <button type="button" onClick={confirmPostHarvest} className="flex-1 rounded-xl bg-emerald-600 px-3 py-2.5 text-xs font-extrabold text-white shadow-md hover:bg-emerald-500">{targetHarvestBuyer ? 'Confirm Offer' : 'Confirm Post'}</button>
                   </div>
                 </div>
