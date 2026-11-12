@@ -98,6 +98,7 @@ export default function FarmerDashboard({
   
   // Selected offer confirmation modal
   const [offerToAccept, setOfferToAccept] = useState<Offer | null>(null);
+  const [offerView, setOfferView] = useState<'bids' | 'accepted'>('bids');
 
   // Logistics Directory state
   const [selectedServiceDir, setSelectedServiceDir] = useState<'all' | 'truck' | 'storage' | 'dryer' | 'miller'>('all');
@@ -564,13 +565,12 @@ export default function FarmerDashboard({
         <main className="dashboard-main flex-1 min-w-0 w-full max-w-[1440px] mx-auto h-full overflow-y-auto border-x border-white/30 bg-white/60 px-4 py-8 shadow-2xl backdrop-blur-[3px] scroll-smooth dark:border-slate-700/40 dark:bg-slate-950/65 sm:px-6 lg:px-8">
         
         {/* Top Header Action Buttons Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        {activeTab !== 'interests' && <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h1 className="text-xl font-extrabold text-slate-900 dark:text-white font-display uppercase tracking-wide">
               {activeTab === 'services' && (lang === 'en' ? 'KAWING Partner Hub' : 'KAWING Partner Hub')}
               {activeTab === 'harvests' && (lang === 'en' ? 'My Harvest Posts' : 'Aking Mga Na-Post na Ani')}
               {activeTab === 'buyers' && (lang === 'en' ? 'Find a Buyer' : 'Maghanap ng Buyer')}
-              {activeTab === 'interests' && (lang === 'en' ? "Buyer's Offers & Rankings" : 'Mga Offers at Presyo ng Buyer')}
               {activeTab === 'announcements' && (lang === 'en' ? 'Updates & System Announcements' : 'Mga Anunsyo at Update')}
               {activeTab === 'loans' && (lang === 'en' ? 'Production Loan Financing' : 'Pautang sa Pagtatanim ng Palay')}
             </h1>
@@ -578,7 +578,6 @@ export default function FarmerDashboard({
               {activeTab === 'services' && (lang === 'en' ? 'Find trusted buyers and book verified farm services in one place.' : 'Maghanap ng mapagkakatiwalaang buyer at mag-book ng verified na serbisyo sa iisang lugar.')}
               {activeTab === 'harvests' && (lang === 'en' ? 'Manage your palay listings and sale status.' : 'Pamahalaan ang iyong mga na-post na palay para sa mga buyer.')}
               {activeTab === 'buyers' && (lang === 'en' ? 'Browse verified buyers who may purchase your harvested grain.' : 'Tingnan ang mga verified buyer na maaaring bumili ng iyong inaning palay.')}
-              {activeTab === 'interests' && (lang === 'en' ? 'Review buyer offers and select the best price.' : 'Suriin ang mga alok na presyo mula sa mga buyer.')}
               {activeTab === 'announcements' && (lang === 'en' ? 'DA reference benchmarks and system notifications.' : 'Mga opisyal na presyo ng DA at abiso sa sistema.')}
               {activeTab === 'loans' && (lang === 'en' ? 'Request and track rice production loans from verified Buyers & Traders.' : 'Mag-apply at subaybayan ang pautang sa pagtatanim mula sa mga verified Buyer.')}
             </p>
@@ -603,7 +602,7 @@ export default function FarmerDashboard({
               {lang === 'en' ? 'Post Harvest' : 'Mag-Post ng Ani'}
             </AnimatedButton>
           </div>
-        </div>
+        </div>}
 
         {/* Content Panels */}
         <div className="space-y-6">
@@ -1372,6 +1371,63 @@ export default function FarmerDashboard({
           ) : activeTab === 'interests' ? (
             /* RANKING SYSTEM FOR BUYER OFFERS */
             <div className="space-y-6">
+              <div className="overflow-hidden rounded-3xl border border-emerald-800/60 bg-gradient-to-br from-emerald-950 via-emerald-900 to-slate-950 p-5 text-white shadow-xl shadow-emerald-950/15 sm:p-6">
+                <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="flex min-w-0 items-start gap-4">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-400 text-slate-950 shadow-lg shadow-amber-400/20"><IconTrophy size={25} stroke={2.2} aria-hidden="true" /></span>
+                    <div className="min-w-0">
+                      <h1 className="font-display text-lg font-black uppercase tracking-wider text-white sm:text-xl">
+                        {lang === 'en' ? 'Buyer Offer Rankings (Sorted by Highest Price)' : 'Rankings ng mga Presyo ng Buyer (Pinakamataas Unang Nakalista)'}
+                      </h1>
+                      <p className="mt-1 max-w-3xl text-xs leading-5 text-emerald-100/80 sm:text-sm">
+                        {lang === 'en'
+                          ? 'Choose the best offer below. After selecting one, you can track the transaction here in KAWING.'
+                          : 'Pumili sa mga offer sa ibaba. Pagkatapos pumili, masusubaybayan ang transaksyon dito sa KAWING.'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col min-[390px]:flex-row items-stretch min-[390px]:items-center gap-2.5 lg:shrink-0">
+                    <AnimatedButton
+                      onClick={handleOpenRequestServiceModal}
+                      variant="outline"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold rounded-xl !border-amber-400 !bg-amber-400 !text-slate-950 hover:!border-amber-300 hover:!bg-amber-300 shadow-md shadow-amber-500/20"
+                    >
+                      <Truck className="w-4 h-4" />
+                      {lang === 'en' ? 'Request Service' : 'Humiling ng Serbisyo'}
+                    </AnimatedButton>
+                    <AnimatedButton
+                      onClick={() => handleOpenPostHarvestModal()}
+                      variant="primary"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20"
+                    >
+                      <Plus className="w-4 h-4" />
+                      {lang === 'en' ? 'Post Harvest' : 'Mag-Post ng Ani'}
+                    </AnimatedButton>
+                  </div>
+                </div>
+              </div>
+              <div className="grid w-full grid-cols-2 gap-2 rounded-2xl border border-slate-200/80 bg-white/80 p-2 shadow-sm backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/80" role="tablist" aria-label={lang === 'en' ? 'Offer views' : 'Mga view ng alok'}>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={offerView === 'bids'}
+                  onClick={() => setOfferView('bids')}
+                  className={`flex min-h-12 items-center justify-center gap-2 rounded-xl border px-4 py-3 text-xs font-extrabold transition-all sm:text-sm ${offerView === 'bids' ? 'border-amber-400 bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20' : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-100 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-800'}`}
+                >
+                  <IconTrophy size={18} stroke={2.2} aria-hidden="true" />
+                  {lang === 'en' ? 'Bid Rankings' : 'Ranggo ng mga Bid'}
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={offerView === 'accepted'}
+                  onClick={() => setOfferView('accepted')}
+                  className={`flex min-h-12 items-center justify-center gap-2 rounded-xl border px-4 py-3 text-xs font-extrabold transition-all sm:text-sm ${offerView === 'accepted' ? 'border-emerald-600 bg-emerald-600 text-white shadow-md shadow-emerald-600/20' : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-100 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-800'}`}
+                >
+                  <IconCircleCheck size={18} stroke={2.2} aria-hidden="true" />
+                  {lang === 'en' ? 'Accepted Deal' : 'Tinanggap na Deal'}
+                </button>
+              </div>
               {myIncomingOffers.length === 0 ? (
                 <div className="bg-white dark:bg-slate-900 text-center py-16 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm transition-all duration-300">
                   <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><span className="inline-flex items-center gap-1.5 align-middle"><IconCoin size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></div>
@@ -1390,28 +1446,16 @@ export default function FarmerDashboard({
                   const sortedOffers = [...myIncomingOffers].sort((a, b) => (b.offerPrice || 0) - (a.offerPrice || 0));
                   const acceptedOffers = sortedOffers.filter((offer) => offer.status === 'accepted');
                   const rankedOffers = sortedOffers.filter((offer) => offer.status !== 'accepted');
-                  const displayedOffers = [...acceptedOffers, ...rankedOffers];
+                  const displayedOffers = offerView === 'accepted' ? acceptedOffers : rankedOffers;
 
                   return (
-                    <div className="space-y-6">
-                      <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl"><span className="inline-flex items-center gap-1.5 align-middle"><IconTrophy size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></span>
-                          <div>
-                            <h4 className="text-sm font-black text-emerald-950 dark:text-emerald-200 uppercase tracking-wider font-display">
-                              {lang === 'en' ? 'Buyer Offer Rankings (Sorted by Highest Price)' : 'Rankings ng mga Presyo ng Buyer (Pinakamataas Unang Nakalista)'}
-                            </h4>
-                            <p className="text-xs text-emerald-800 dark:text-emerald-300">
-                              {lang === 'en' 
-                                ? 'Piliin ang pinakamataas na offer. Kapag nakapili ka na, masusubaybayan ang transaksyon dito sa KAWING!' 
-                                : 'Pumili sa mga offer sa ibaba. Pagkatapos pumili, masusubaybayan ang transaksyon dito sa KAWING.'}
-                            </p>
-                          </div>
+                    <div className="space-y-4">
+                      {displayedOffers.length === 0 ? (
+                        <div className="rounded-2xl border border-slate-200 bg-white px-5 py-12 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">{offerView === 'accepted' ? (lang === 'en' ? 'No accepted deal yet' : 'Wala pang tinanggap na deal') : (lang === 'en' ? 'No bids available' : 'Walang available na bid')}</h3>
                         </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {displayedOffers.map((o, index) => {
+                      ) : <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+                        {displayedOffers.map((o) => {
                           const rankIndex = rankedOffers.findIndex((offer) => offer.id === o.id);
                           const isAccepted = o.status === 'accepted';
                           const isTopRank = !isAccepted && rankIndex === 0;
@@ -1426,31 +1470,19 @@ export default function FarmerDashboard({
 
                           return (
                             <React.Fragment key={o.id}>
-                              {index === 0 && acceptedOffers.length > 0 && (
-                                <div className="col-span-full rounded-2xl border border-emerald-300 bg-emerald-50 px-5 py-4 dark:border-emerald-800 dark:bg-emerald-950/30">
-                                  <h3 className="text-base font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-300">{lang === 'en' ? 'Accepted Deal' : 'Tinanggap na Deal'}</h3>
-                                  <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-400">{lang === 'en' ? 'Your selected buyer and contact information.' : 'Ang napiling buyer at impormasyon sa pakikipag-ugnayan.'}</p>
-                                </div>
-                              )}
-                              {index === acceptedOffers.length && rankedOffers.length > 0 && (
-                                <div className="col-span-full mt-3 border-t border-slate-300 pt-6 dark:border-slate-700">
-                                  <h3 className="text-base font-black uppercase tracking-wider text-slate-900 dark:text-white">{lang === 'en' ? 'Bid Rankings' : 'Ranggo ng mga Bid'}</h3>
-                                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Remaining offers ranked from highest to lowest.' : 'Natitirang mga offer mula pinakamataas hanggang pinakamababa.'}</p>
-                                </div>
-                              )}
                             <motion.div
                               initial={{ opacity: 0, y: 10 }}
                               animate={{ opacity: 1, y: 0 }}
-                              className={`bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 relative border ${
+                              className={`bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm flex flex-col justify-between transition-all duration-300 relative border ${
                                 isTopRank 
                                   ? 'border-amber-400 dark:border-amber-500 ring-2 ring-amber-400/30 dark:ring-amber-500/20' 
                                   : 'border-slate-100 dark:border-slate-800'
                               }`}
                             >
                               <div>
-                                <div className="flex justify-between items-start mb-4">
-                                  <div>
-                                    <div className="flex items-center gap-2 mb-1">
+                                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                  <div className="min-w-0">
+                                    <div className="mb-1 flex flex-wrap items-center gap-2">
                                       <span className={`text-[11px] px-3 py-1 rounded-full uppercase tracking-wider ${rankColor}`}>
                                         <span className="inline-flex items-center gap-1.5">{!isAccepted && rankIndex < 3 && <IconMedal size={16} stroke={2} aria-hidden="true" className={`inline-block shrink-0 ${rankIndex === 0 ? 'text-yellow-500' : rankIndex === 1 ? 'text-slate-400' : 'text-amber-700'}`} />}{rankBadge.trim()}</span>
                                       </span>
@@ -1461,7 +1493,7 @@ export default function FarmerDashboard({
                                       {o.quantity} {o.unit}
                                     </h4>
                                   </div>
-                                  <span className={`text-xs px-2.5 py-1 rounded-full font-bold border ${
+                                  <span className={`w-fit shrink-0 text-xs px-2.5 py-1 rounded-full font-bold border ${
                                     o.status === 'pending' 
                                       ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/50' 
                                       : o.status === 'accepted'
@@ -1477,8 +1509,8 @@ export default function FarmerDashboard({
                                 </div>
 
                                 {/* PRICE OFFER HIGHLIGHT */}
-                                <div className="bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 p-4 rounded-xl space-y-3 mb-4">
-                                  <div className="flex items-center justify-between">
+                                <div className="mb-4 space-y-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/60">
+                                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                                       {lang === 'en' ? 'Offered Price:' : 'Inalok na Presyo:'}
                                     </span>
@@ -1496,13 +1528,13 @@ export default function FarmerDashboard({
                                 </div>
 
                                 {/* Buyer Info */}
-                                <div className="space-y-2 text-xs text-slate-600 dark:text-slate-300 mb-4">
-                                  <div className="flex justify-between">
+                                <div className="mb-4 grid gap-2 text-xs text-slate-600 dark:text-slate-300">
+                                  <div className="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
                                     <span className="text-slate-400">{lang === 'en' ? 'Buyer Name:' : 'Pangalan ng Buyer:'}</span>
                                     <strong className="text-slate-900 dark:text-white">{o.buyerName}</strong>
                                   </div>
                                   {o.buyerAddress && (
-                                    <div className="flex justify-between">
+                                    <div className="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
                                       <span className="text-slate-400">{lang === 'en' ? 'Trading Hub/Location:' : 'Lokasyon:'}</span>
                                       <span className="font-medium text-slate-700 dark:text-slate-300">{o.buyerAddress}</span>
                                     </div>
@@ -1518,7 +1550,7 @@ export default function FarmerDashboard({
                               {/* REVEAL BUYER CONTACT ON SELECTION */}
                               <div className="border-t border-slate-100 dark:border-slate-800 pt-4">
                                 {o.status === 'pending' ? (
-                                  <div className="flex gap-2">
+                                  <div className="grid grid-cols-[auto_1fr] gap-2">
                                     <button
                                       onClick={() => askConfirmation(
                                         lang === 'en' ? `Decline the offer from ${o.buyerName}?` : `Tanggihan ang offer mula kay ${o.buyerName}?`,
@@ -1574,7 +1606,7 @@ export default function FarmerDashboard({
                             </React.Fragment>
                           );
                         })}
-                      </div>
+                      </div>}
                     </div>
                   );
                 })()
