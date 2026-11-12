@@ -97,11 +97,12 @@ export default function Splash({ onComplete }: SplashProps) {
 
       <footer className="landing-footer">
         <div className="landing-footer-grid">
-          <div className="landing-footer-brand"><img src={kawingLogo} alt="KAWING" /><p>Connecting farmers and agricultural businesses across Pampanga and Mount Arayat.</p></div>
+          <div className="landing-footer-brand"><img src={kawingLogo} alt="KAWING" /><p>Connecting Pampanga’s farmers to trusted buyers, reliable services, and better opportunities.</p></div>
           <div><h3>Address</h3><p>6M67+94C, Magalang, Pampanga</p></div>
           <div><h3>Office Hours</h3><p>Monday–Friday: 8:00 AM–5:00 PM</p><p>Saturday–Sunday: Closed</p></div>
         </div>
         <div className="landing-copyright">© 2026 KAWING Agricultural Platform. All rights reserved.</div>
+        <p className="landing-disclaimer">KAWING only connects farmers, buyers, and delivery or service providers. All deals are made between the users.</p>
       </footer>
     </div>
   );

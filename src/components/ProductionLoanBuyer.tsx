@@ -246,7 +246,7 @@ export default function ProductionLoanBuyer({
           <div className="max-h-[calc(100dvh-1.5rem)] w-full max-w-2xl overflow-y-auto bg-white dark:bg-slate-900 border border-emerald-500/30 dark:border-emerald-500/20 rounded-2xl md:rounded-3xl shadow-2xl p-5 md:p-8 sm:p-12 space-y-5 md:space-y-8 relative md:overflow-hidden">
             
             {/* Top Accent Line */}
-            <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-amber-500 via-emerald-500 to-teal-500" />
+            <div className="absolute top-0 inset-x-0 h-2 bg-emerald-500" />
 
             <div className="border-b border-slate-100 dark:border-slate-800 pb-6 text-center">
               <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -310,30 +310,30 @@ export default function ProductionLoanBuyer({
       )}
 
       {/* PAGE CONTENT - HIDDEN UNTIL UNLOCKED */}
-      <div className={`space-y-6 ${isPageLocked ? 'hidden' : ''}`}>
+      <div className={`mx-auto max-w-6xl space-y-5 ${isPageLocked ? 'hidden' : ''}`}>
       {/* Top Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 rounded-2xl md:rounded-3xl p-4 md:p-6 text-white shadow-xl relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="relative overflow-hidden rounded-2xl border border-emerald-900/70 bg-slate-950 p-5 text-white shadow-sm dark:bg-slate-900 md:p-6">
+        <div className="relative z-10 grid gap-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
           <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold border border-emerald-500/30">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300">
               <Landmark className="w-4 h-4 text-emerald-400" />
               <span>{lang === 'en' ? 'Buyer Production Loan Management' : 'Pamamahala ng Pautang sa Pagtatanim'}</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               {lang === 'en' ? 'Rice Farmer Production Financing' : 'Pondo para sa Magsasaka ng Palay'}
             </h1>
-            <p className="text-slate-700 dark:text-slate-300 text-xs sm:text-sm leading-relaxed">
+            <p className="text-xs leading-relaxed text-slate-300 sm:text-sm">
               {lang === 'en'
                 ? 'Offer rice production loans for seeds, fertilizer, harvest, and post-harvest work to secure palay supply.'
                 : 'Magpautang para sa binhi, abono, pag-aani, at pagpapatuyo kapalit ng suplay ng palay.'}
             </p>
           </div>
 
-          <div className="flex items-center shrink-0">
+          <div className="flex items-center md:justify-end">
             <AnimatedButton
               onClick={handlePostLoanClick}
               variant="outline"
-              className="px-4 py-2 text-xs font-bold rounded-xl border-emerald-400/80 text-emerald-300 hover:bg-emerald-500/20 hover:text-white transition-all shadow-sm whitespace-nowrap flex items-center gap-2"
+              className="flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl border-emerald-400/80 px-4 py-2 text-xs font-bold text-emerald-300 shadow-sm transition-all hover:bg-emerald-500/20 hover:text-white md:w-auto"
             >
               {hasLoanService ? <Edit3 className="w-4 h-4" /> : <PlusCircle className="w-4 h-4" />}
               <span>{hasLoanService
@@ -345,10 +345,10 @@ export default function ProductionLoanBuyer({
       </div>
 
       {/* Main Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3 overflow-x-auto">
+      <div className="grid grid-cols-1 gap-2 rounded-2xl border border-slate-200 bg-white/80 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 sm:grid-cols-2 xl:grid-cols-4">
         <button
           onClick={() => setActiveTab('incoming')}
-          className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+          className={`flex items-center justify-center gap-2 whitespace-nowrap rounded-xl px-3 py-2.5 text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'incoming'
               ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
               : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
@@ -365,7 +365,7 @@ export default function ProductionLoanBuyer({
 
         <button
           onClick={() => setActiveTab('active')}
-          className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+          className={`flex items-center justify-center gap-2 whitespace-nowrap rounded-xl px-3 py-2.5 text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'active'
               ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
               : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
@@ -380,7 +380,7 @@ export default function ProductionLoanBuyer({
 
         <button
           onClick={() => setActiveTab('completed')}
-          className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+          className={`flex items-center justify-center gap-2 whitespace-nowrap rounded-xl px-3 py-2.5 text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'completed'
               ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
               : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
@@ -392,7 +392,7 @@ export default function ProductionLoanBuyer({
 
         {hasLoanService && <button
           onClick={handleOpenLoanManager}
-          className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+          className={`flex items-center justify-center gap-2 whitespace-nowrap rounded-xl px-3 py-2.5 text-xs font-bold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
             activeTab === 'settings'
               ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
               : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
@@ -407,7 +407,7 @@ export default function ProductionLoanBuyer({
       {activeTab === 'incoming' && (
         <div className="space-y-4">
           {pendingRequests.length === 0 ? (
-            <div className="p-12 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            <div className="space-y-3 rounded-2xl border border-dashed border-slate-300 bg-slate-50/80 p-8 text-center dark:border-slate-700 dark:bg-slate-900/70">
               <Clock className="w-12 h-12 text-slate-700 dark:text-slate-300 dark:text-slate-700 mx-auto" />
               <h3 className="text-base font-bold text-slate-700 dark:text-slate-300">
                 {lang === 'en' ? 'No Pending Loan Requests' : 'Walang Nakatenggang Hiling sa Pautang'}
@@ -419,11 +419,11 @@ export default function ProductionLoanBuyer({
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
               {pendingRequests.map(req => (
                 <div
                   key={req.id}
-                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4"
+                  className="space-y-3 rounded-2xl border border-amber-200/80 bg-amber-50/60 p-4 shadow-sm dark:border-amber-900/60 dark:bg-slate-900 sm:p-5"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
                     <div className="space-y-1">
@@ -442,7 +442,7 @@ export default function ProductionLoanBuyer({
                       </p>
                     </div>
 
-                    <div className="text-left sm:text-right bg-emerald-50 dark:bg-emerald-950/40 p-3 rounded-2xl border border-emerald-200 dark:border-emerald-800">
+                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-2.5 text-left dark:border-emerald-800 dark:bg-emerald-950/40 sm:text-right">
                       <span className="text-[11px] text-emerald-800 dark:text-emerald-300 font-medium block">
                         {lang === 'en' ? 'Requested Loan Amount' : 'Hiling na Halaga'}
                       </span>
@@ -453,7 +453,7 @@ export default function ProductionLoanBuyer({
                   </div>
 
                   {/* Loan Details Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-2xl">
+                  <div className="grid grid-cols-1 gap-3 rounded-xl border border-slate-100 bg-white/70 p-3 text-xs dark:border-slate-800 dark:bg-slate-800/40 sm:grid-cols-2">
                     <div>
                       <span className="text-slate-400 text-[11px] block">{lang === 'en' ? 'Purpose of Loan' : 'Layunin ng Pautang'}</span>
                       <span className="font-bold text-slate-800 dark:text-slate-200">
@@ -501,10 +501,10 @@ export default function ProductionLoanBuyer({
                   )}
 
                   {/* Approve / Decline Actions */}
-                  <div className="flex items-center justify-end gap-3 pt-2">
+                  <div className="grid grid-cols-1 gap-2 pt-1 sm:grid-cols-2">
                     <button
                       onClick={() => handleOpenActionModal(req, 'decline')}
-                      className="px-4 py-2.5 rounded-xl text-xs font-bold bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-300 hover:bg-rose-100 transition-colors cursor-pointer flex items-center gap-1.5"
+                       className="flex items-center justify-center gap-1.5 rounded-xl bg-rose-50 px-4 py-2.5 text-xs font-bold text-rose-600 transition-colors hover:bg-rose-100 dark:bg-rose-950/50 dark:text-rose-300 cursor-pointer"
                     >
                       <X className="w-4 h-4" />
                       <span>{lang === 'en' ? 'Decline Request' : 'Tanggihan'}</span>
@@ -512,7 +512,7 @@ export default function ProductionLoanBuyer({
 
                     <AnimatedButton
                       onClick={() => handleOpenActionModal(req, 'approve')}
-                      className="px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 transition-all cursor-pointer flex items-center gap-1.5"
+                      className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-600/20 transition-all hover:bg-emerald-500 cursor-pointer"
                     >
                       <Check className="w-4 h-4" />
                       <span>{lang === 'en' ? 'Approve Loan' : 'Aprubahan ang Pautang'}</span>
@@ -529,7 +529,7 @@ export default function ProductionLoanBuyer({
       {activeTab === 'active' && (
         <div className="space-y-4">
           {activeLoans.length === 0 ? (
-            <div className="p-12 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            <div className="space-y-3 rounded-2xl border border-dashed border-slate-300 bg-slate-50/80 p-8 text-center dark:border-slate-700 dark:bg-slate-900/70">
               <Sparkles className="w-12 h-12 text-slate-700 dark:text-slate-300 dark:text-slate-700 mx-auto" />
               <h3 className="text-base font-bold text-slate-700 dark:text-slate-300">
                 {lang === 'en' ? 'No Active Loans' : 'Walang Aktibong Pautang'}
@@ -539,11 +539,11 @@ export default function ProductionLoanBuyer({
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
               {activeLoans.map(req => (
                 <div
                   key={req.id}
-                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4"
+                  className="space-y-3 rounded-2xl border border-emerald-200/80 bg-emerald-50/60 p-4 shadow-sm dark:border-emerald-900/60 dark:bg-slate-900 sm:p-5"
                 >
                   <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                     <div>
@@ -564,7 +564,7 @@ export default function ProductionLoanBuyer({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-2xl">
+                  <div className="grid grid-cols-2 gap-3 rounded-xl border border-slate-100 bg-white/70 p-3 text-xs dark:border-slate-800 dark:bg-slate-800/40 sm:grid-cols-3">
                     <div>
                       <span className="text-slate-400 text-[11px] block">{lang === 'en' ? 'Purpose' : 'Layunin'}</span>
                       <span className="font-semibold text-slate-800 dark:text-slate-200">{req.purpose}</span>
@@ -599,18 +599,18 @@ export default function ProductionLoanBuyer({
       {activeTab === 'completed' && (
         <div className="space-y-4">
           {completedOrDeclinedLoans.length === 0 ? (
-            <div className="p-12 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            <div className="space-y-3 rounded-2xl border border-dashed border-slate-300 bg-slate-50/80 p-8 text-center dark:border-slate-700 dark:bg-slate-900/70">
               <FileText className="w-12 h-12 text-slate-700 dark:text-slate-300 dark:text-slate-700 mx-auto" />
               <h3 className="text-base font-bold text-slate-700 dark:text-slate-300">
                 {lang === 'en' ? 'No Historical Loan Records' : 'Walang Nakaraang Tala ng Pautang'}
               </h3>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
               {completedOrDeclinedLoans.map(req => (
                 <div
                   key={req.id}
-                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-2xs flex items-center justify-between gap-4 text-xs"
+                  className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-xs shadow-2xs dark:border-slate-800 dark:bg-slate-900"
                 >
                   <div>
                     <span className="font-bold text-slate-900 dark:text-white block">{req.farmerName}</span>
@@ -633,7 +633,7 @@ export default function ProductionLoanBuyer({
 
       {/* TAB 4: MANAGE PUBLISHED LOAN SERVICE */}
       {activeTab === 'settings' && hasLoanService && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-6">
+        <div className="space-y-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
             <div>
               <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
@@ -828,7 +828,7 @@ export default function ProductionLoanBuyer({
       )}
 
       {/* Production loan platform limitation notice */}
-      <div className="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-2xl flex items-start gap-3.5 text-xs text-amber-900 dark:text-amber-200 shadow-2xs">
+      <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50/80 p-3.5 text-xs text-amber-900 shadow-2xs dark:border-amber-800/80 dark:bg-amber-950/40 dark:text-amber-200">
         <Info className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
         <div className="space-y-1">
           <p className="font-bold">

@@ -611,9 +611,9 @@ export default function BuyerDashboard({
 
 
         {activeTab === 'logistics_jobs' && (
-          <div className="space-y-6">
+          <div className="mx-auto max-w-6xl space-y-5">
             {/* Services selected on the account or published by this provider. */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col justify-between gap-4 rounded-2xl border border-blue-200/80 bg-blue-50/70 p-4 shadow-sm dark:border-blue-900/60 dark:bg-slate-900 md:flex-row md:items-center sm:p-5">
               <div className="flex items-start sm:items-center gap-3">
                 <div>
                   {listedServiceTypes.length > 0 && (
@@ -637,10 +637,10 @@ export default function BuyerDashboard({
             </div>
 
             {/* Filter Pills for Jobs */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <div className="grid grid-cols-1 gap-2 rounded-2xl border border-slate-200 bg-white/80 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 sm:grid-cols-3">
               <button
                 onClick={() => setLogisticsFilter('available')}
-                className={`px-4 py-2 text-xs font-extrabold rounded-xl transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                className={`flex items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-2.5 text-xs font-extrabold transition-all cursor-pointer ${
                   logisticsFilter === 'available'
                     ? 'bg-blue-600 text-white shadow-xs'
                     : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-blue-400'
@@ -649,7 +649,7 @@ export default function BuyerDashboard({
               </button>
               <button
                 onClick={() => setLogisticsFilter('active')}
-                className={`px-4 py-2 text-xs font-extrabold rounded-xl transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                className={`flex items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-2.5 text-xs font-extrabold transition-all cursor-pointer ${
                   logisticsFilter === 'active'
                     ? 'bg-amber-600 text-white shadow-xs'
                     : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-amber-400'
@@ -658,7 +658,7 @@ export default function BuyerDashboard({
               </button>
               <button
                 onClick={() => setLogisticsFilter('completed')}
-                className={`px-4 py-2 text-xs font-extrabold rounded-xl transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                className={`flex items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-2.5 text-xs font-extrabold transition-all cursor-pointer ${
                   logisticsFilter === 'completed'
                     ? 'bg-emerald-600 text-white shadow-xs'
                     : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-emerald-400'
@@ -670,8 +670,8 @@ export default function BuyerDashboard({
             {/* Content List Based on Filter */}
             {logisticsFilter === 'available' && (
               availableTransportRequests.length === 0 ? (
-                <div className="bg-white dark:bg-slate-900 text-center py-16 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                  <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/40 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><span className="inline-flex items-center gap-1.5 align-middle"><IconTruck size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></div>
+                <div className="rounded-2xl border border-dashed border-blue-200 bg-blue-50/40 px-4 py-10 text-center dark:border-blue-900/60 dark:bg-blue-950/20">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-500 dark:bg-blue-950/60"><span className="inline-flex items-center gap-1.5 align-middle"><IconTruck size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></div>
                   <h3 className="text-base font-bold text-slate-900 dark:text-white">
                     {lang === 'en' ? 'No Available Transport Requests' : 'Walang Bakanteng Hiling na Biyahe'}
                   </h3>
@@ -682,17 +682,17 @@ export default function BuyerDashboard({
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
                   {availableTransportRequests.map((req) => (
                     <motion.div
                       key={req.id}
                       whileHover={{ y: -3 }}
-                      className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm p-6 flex flex-col justify-between hover:border-blue-400 transition-all duration-300"
+                      className="flex flex-col justify-between rounded-2xl border border-blue-200/80 bg-blue-50/50 p-4 shadow-sm transition-all duration-300 hover:border-blue-400 dark:border-blue-900/50 dark:bg-slate-900"
                     >
                       <div>
-                        <div className="flex items-start justify-between gap-3 mb-4">
+                        <div className="mb-3 flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3">
-                            <div className="p-3 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-xl">
+                            <div className="rounded-xl bg-blue-100 p-2.5 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400">
                               <Truck className="w-6 h-6" />
                             </div>
                             <div>
@@ -707,7 +707,7 @@ export default function BuyerDashboard({
                           </span>
                         </div>
 
-                        <div className="space-y-2 text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700/60 mb-5">
+                        <div className="mb-4 space-y-2 rounded-xl border border-blue-100 bg-white/80 p-3 text-xs text-slate-600 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-slate-300">
                           {req.truckType && (
                             <div className="flex justify-between items-center text-blue-700 dark:text-blue-300 font-extrabold bg-blue-50 dark:bg-blue-950/40 p-1.5 rounded-lg">
                               <span className="text-slate-500 font-medium">{lang === 'en' ? 'Truck Type' : 'Klase ng Truck'}:</span>
@@ -777,8 +777,8 @@ export default function BuyerDashboard({
 
             {logisticsFilter === 'active' && (
               myAcceptedTransportJobs.length === 0 ? (
-                <div className="bg-white dark:bg-slate-900 text-center py-16 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                  <div className="w-16 h-16 bg-amber-50 dark:bg-amber-950/40 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><span className="inline-flex items-center gap-1.5 align-middle"><IconHourglass size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></div>
+                <div className="rounded-2xl border border-dashed border-amber-200 bg-amber-50/40 px-4 py-10 text-center dark:border-amber-900/60 dark:bg-amber-950/20">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-500 dark:bg-amber-950/60"><span className="inline-flex items-center gap-1.5 align-middle"><IconHourglass size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></div>
                   <h3 className="text-base font-bold text-slate-900 dark:text-white">
                     {lang === 'en' ? 'No Active Hauling Trips' : 'Walang Active na Biyahe'}
                   </h3>
@@ -789,17 +789,17 @@ export default function BuyerDashboard({
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
                   {myAcceptedTransportJobs.map((req) => (
                     <motion.div
                       key={req.id}
                       whileHover={{ y: -3 }}
-                      className="bg-white dark:bg-slate-900 rounded-2xl border-2 border-emerald-300 dark:border-emerald-800 shadow-sm p-6 flex flex-col justify-between"
+                      className="flex flex-col justify-between rounded-2xl border border-emerald-300 bg-emerald-50/60 p-4 shadow-sm dark:border-emerald-800 dark:bg-slate-900"
                     >
                       <div>
-                        <div className="flex items-start justify-between gap-3 mb-4">
+                        <div className="mb-3 flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3">
-                            <div className="p-3 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                            <div className="rounded-xl bg-emerald-100 p-2.5 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
                               <Navigation className="w-6 h-6 animate-spin-slow" />
                             </div>
                             <div>
@@ -812,7 +812,7 @@ export default function BuyerDashboard({
                           <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 uppercase"><span className="inline-flex items-center gap-1.5 align-middle"><span aria-hidden="true" className="inline-block h-2 w-2 shrink-0 rounded-full bg-emerald-500" />{"In Progress"}</span></span>
                         </div>
 
-                        <div className="space-y-2 text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700/60 mb-5">
+                        <div className="mb-4 space-y-2 rounded-xl border border-emerald-100 bg-white/80 p-3 text-xs text-slate-600 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-slate-300">
                           <div className="flex justify-between">
                             <span className="text-slate-400 font-medium">{t('label_farmer')}:</span>
                             <span className="font-bold text-slate-900 dark:text-white">{req.farmerName}</span>
@@ -847,8 +847,8 @@ export default function BuyerDashboard({
 
             {logisticsFilter === 'completed' && (
               myCompletedTransportJobs.length === 0 ? (
-                <div className="bg-white dark:bg-slate-900 text-center py-16 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                  <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><span className="inline-flex items-center gap-1.5 align-middle"><IconCircleCheck size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></div>
+                <div className="rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/40 px-4 py-10 text-center dark:border-emerald-900/60 dark:bg-emerald-950/20">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-500 dark:bg-emerald-950/60"><span className="inline-flex items-center gap-1.5 align-middle"><IconCircleCheck size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></div>
                   <h3 className="text-base font-bold text-slate-900 dark:text-white">
                     {lang === 'en' ? 'No Completed Trips Yet' : 'Wala pa Natatapos na Biyahe'}
                   </h3>
@@ -859,11 +859,11 @@ export default function BuyerDashboard({
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                   {myCompletedTransportJobs.map((req) => (
                     <div
                       key={req.id}
-                      className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
+                      className="flex flex-col justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4 shadow-sm dark:border-emerald-800/60 dark:bg-emerald-950/20 sm:flex-row sm:items-center"
                     >
                       <div className="flex items-center gap-4">
                         <div className="p-3 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 rounded-xl shrink-0">

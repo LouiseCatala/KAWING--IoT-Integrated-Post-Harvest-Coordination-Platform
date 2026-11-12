@@ -10,11 +10,12 @@
 .kawing-landing{font-family:'Inter',system-ui,-apple-system,sans-serif}
 .landing-wordmark span{font-family:'Orbitron-Medium','Arial Narrow',sans-serif;font-weight:900;letter-spacing:-.035em}
 .landing-info-header>span,.landing-info-header h2,.landing-benefit-card h3,.landing-card-label,.landing-card-count,.landing-footer h3{font-family:'Orbitron','Orbitron-Medium','Arial Narrow',sans-serif}
-.landing-language,.landing-enter,.landing-scroll-link,.landing-tabs button,.landing-benefit-card>p,.landing-card-result,.landing-card-controls button,.landing-footer button,.landing-footer p,.landing-copyright{font-family:'Inter',system-ui,-apple-system,sans-serif}
+.landing-language,.landing-enter,.landing-scroll-link,.landing-tabs button,.landing-benefit-card>p,.landing-card-result,.landing-card-controls button,.landing-footer button,.landing-footer p,.landing-copyright,.landing-disclaimer{font-family:'Inter',system-ui,-apple-system,sans-serif}
 .landing-wordmark span{font-weight:900;-webkit-text-stroke:.7px currentColor}
 .landing-image-base{z-index:4}
 .landing-image-reveal{z-index:5}
 .landing-info-header>span,.landing-card-label,.landing-card-count,.landing-footer h3{font-weight:800}
+.landing-disclaimer{width:min(900px,100%);margin:16px auto 0;text-align:center;color:#526177;font-size:12px;line-height:1.55}
 .landing-info-header h2,.landing-benefit-card h3{font-weight:900}
 .landing-slogans p,.landing-info-header p,.landing-benefit-card>p,.landing-footer p{font-weight:500}
 .landing-language,.landing-enter,.landing-scroll-link,.landing-tabs button,.landing-card-result,.landing-card-controls button,.landing-footer button{font-weight:600}

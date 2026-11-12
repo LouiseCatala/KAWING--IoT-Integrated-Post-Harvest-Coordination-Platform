@@ -100,6 +100,10 @@ export default function FarmerDashboard({
   const [offerToAccept, setOfferToAccept] = useState<Offer | null>(null);
   const [offerView, setOfferView] = useState<'bids' | 'accepted'>('bids');
 
+  useEffect(() => {
+    if (activeTab === 'interests') setOfferView('bids');
+  }, [activeTab]);
+
   // Logistics Directory state
   const [selectedServiceDir, setSelectedServiceDir] = useState<'all' | 'truck' | 'storage' | 'dryer' | 'miller'>('all');
   const [showDirDetails, setShowDirDetails] = useState(true);
@@ -562,7 +566,7 @@ export default function FarmerDashboard({
           onMarkNotificationRead={onMarkNotificationRead}
         />
 
-        <main className="dashboard-main flex-1 min-w-0 w-full max-w-[1440px] mx-auto h-full overflow-y-auto border-x border-white/30 bg-white/60 px-4 py-8 shadow-2xl backdrop-blur-[3px] scroll-smooth dark:border-slate-700/40 dark:bg-slate-950/65 sm:px-6 lg:px-8">
+        <main className="dashboard-main flex-1 min-w-0 w-full max-w-360 mx-auto h-full overflow-y-auto border-x border-white/30 bg-white/60 px-4 py-8 shadow-2xl backdrop-blur-[3px] scroll-smooth dark:border-slate-700/40 dark:bg-slate-950/65 sm:px-6 lg:px-8">
         
         {/* Top Header Action Buttons Bar */}
         {activeTab !== 'interests' && <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -587,7 +591,7 @@ export default function FarmerDashboard({
             <AnimatedButton
               onClick={handleOpenRequestServiceModal}
               variant="outline"
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold rounded-xl !border-amber-400 !bg-amber-400 !text-slate-950 hover:!border-amber-300 hover:!bg-amber-300 shadow-md shadow-amber-500/20"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold rounded-xl border-amber-400! bg-amber-400! text-slate-950! hover:border-amber-300! hover:bg-amber-300! shadow-md shadow-amber-500/20"
             >
               <Truck className="w-4 h-4" />
               {lang === 'en' ? 'Request Service' : 'Humiling ng Serbisyo'}
@@ -628,7 +632,7 @@ export default function FarmerDashboard({
           )}
 
           {activeTab === 'services' && (
-            <section className="flex h-[calc(100dvh-13.5rem)] min-h-[24rem] flex-col gap-5 overflow-hidden">
+            <section className="flex h-[calc(100dvh-13.5rem)] min-h-96 flex-col gap-5 overflow-hidden">
               <div className="rounded-2xl border border-slate-200/70 dark:border-slate-700/70 bg-white dark:bg-slate-900 p-4 shadow-lg">
                 <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                   <div className="flex flex-wrap gap-2">
@@ -674,7 +678,7 @@ export default function FarmerDashboard({
                 <span className="text-xs font-bold text-slate-500">{visiblePartnerEntries.length} available</span>
               </div>
 
-              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1.5 scrollbar-none [&::-webkit-scrollbar]:hidden">
               {visiblePartnerEntries.length === 0 ? (
                 <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-5 py-16 text-center text-sm text-slate-400">
                   {lang === 'en' ? 'No matching buyers or service providers are available yet.' : 'Wala pang available na buyer o service provider sa napiling filter.'}
@@ -767,7 +771,7 @@ export default function FarmerDashboard({
                     className={`p-5 text-left transition-all disabled:cursor-not-allowed disabled:opacity-50 enabled:hover:bg-slate-50/50 dark:enabled:hover:bg-slate-800/20 cursor-pointer ${selectedServiceDir === 'truck' ? 'bg-blue-50/40 dark:bg-blue-950/10 border-b-2 border-blue-500' : ''}`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-slate-400 dark:text-slate-500 p-2 bg-blue-50 dark:bg-blue-950/20 rounded-xl text-blue-600 dark:text-blue-400">
+                      <span className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded-xl text-blue-600 dark:text-blue-400">
                         <Truck className="w-5 h-5" />
                       </span>
                       <span className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full ${liveTrucks.length > 0 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-500'}`}>
@@ -787,7 +791,7 @@ export default function FarmerDashboard({
                     className={`p-5 text-left transition-all disabled:cursor-not-allowed disabled:opacity-50 enabled:hover:bg-slate-50/50 dark:enabled:hover:bg-slate-800/20 cursor-pointer ${selectedServiceDir === 'storage' ? 'bg-purple-50/40 dark:bg-purple-950/10 border-b-2 border-purple-500' : ''}`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-slate-400 dark:text-slate-500 p-2 bg-purple-50 dark:bg-purple-950/20 rounded-xl text-purple-600 dark:text-purple-400">
+                      <span className="p-2 bg-purple-50 dark:bg-purple-950/20 rounded-xl text-purple-600 dark:text-purple-400">
                         <HardDrive className="w-5 h-5" />
                       </span>
                       <span className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full ${liveStorage.length > 0 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-500'}`}>
@@ -807,7 +811,7 @@ export default function FarmerDashboard({
                     className={`p-5 text-left transition-all disabled:cursor-not-allowed disabled:opacity-50 enabled:hover:bg-slate-50/50 dark:enabled:hover:bg-slate-800/20 cursor-pointer ${selectedServiceDir === 'dryer' ? 'bg-amber-50/40 dark:bg-amber-950/10 border-b-2 border-amber-500' : ''}`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-slate-400 dark:text-slate-500 p-2 bg-amber-50 dark:bg-amber-950/20 rounded-xl text-amber-600 dark:text-amber-400">
+                      <span className="p-2 bg-amber-50 dark:bg-amber-950/20 rounded-xl text-amber-600 dark:text-amber-400">
                         <Wind className="w-5 h-5" />
                       </span>
                       <span className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full ${liveDryers.length > 0 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-500'}`}>
@@ -827,7 +831,7 @@ export default function FarmerDashboard({
                     className={`p-5 text-left transition-all disabled:cursor-not-allowed disabled:opacity-50 enabled:hover:bg-slate-50/50 dark:enabled:hover:bg-slate-800/20 cursor-pointer ${selectedServiceDir === 'miller' ? 'bg-teal-50/40 dark:bg-teal-950/10 border-b-2 border-teal-500' : ''}`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-slate-400 dark:text-slate-500 p-2 bg-teal-50 dark:bg-teal-950/20 rounded-xl text-teal-600 dark:text-teal-400">
+                      <span className="p-2 bg-teal-50 dark:bg-teal-950/20 rounded-xl text-teal-600 dark:text-teal-400">
                         <RefreshCw className="w-5 h-5 animate-spin-slow" />
                       </span>
                       <span className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full ${liveMillers.length > 0 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-500'}`}>
@@ -1172,7 +1176,7 @@ export default function FarmerDashboard({
                           </div>
                         )}
 
-                        <div className="p-6 flex-grow">
+                        <div className="p-6 grow">
                           {!h.photoUrl && (
                             <div className="flex items-start justify-between gap-4 mb-4">
                               <div>
@@ -1371,7 +1375,7 @@ export default function FarmerDashboard({
           ) : activeTab === 'interests' ? (
             /* RANKING SYSTEM FOR BUYER OFFERS */
             <div className="space-y-6">
-              <div className="overflow-hidden rounded-3xl border border-emerald-800/60 bg-gradient-to-br from-emerald-950 via-emerald-900 to-slate-950 p-5 text-white shadow-xl shadow-emerald-950/15 sm:p-6">
+              <div className="overflow-hidden rounded-3xl border border-emerald-800/60 bg-emerald-950 p-5 text-white shadow-xl shadow-emerald-950/15 sm:p-6">
                 <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                   <div className="flex min-w-0 items-start gap-4">
                     <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-400 text-slate-950 shadow-lg shadow-amber-400/20"><IconTrophy size={25} stroke={2.2} aria-hidden="true" /></span>
@@ -1390,7 +1394,7 @@ export default function FarmerDashboard({
                     <AnimatedButton
                       onClick={handleOpenRequestServiceModal}
                       variant="outline"
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold rounded-xl !border-amber-400 !bg-amber-400 !text-slate-950 hover:!border-amber-300 hover:!bg-amber-300 shadow-md shadow-amber-500/20"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold rounded-xl border-amber-400! bg-amber-400! text-slate-950! hover:border-amber-300! hover:bg-amber-300! shadow-md shadow-amber-500/20"
                     >
                       <Truck className="w-4 h-4" />
                       {lang === 'en' ? 'Request Service' : 'Humiling ng Serbisyo'}
@@ -1620,7 +1624,7 @@ export default function FarmerDashboard({
       {/* HARVEST DETAILS AND MANAGEMENT */}
       {selectedHarvestPost && harvestEditDraft && (
         <div
-          className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-3 sm:p-6 backdrop-blur-sm"
+          className="fixed inset-0 z-70 flex items-center justify-center bg-black/70 p-3 sm:p-6 backdrop-blur-sm"
 
         >
           <motion.div
@@ -1628,7 +1632,7 @@ export default function FarmerDashboard({
             animate={{ opacity: 1, scale: 1 }}
             className="kawing-readable-modal flex max-h-[calc(100dvh-1rem)] md:max-h-[96vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white shadow-2xl"
           >
-            <div className="flex items-start justify-between gap-4 border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-emerald-900 to-emerald-700 px-5 py-4 sm:px-7">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-200 dark:border-slate-800 bg-emerald-900 px-5 py-4 sm:px-7">
               <div>
                 <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-emerald-200">My Harvest Post</p>
                 <h2 className="mt-1 text-xl font-black text-white sm:text-2xl">{selectedHarvestPost.cropType}</h2>
@@ -1699,7 +1703,7 @@ export default function FarmerDashboard({
                       ['Destination', selectedHarvestPost.dropLocation || 'To be arranged with buyer'],
                       ['Preferred schedule', [selectedHarvestPost.preferredScheduleDate, selectedHarvestPost.preferredScheduleTime].filter(Boolean).join(' ') || 'Not specified'],
                       ['Market reference', selectedHarvestPost.marketRefPrice ? `₱${selectedHarvestPost.marketRefPrice}/kg` : 'Not specified'],
-                    ].map(([label, value]) => <div key={label}><p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">{label}</p><p className="mt-1 break-words text-sm font-semibold text-slate-800 dark:text-slate-200">{value}</p></div>)}
+                    ].map(([label, value]) => <div key={label}><p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">{label}</p><p className="mt-1 wrap-break-word text-sm font-semibold text-slate-800 dark:text-slate-200">{value}</p></div>)}
                   </div>
                   <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/60 dark:bg-slate-900/60 p-5"><p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Description / Additional Notes</p><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700 dark:text-slate-300">{selectedHarvestPost.notes || selectedHarvestPost.remarks || selectedHarvestPost.additionalNotes || 'No additional notes.'}</p></div>
                 </div>
@@ -1728,7 +1732,7 @@ export default function FarmerDashboard({
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="kawing-readable-modal bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl md:rounded-3xl w-full max-w-xl sm:max-w-[1440px] shadow-2xl overflow-hidden max-h-[calc(100dvh-1rem)] md:max-h-[96vh] flex flex-col my-auto"
+            className="kawing-readable-modal bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl md:rounded-3xl w-full max-w-xl sm:max-w-360 shadow-2xl overflow-hidden max-h-[calc(100dvh-1rem)] md:max-h-[96vh] flex flex-col my-auto"
           >
             <div className="px-5 py-3.5 flex items-center justify-between bg-blue-600 text-white shrink-0">
               <div className="flex items-center gap-2">
@@ -1913,17 +1917,17 @@ export default function FarmerDashboard({
 
               {/* SERVICES NEEDED */}
               <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 dark:border-slate-700/70 dark:bg-slate-900 space-y-4">
-                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase block flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase flex items-center justify-between">
                   <span><span className="inline-flex items-center gap-1.5 align-middle mr-1.5"><IconTools size={16} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Service Needed"}</span><span className="text-red-500">*</span></span>
                   <span className="text-[10px] font-normal text-slate-400">({lang === 'en' ? 'Check at least 1' : 'Mag-check ng kahit 1'})</span>
                 </label>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {[
+                  {([
                     { id: 'transport', label: ' Transportation' },
                     { id: 'drying', label: ' Mechanical Drying' },
                     { id: 'storage', label: ' Storage' },
                     { id: 'milling', label: ' Milling' },
-                  ].map((service) => {
+                  ] as const).map((service) => {
                     const isSelected = reqServices.includes(service.id as any);
                     const isAvailable = availableServiceTypes.has(service.id as 'transport' | 'storage' | 'drying' | 'milling');
                     return (
@@ -2009,7 +2013,7 @@ export default function FarmerDashboard({
                   {/* Pick-up Place & Drop Place text inputs */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div className="space-y-1">
-                      <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block flex items-center gap-1">
+                      <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
                         <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                         <span>{lang === 'en' ? 'Pick-up Place' : 'Lugar ng Sakay'} <span className="text-red-500">*</span>:</span>
                       </label>
@@ -2027,7 +2031,7 @@ export default function FarmerDashboard({
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block flex items-center gap-1">
+                      <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
                         <MapPin className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
                         <span>{lang === 'en' ? 'Drop Place' : 'Lugar ng Bagsakan'} <span className="text-red-500">*</span>:</span>
                       </label>
@@ -2260,7 +2264,7 @@ export default function FarmerDashboard({
 
                 {/* Description stays directly below the harvest fields. */}
                 <div className="post-harvest-description space-y-1.5">
-                  <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block flex items-center justify-between">
+                  <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center justify-between">
                     <span>Description</span>
                     <span className="text-[10px] text-slate-400 font-normal lowercase">({lang === 'en' ? 'optional' : 'opsyonal'})</span>
                   </label>
@@ -2515,7 +2519,7 @@ export default function FarmerDashboard({
         </div>
       )}
       {showRequestServiceReview && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center overflow-y-auto bg-slate-950/75 p-3 md:p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-80 flex items-center justify-center overflow-y-auto bg-slate-950/75 p-3 md:p-4 backdrop-blur-sm">
           <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} role="dialog" aria-modal="true" className="w-full max-w-lg rounded-3xl border border-cyan-800 bg-white dark:bg-slate-900 p-6 text-slate-900 dark:text-white shadow-2xl">
             <h2 className="text-xl font-black">Review Service Request</h2>
             <p className="mt-1 text-xs text-slate-400">Confirm all details before this request is sent.</p>
@@ -2541,7 +2545,7 @@ export default function FarmerDashboard({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             className="my-auto max-h-[calc(100dvh-1.5rem)] w-full max-w-lg overflow-y-auto rounded-2xl md:rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl"
           >
-            <div className="flex items-start justify-between bg-gradient-to-r from-emerald-600 to-teal-700 p-6 text-white">
+            <div className="flex items-start justify-between bg-emerald-700 p-6 text-white">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-emerald-100">Verified Harvest Buyer</p>
                 <h2 className="mt-1 text-xl font-extrabold">{selectedBuyerModal.businessName || selectedBuyerModal.name}</h2>
@@ -2600,12 +2604,12 @@ export default function FarmerDashboard({
             animate={{ scale: 1, opacity: 1 }}
             className="max-h-[calc(100dvh-1.5rem)] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl md:rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden my-auto flex flex-col"
           >
-            {/* Header with role color gradient */}
+            {/* Header with role color */}
             <div className={`px-6 py-5 flex items-start justify-between text-white ${
-              selectedOperatorModal.role === 'truck' ? 'bg-gradient-to-r from-blue-600 to-indigo-700' :
-              selectedOperatorModal.role === 'storage' ? 'bg-gradient-to-r from-purple-600 to-violet-700' :
-              selectedOperatorModal.role === 'dryer' ? 'bg-gradient-to-r from-amber-600 to-orange-700' :
-              'bg-gradient-to-r from-teal-600 to-emerald-700'
+              selectedOperatorModal.role === 'truck' ? 'bg-blue-700' :
+              selectedOperatorModal.role === 'storage' ? 'bg-purple-700' :
+              selectedOperatorModal.role === 'dryer' ? 'bg-amber-700' :
+              'bg-teal-700'
             }`}>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl shrink-0 shadow-inner">
@@ -2654,7 +2658,7 @@ export default function FarmerDashboard({
                     <Star className="w-4 h-4 fill-current" />
                     <RatingSummary email={selectedOperatorModal.email} />
                   </div>
-                  <span className="text-slate-700 dark:text-slate-300 dark:text-slate-600 text-xs">|</span>
+                  <span className="text-slate-700 dark:text-slate-300 text-xs">|</span>
                   <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
                     {lang === 'en' ? 'Verified Logistics Partner' : 'Veripikadong Partner sa Logistika'}
                   </span>
