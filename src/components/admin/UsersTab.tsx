@@ -199,7 +199,7 @@ export default function UsersTab({
       {filteredUsers.length > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-3 bg-red-50/50 dark:bg-red-950/10 p-4 rounded-2xl border border-red-150 dark:border-red-900/30 text-xs">
           <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-semibold">
-            <span>Selected: <strong>{selectedNames.length}</strong> of <strong>{filteredUsers.length}</strong> users</span>
+            <span>{lang === 'en' ? 'Selected' : 'Napili'}: <strong>{selectedNames.length}</strong> {lang === 'en' ? 'of' : 'sa'} <strong>{filteredUsers.length}</strong> {lang === 'en' ? 'users' : 'user'}</span>
           </div>
           <div className="flex gap-2">
             <button
@@ -439,8 +439,8 @@ export default function UsersTab({
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3 text-xs sm:block sm:space-y-1">
-                    <p><span className="font-bold text-slate-400">Capacity:</span> <span className="font-semibold text-slate-700 dark:text-slate-200">{capacity}</span></p>
-                    <p className="truncate"><span className="font-bold text-slate-400">Coverage:</span> <span className="font-semibold text-slate-700 dark:text-slate-200">{location}</span></p>
+                    <p><span className="font-bold text-slate-400">{lang === 'en' ? 'Capacity:' : 'Kapasidad:'}</span> <span className="font-semibold text-slate-700 dark:text-slate-200">{capacity}</span></p>
+                    <p className="truncate"><span className="font-bold text-slate-400">{lang === 'en' ? 'Coverage:' : 'Sakop:'}</span> <span className="font-semibold text-slate-700 dark:text-slate-200">{location}</span></p>
                   </div>
                   <div className="flex gap-2 sm:justify-end">
                     <button type="button" onClick={() => onViewProfile(user)} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">

@@ -139,7 +139,7 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
           <span className="font-bold">{notif}</span>
         </div>
       )}
-      {saveError && <div role="alert" className="rounded-xl border border-red-300 bg-red-50 p-4 text-xs font-bold text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">{saveError} <button type="button" onClick={() => void persistAnnouncements(announcements)} className="ml-2 underline">Retry</button></div>}
+      {saveError && <div role="alert" className="rounded-xl border border-red-300 bg-red-50 p-4 text-xs font-bold text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">{saveError} <button type="button" onClick={() => void persistAnnouncements(announcements)} className="ml-2 underline">{lang === 'en' ? 'Retry' : 'Subukan Muli'}</button></div>}
 
       {/* Two-Column Layout: Add Form + Current Announcements List */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -154,7 +154,7 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
           <form onSubmit={handleAdd} className="space-y-3.5 text-xs">
             {/* Title */}
             <div className="space-y-1">
-              <label className="block font-bold text-slate-500 dark:text-slate-400">Advisory Title</label>
+              <label className="block font-bold text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Advisory Title' : 'Pamagat ng Paunawa'}</label>
               <input
                 type="text"
                 required
@@ -167,7 +167,7 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
 
             {/* Category */}
             <div className="space-y-1">
-              <label className="block font-bold text-slate-500 dark:text-slate-400">Category Tag</label>
+              <label className="block font-bold text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Category Tag' : 'Kategorya'}</label>
               <select
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value)}
@@ -180,7 +180,7 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
 
             {/* Status */}
             <div className="space-y-1">
-              <label className="block font-bold text-slate-500 dark:text-slate-400">Publishing Status</label>
+              <label className="block font-bold text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Publishing Status' : 'Kalagayan ng Paglalathala'}</label>
               <select
                 value={newStatus}
                 onChange={(e) => setNewStatus(e.target.value)}
@@ -193,7 +193,7 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
 
             {/* Content body */}
             <div className="space-y-1">
-              <label className="block font-bold text-slate-500 dark:text-slate-400">Detailed Advisory Message</label>
+              <label className="block font-bold text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Detailed Advisory Message' : 'Detalyadong Mensahe ng Paunawa'}</label>
               <textarea
                 required
                 rows={4}
@@ -227,7 +227,7 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
 
           <div className="space-y-4">
             {announcements.length === 0 ? (
-              <p className="text-xs text-slate-400 text-center py-10">No public advisories currently listed.</p>
+              <p className="text-xs text-slate-400 text-center py-10">{lang === 'en' ? 'No public advisories currently listed.' : 'Wala pang nakalistang pampublikong paunawa.'}</p>
             ) : (
               announcements.map((ann) => (
                 <div 
@@ -317,7 +317,7 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
 
             <form onSubmit={handleSaveEdit} className="p-6 space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="block font-bold text-slate-600 dark:text-slate-300">Advisory Title</label>
+                <label className="block font-bold text-slate-600 dark:text-slate-300">{lang === 'en' ? 'Advisory Title' : 'Pamagat ng Paunawa'}</label>
                 <input
                   type="text"
                   required
@@ -328,7 +328,7 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
               </div>
 
               <div className="space-y-1">
-                <label className="block font-bold text-slate-600 dark:text-slate-300">Category Tag</label>
+                <label className="block font-bold text-slate-600 dark:text-slate-300">{lang === 'en' ? 'Category Tag' : 'Kategorya'}</label>
                 <select
                   value={editCategory}
                   onChange={(e) => setEditCategory(e.target.value)}
@@ -340,7 +340,7 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
               </div>
 
               <div className="space-y-1">
-                <label className="block font-bold text-slate-600 dark:text-slate-300">Publishing Status</label>
+                <label className="block font-bold text-slate-600 dark:text-slate-300">{lang === 'en' ? 'Publishing Status' : 'Kalagayan ng Paglalathala'}</label>
                 <select
                   value={editStatus}
                   onChange={(e) => setEditStatus(e.target.value)}
@@ -352,7 +352,7 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
               </div>
 
               <div className="space-y-1">
-                <label className="block font-bold text-slate-600 dark:text-slate-300">Message Details</label>
+                <label className="block font-bold text-slate-600 dark:text-slate-300">{lang === 'en' ? 'Message Details' : 'Detalye ng Mensahe'}</label>
                 <textarea
                   required
                   rows={4}
@@ -375,7 +375,7 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
                   className="flex-grow py-2.5 text-center text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Save className="w-3.5 h-3.5" />
-                  <span>Update Advisory</span>
+                  <span>{lang === 'en' ? 'Update Advisory' : 'I-update ang Paunawa'}</span>
                 </button>
               </div>
             </form>

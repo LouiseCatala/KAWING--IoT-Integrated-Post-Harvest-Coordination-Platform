@@ -893,7 +893,7 @@ export default function App() {
           serviceType === 'transport' ? 'transportasyon' :
           serviceType === 'storage' ? 'cold storage' :
           serviceType === 'drying' ? 'patuyuan' :
-          serviceType === 'milling' ? 'gilingan' : 'direktang mamimili (buyer)';
+          serviceType === 'milling' ? 'gilingan' : 'direktang mamimili';
 
         const msg = serviceType === 'buyer'
           ? `Ang iyong ani na ${newHarvest.cropType} ay matagumpay na na-post sa Browse Fresh Harvest ng mga Buyer!`
@@ -971,7 +971,7 @@ export default function App() {
       type === 'transport' ? 'transportasyon' :
       type === 'storage' ? 'cold storage' :
       type === 'drying' ? 'patuyuan' :
-      type === 'milling' ? 'gilingan' : 'pagbili (buyer)';
+      type === 'milling' ? 'gilingan' : 'pagbili';
 
     addNotification(
       activeUser.email || 'magsasaka@kawing.com',
@@ -1353,7 +1353,7 @@ export default function App() {
         serviceType === 'transport' ? 'Transportasyon' :
         serviceType === 'storage' ? 'Cold Storage' :
         serviceType === 'drying' ? 'Patuyuan' :
-        serviceType === 'milling' ? 'Gilingan' : 'Pagbili (Buyer)';
+        serviceType === 'milling' ? 'Gilingan' : 'Pagbili';
       
       addNotification(
         farmerEmail,
@@ -1394,7 +1394,7 @@ export default function App() {
         serviceType === 'transport' ? 'Transportasyon' :
         serviceType === 'storage' ? 'Cold Storage' :
         serviceType === 'drying' ? 'Patuyuan' :
-        serviceType === 'milling' ? 'Gilingan' : 'Pagbili (Buyer)';
+        serviceType === 'milling' ? 'Gilingan' : 'Pagbili';
       
       addNotification(
         farmerEmail,

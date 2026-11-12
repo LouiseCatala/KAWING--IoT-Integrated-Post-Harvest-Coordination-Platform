@@ -2047,7 +2047,7 @@ export default function FarmerDashboard({
 
               {/* Additional Notes */}
               <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 dark:border-slate-700/70 dark:bg-slate-900 space-y-4">
-                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase block">Additional Notes (Optional)</label>
+                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase block">{lang === 'en' ? 'Additional Notes (Optional)' : 'Karagdagang Tala (Opsyonal)'}</label>
                 <textarea rows={3}
                   value={reqAddNotes}
                   onChange={(e) => setReqAddNotes(e.target.value)}

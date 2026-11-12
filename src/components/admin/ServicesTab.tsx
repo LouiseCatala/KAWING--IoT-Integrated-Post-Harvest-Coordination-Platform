@@ -155,27 +155,27 @@ export default function ServicesTab({
 
                 <div className="mt-4 space-y-2 border-t border-b border-slate-100 dark:border-slate-800 py-3.5 text-xs text-slate-600 dark:text-slate-300">
                   <p className="flex justify-between">
-                    <span className="text-slate-400 font-bold">Farmer Name:</span>
+                    <span className="text-slate-400 font-bold">{lang === 'en' ? 'Farmer Name:' : 'Pangalan ng Magsasaka:'}</span>
                     <span className="font-semibold text-slate-800 dark:text-white">{req.farmerName}</span>
                   </p>
                   <p className="flex justify-between">
-                    <span className="text-slate-400 font-bold">Hub / Location:</span>
+                    <span className="text-slate-400 font-bold">{lang === 'en' ? 'Hub / Location:' : 'Sentro / Lokasyon:'}</span>
                     <span className="font-semibold text-slate-800 dark:text-white truncate max-w-[200px]">{req.location}</span>
                   </p>
                   {req.details?.distance && (
                     <p className="flex justify-between">
-                      <span className="text-slate-400 font-bold">Routing Distance:</span>
+                      <span className="text-slate-400 font-bold">{lang === 'en' ? 'Routing Distance:' : 'Layo ng Ruta:'}</span>
                       <span className="font-semibold text-slate-800 dark:text-white">{req.details.distance}</span>
                     </p>
                   )}
                   {req.details?.daysRemaining && (
                     <p className="flex justify-between">
-                      <span className="text-slate-400 font-bold">Safe Days Remaining:</span>
+                      <span className="text-slate-400 font-bold">{lang === 'en' ? 'Safe Days Remaining:' : 'Natitirang Ligtas na Araw:'}</span>
                       <span className="font-bold text-amber-600">{req.details.daysRemaining} days</span>
                     </p>
                   )}
                   <p className="flex justify-between">
-                    <span className="text-slate-400 font-bold">Assigned Operator:</span>
+                    <span className="text-slate-400 font-bold">{lang === 'en' ? 'Assigned Operator:' : 'Nakatalagang Operator:'}</span>
                     <span className="font-bold text-emerald-600">
                       {req.operatorName || (lang === 'en' ? 'Unassigned' : 'Wala pa')}
                     </span>

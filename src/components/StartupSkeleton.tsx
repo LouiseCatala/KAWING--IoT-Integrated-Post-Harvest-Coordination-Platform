@@ -1,9 +1,12 @@
+import { useApp } from '../context/AppContext';
+
 export default function StartupSkeleton() {
+  const { lang } = useApp();
   const block = 'rounded-lg bg-slate-200/80 dark:bg-slate-800/80';
 
   return (
-    <div role="status" aria-label="Loading KAWING" aria-busy="true" className="min-h-dvh bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white">
-      <span className="sr-only">Loading KAWING. Please wait.</span>
+    <div role="status" aria-label={lang === 'en' ? 'Loading KAWING' : 'Nilo-load ang KAWING'} aria-busy="true" className="min-h-dvh bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white">
+      <span className="sr-only">{lang === 'en' ? 'Loading KAWING. Please wait.' : 'Nilo-load ang KAWING. Mangyaring maghintay.'}</span>
       <header className="border-b border-slate-200/70 px-5 py-5 dark:border-slate-800/70 sm:px-10">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <span className="font-display text-lg font-black tracking-[0.18em] text-emerald-600 dark:text-emerald-400">KAWING</span>

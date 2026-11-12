@@ -256,7 +256,7 @@ export default function TransactionsTab({
       <div className="flex flex-wrap items-center gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-150 dark:border-slate-800 shadow-sm text-xs">
         <div className="flex items-center gap-2 text-slate-400 font-bold">
           <Filter className="w-4 h-4 text-emerald-600" />
-          <span>Status Filter:</span>
+          <span>{lang === 'en' ? 'Status Filter:' : 'Salain ayon sa Kalagayan:'}</span>
         </div>
         {activeSubTab === 'logistics' ? (
           <select
@@ -267,9 +267,9 @@ export default function TransactionsTab({
             }}
             className="px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs cursor-pointer focus:outline-none dark:text-white"
           >
-            <option value="all">All Status</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Completed">Completed Match</option>
+            <option value="all">{lang === 'en' ? 'All Status' : 'Lahat ng Kalagayan'}</option>
+            <option value="In Progress">{lang === 'en' ? 'In Progress' : 'Isinasagawa'}</option>
+            <option value="Completed">{lang === 'en' ? 'Completed Match' : 'Nakumpletong Pagtutugma'}</option>
           </select>
         ) : (
           <select
@@ -280,10 +280,10 @@ export default function TransactionsTab({
             }}
             className="px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs cursor-pointer focus:outline-none dark:text-white"
           >
-            <option value="all">All Connections</option>
-            <option value="pending">Awaiting Verification</option>
-            <option value="accepted">Verified & Connected</option>
-            <option value="declined">Declined Request</option>
+            <option value="all">{lang === 'en' ? 'All Connections' : 'Lahat ng Koneksyon'}</option>
+            <option value="pending">{lang === 'en' ? 'Awaiting Verification' : 'Naghihintay ng Beripikasyon'}</option>
+            <option value="accepted">{lang === 'en' ? 'Verified & Connected' : 'Beripikado at Nakakonekta'}</option>
+            <option value="declined">{lang === 'en' ? 'Declined Request' : 'Tinanggihang Hiling'}</option>
           </select>
         )}
       </div>
@@ -295,13 +295,13 @@ export default function TransactionsTab({
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-emerald-50 dark:bg-emerald-950/30 border-b border-slate-150 dark:border-slate-800 font-bold text-emerald-800 dark:text-emerald-200">
-                  <th className="p-4">Match ID</th>
+                  <th className="p-4">{lang === 'en' ? 'Match ID' : 'ID ng Pagtutugma'}</th>
                   <th className="p-4">{lang === 'en' ? 'Farmer Name & Contact' : 'Magsasaka at Kontak'}</th>
                   <th className="p-4">{lang === 'en' ? 'Logistics Partner & Contact' : 'Logistiko at Kontak'}</th>
                   <th className="p-4">{lang === 'en' ? 'Produce / Service' : 'Paninda o Serbisyo'}</th>
-                  <th className="p-4">Date Merged</th>
-                  <th className="p-4">Matching Status</th>
-                  <th className="p-4 text-center">Connection Control</th>
+                  <th className="p-4">{lang === 'en' ? 'Date Merged' : 'Petsa ng Pagtutugma'}</th>
+                  <th className="p-4">{lang === 'en' ? 'Matching Status' : 'Kalagayan ng Pagtutugma'}</th>
+                  <th className="p-4 text-center">{lang === 'en' ? 'Connection Control' : 'Kontrol ng Koneksyon'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -383,14 +383,14 @@ export default function TransactionsTab({
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-emerald-50 dark:bg-emerald-950/30 border-b border-slate-150 dark:border-slate-800 font-bold text-emerald-800 dark:text-emerald-200">
-                  <th className="p-4">Deal ID</th>
+                  <th className="p-4">{lang === 'en' ? 'Deal ID' : 'ID ng Kasunduan'}</th>
                   <th className="p-4">{lang === 'en' ? 'Buyer Name' : 'Pangalan ng Mamimili'}</th>
                   <th className="p-4">{lang === 'en' ? 'Farmer Name' : 'Pangalan ng Magsasaka'}</th>
                   <th className="p-4">{lang === 'en' ? 'Interested Crop' : 'Interesadong Ani'}</th>
-                  <th className="p-4">Direct Contacts</th>
-                  <th className="p-4">Submitted Date</th>
-                  <th className="p-4">Approval Status</th>
-                  <th className="p-4 text-center">Identity & ID Review</th>
+                  <th className="p-4">{lang === 'en' ? 'Direct Contacts' : 'Direktang Kontak'}</th>
+                  <th className="p-4">{lang === 'en' ? 'Submitted Date' : 'Petsa ng Pagsumite'}</th>
+                  <th className="p-4">{lang === 'en' ? 'Approval Status' : 'Kalagayan ng Pag-apruba'}</th>
+                  <th className="p-4 text-center">{lang === 'en' ? 'Identity & ID Review' : 'Pagsuri ng Pagkakakilanlan at ID'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -440,10 +440,10 @@ export default function TransactionsTab({
                               title="Inspect Buyer Submitted Identity ID"
                             >
                               <Eye className="w-3.5 h-3.5 text-emerald-600" />
-                              <span>View submitted Gov ID</span>
+                              <span>{lang === 'en' ? 'View submitted Government ID' : 'Tingnan ang isinumiteng ID ng gobyerno'}</span>
                             </button>
                           ) : (
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">No ID uploaded</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{lang === 'en' ? 'No ID uploaded' : 'Walang ID na na-upload'}</span>
                           )}
                         </div>
                       </td>
