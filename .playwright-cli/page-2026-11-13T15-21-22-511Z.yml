@@ -1,0 +1,91 @@
+- generic [ref=e2]:
+  - generic [ref=e103]:
+    - complementary [ref=e104]:
+      - generic [ref=e105]:
+        - button "D Draven21 My Profile" [ref=e211] [cursor=pointer]:
+          - generic [ref=e108]: D
+          - generic [ref=e212]:
+            - generic [ref=e213]: Draven21
+            - generic [ref=e214]: My Profile
+        - generic [ref=e110]:
+          - generic [ref=e111]:
+            - generic [ref=e220]: Features & Workspace
+            - button "0 unread notifications" [ref=e112]
+          - button "Buy Harvests" [ref=e116] [cursor=pointer]
+          - button "My Price Offers" [ref=e122] [cursor=pointer]
+          - button "Announcements Board" [ref=e129] [cursor=pointer]
+          - button "Loan Management" [ref=e136] [cursor=pointer]
+          - button "Logistics" [ref=e142] [cursor=pointer]
+          - generic [ref=e240]:
+            - button "My Posted Services" [ref=e241]
+            - button "Available Jobs" [ref=e248]
+            - button "Service Bookings" [active] [ref=e256]
+        - button "Switch to light mode" [ref=e151] [cursor=pointer]:
+          - generic [ref=e231]: Light Mode
+        - button "Log Out" [ref=e232] [cursor=pointer]
+        - generic [ref=e163]:
+          - generic [ref=e234]: Account records secured
+          - generic [ref=e239]: v2.4
+    - main [ref=e164]:
+      - generic [ref=e166]:
+        - heading "Service Bookings" [level=1] [ref=e262]
+        - paragraph [ref=e168]: Review and manage farmer bookings for your posted services.
+      - generic [ref=e263]:
+        - generic [ref=e264]:
+          - button "All Bookings 1" [ref=e265]:
+            - text: All Bookings
+            - generic [ref=e266]: "1"
+          - button "Completed 0" [ref=e267]:
+            - text: Completed
+            - generic [ref=e268]: "0"
+          - button "Declined 0" [ref=e269]:
+            - text: Declined
+            - generic [ref=e270]: "0"
+        - article [ref=e272]:
+          - generic [ref=e273]:
+            - generic [ref=e280]:
+              - paragraph [ref=e281]: Storage
+              - heading "Palay (NSIC Rc222)" [level=3] [ref=e282]
+            - generic [ref=e283]: Accepted Booking
+          - generic [ref=e284]:
+            - generic [ref=e285]:
+              - paragraph [ref=e286]: Farmer
+              - paragraph [ref=e287]: Catala24
+            - generic [ref=e288]:
+              - paragraph [ref=e289]: Quantity
+              - paragraph [ref=e290]: 9,000 kg
+            - generic [ref=e291]:
+              - paragraph [ref=e292]: Preferred Schedule
+              - paragraph [ref=e293]: 2026-11-15 08:00
+            - generic [ref=e294]:
+              - paragraph [ref=e295]: Requested
+              - paragraph [ref=e296]: 11/12/2026
+            - generic [ref=e297]:
+              - paragraph [ref=e298]: Location
+              - paragraph [ref=e299]: 277, sampaguita street, nepo subd. A.C
+            - generic [ref=e303]:
+              - paragraph [ref=e304]: Farmer Notes
+              - paragraph [ref=e305]: wazaaaaaaaaaaaaaaaaaaaaaup
+          - generic [ref=e306]:
+            - paragraph [ref=e307]: Farmer Contact
+            - generic [ref=e312]:
+              - paragraph [ref=e313]: Catala24
+              - paragraph [ref=e314]: "09682384854"
+            - generic [ref=e316]:
+              - paragraph [ref=e317]: Farmer Coordination Contact
+              - generic [ref=e318]:
+                - link "louise.catala24@gmail.com" [ref=e319] [cursor=pointer]:
+                  - /url: mailto:louise.catala24@gmail.com
+                - link "09682384854" [ref=e323] [cursor=pointer]:
+                  - /url: tel:09682384854
+                - link "09238485675" [ref=e326] [cursor=pointer]:
+                  - /url: tel:09238485675
+          - generic [ref=e329]:
+            - button "Cancel" [ref=e330]
+            - button "Mark Fulfilled" [ref=e331]
+  - generic:
+    - button "Hi, I'm Grainy! Do you need help? Open Grainy assistant" [ref=e332] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e333]: Hi, I'm Grainy! Do you need help?
+    - generic:
+      - button "Open Grainy KAWING Assistant" [ref=e334] [cursor=pointer]
+      - img "Grainy, the KAWING agricultural assistant"

@@ -1,0 +1,72 @@
+- generic [ref=e2]:
+  - generic [ref=e171]:
+    - complementary [ref=e172]:
+      - generic [ref=e173]:
+        - button "B" [ref=e542] [cursor=pointer]
+        - generic [ref=e178]:
+          - button "5 unread notifications" [ref=e446]:
+            - generic [ref=e184]: "+5"
+          - button "+5" [ref=e543] [cursor=pointer]
+          - button "My Price Offers" [ref=e192] [cursor=pointer]
+          - button "Announcements Board" [ref=e199] [cursor=pointer]
+          - button "Loan Management" [ref=e447] [cursor=pointer]
+          - button "Logistics" [ref=e213] [cursor=pointer]
+        - button "Switch to light mode" [ref=e222] [cursor=pointer]
+        - button [active] [ref=e544] [cursor=pointer]
+    - main [ref=e235]:
+      - generic [ref=e451]:
+        - generic [ref=e453]:
+          - generic [ref=e454]:
+            - generic [ref=e455]: Buyer Production Loan Management
+            - heading "Rice Farmer Production Financing" [level=1] [ref=e459]
+            - paragraph [ref=e460]: Offer rice production loans for seeds, fertilizer, harvest, and post-harvest work to secure palay supply.
+          - button "Edit Loan Service" [ref=e462] [cursor=pointer]
+        - generic [ref=e467]:
+          - button "Incoming Loan Requests 1" [ref=e468] [cursor=pointer]:
+            - generic [ref=e472]: Incoming Loan Requests
+            - generic [ref=e473]: "1"
+          - button "Active & Approved Loans 0" [ref=e474] [cursor=pointer]:
+            - generic [ref=e478]: Active & Approved Loans
+            - generic [ref=e479]: "0"
+          - button "Loan Records History" [ref=e480] [cursor=pointer]
+          - button "Edit Loan Service" [ref=e485] [cursor=pointer]
+        - generic [ref=e491]:
+          - generic [ref=e492]:
+            - generic [ref=e493]:
+              - generic [ref=e494]:
+                - generic [ref=e495]: "Request ID: PL_35924e1213b8d02f6b48a1247add2cb3"
+                - generic [ref=e496]: Pending Review
+              - heading "Catala24" [level=3] [ref=e497]
+              - paragraph [ref=e503]: 277, sampaguita street, nepo subd. A.C
+            - generic [ref=e504]:
+              - generic [ref=e505]: Requested Loan Amount
+              - generic [ref=e506]: ₱1,500
+          - generic [ref=e507]:
+            - generic [ref=e508]:
+              - generic [ref=e509]: Purpose of Loan
+              - text: Rice Seeds
+            - generic [ref=e510]:
+              - generic [ref=e511]: Planting Season
+              - text: Wet Season 2026 (Tag-ulan)
+            - generic [ref=e512]:
+              - generic [ref=e513]: Requested Term
+              - text: 4 Months / Upon Harvest
+            - generic [ref=e514]:
+              - generic [ref=e515]: Repayment Method
+              - generic [ref=e516]: Harvest-Based Repayment (Farmer as Planter - Harvest allocated to Buyer)
+          - generic [ref=e522]:
+            - generic [ref=e523]: "Farm Area Covered by Loan:"
+            - paragraph [ref=e524]: 1.21 hectares
+          - generic [ref=e525]:
+            - button "Decline Request" [ref=e526] [cursor=pointer]
+            - button "Approve Loan" [ref=e531] [cursor=pointer]
+        - generic [ref=e539]:
+          - paragraph [ref=e540]: "Important System Notice:"
+          - paragraph [ref=e541]: KAWING coordinates loan requests, approvals, records, and monitoring. It does not process, hold, transfer, or collect money. Buyers and farmers release and repay funds directly outside KAWING.
+  - generic [ref=e546]:
+    - generic [ref=e553]:
+      - heading "Confirm Logout" [level=3] [ref=e554]
+      - paragraph [ref=e555]: Are you sure you want to log out of your account?
+    - generic [ref=e556]:
+      - button "Cancel" [ref=e557] [cursor=pointer]
+      - button "Yes, Log Out" [ref=e558] [cursor=pointer]

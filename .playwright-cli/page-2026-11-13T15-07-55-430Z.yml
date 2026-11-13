@@ -1,0 +1,59 @@
+- generic [ref=e2]:
+  - generic [ref=e171]:
+    - complementary [ref=e172]:
+      - generic [ref=e173]:
+        - button "B Byron12 My Profile" [ref=e399] [cursor=pointer]:
+          - generic [ref=e176]: B
+          - generic [ref=e283]:
+            - generic [ref=e284]: Byron12
+            - generic [ref=e285]: My Profile
+        - generic [ref=e178]:
+          - generic [ref=e179]:
+            - generic [ref=e291]: Features & Workspace
+            - button "6 unread notifications" [ref=e180]:
+              - generic [ref=e184]: "+6"
+          - button "+5 Buy Harvests" [ref=e400] [cursor=pointer]:
+            - generic [ref=e186]:
+              - generic [ref=e187]: "+5"
+              - generic [ref=e293]: Buy Harvests
+          - button "My Price Offers" [ref=e192] [cursor=pointer]
+          - button "Announcements Board" [ref=e199] [cursor=pointer]
+          - button "+1 Loan Management" [ref=e401] [cursor=pointer]:
+            - generic [ref=e207]:
+              - generic [ref=e208]: "+1"
+              - generic [ref=e299]: Loan Management
+          - button "Logistics" [ref=e213] [cursor=pointer]
+          - generic [ref=e403]:
+            - button "My Posted Services" [ref=e404]
+            - button "Available Jobs" [ref=e411]
+            - button "Service Bookings" [active] [ref=e419]
+        - button "Switch to light mode" [ref=e222] [cursor=pointer]:
+          - generic [ref=e304]: Light Mode
+        - button "Log Out" [ref=e402] [cursor=pointer]
+        - generic [ref=e234]:
+          - generic [ref=e307]: Account records secured
+          - generic [ref=e312]: v2.4
+    - main [ref=e235]:
+      - generic [ref=e237]:
+        - heading "Service Bookings" [level=1] [ref=e428]
+        - paragraph [ref=e239]: Review and manage farmer bookings for your posted services.
+      - generic [ref=e429]:
+        - generic [ref=e430]:
+          - button "All Bookings 0" [ref=e431]:
+            - text: All Bookings
+            - generic [ref=e432]: "0"
+          - button "Completed 0" [ref=e433]:
+            - text: Completed
+            - generic [ref=e434]: "0"
+          - button "Declined 0" [ref=e435]:
+            - text: Declined
+            - generic [ref=e436]: "0"
+        - generic [ref=e437]:
+          - heading "No Service Bookings Yet" [level=3] [ref=e441]
+          - paragraph [ref=e442]: Requests sent directly to your posted transportation, storage, drying, or milling services will appear here.
+  - generic:
+    - button "Hi, I'm Grainy! Do you need help? Open Grainy assistant" [ref=e443] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e444]: Hi, I'm Grainy! Do you need help?
+    - generic:
+      - button "Open Grainy KAWING Assistant" [ref=e445] [cursor=pointer]
+      - img "Grainy, the KAWING agricultural assistant"

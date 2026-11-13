@@ -1,0 +1,4 @@
+- status "Loading KAWING" [ref=e3]:
+  - generic [ref=e4]: Loading KAWING. Please wait.
+  - banner [ref=e5]:
+    - generic [ref=e6]: KAWING

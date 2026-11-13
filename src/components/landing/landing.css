@@ -140,3 +140,535 @@ html:not(.dark) .landing-card-count {
 html:not(.dark) .landing-progress span {
   background: linear-gradient(90deg, #047857, #4ade80);
 }
+
+/* Refined KAWING landing: quieter surfaces, clearer type, no decorative gradients. */
+.kawing-landing {
+  --landing-surface: #0b1221;
+  --landing-panel: #111a2a;
+  --landing-border: rgba(255, 255, 255, 0.12);
+  --landing-muted: #a9b6c9;
+}
+
+.landing-hero-vignette {
+  background: transparent;
+}
+
+.landing-wordmark span,
+.landing-wordmark span:hover {
+  text-shadow: 0 8px 28px rgba(0, 0, 0, 0.72);
+}
+
+.landing-enter,
+.landing-scroll-link {
+  min-height: 44px;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.landing-enter span {
+  box-shadow: none;
+  animation: none;
+}
+
+.landing-scroll-link svg {
+  animation: none;
+}
+
+.landing-info {
+  padding-block: clamp(64px, 8vw, 96px);
+  border-top-color: var(--landing-border);
+  background: var(--landing-surface);
+}
+
+.landing-info-header {
+  max-width: 680px;
+  margin-bottom: 36px;
+}
+
+.landing-info-header > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.landing-info-header h2 {
+  margin: 0 0 14px;
+  font-size: clamp(1.85rem, 3.6vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.landing-info-header p {
+  margin: 0 auto;
+  max-width: 58ch;
+  color: var(--landing-muted);
+  font-size: 16px;
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+
+.landing-tabs {
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.landing-tabs button {
+  min-height: 42px;
+  padding: 9px 14px;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--landing-muted);
+  font-size: 13px;
+}
+
+.landing-tabs button.is-active {
+  border-color: #34d399;
+  background: #123b31;
+  color: #ecfdf5;
+  box-shadow: none;
+}
+
+.landing-benefit-card {
+  grid-template-columns: 72px 1fr;
+  min-height: 300px;
+  gap: 18px;
+  padding: 36px;
+  border-color: var(--landing-border);
+  border-radius: 16px;
+  background: var(--landing-panel);
+  animation: landing-card-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.landing-progress {
+  height: 3px;
+}
+
+.landing-progress span,
+html:not(.dark) .landing-progress span {
+  background: #34d399;
+}
+
+.landing-card-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  background: #172236;
+  font-size: 1.6rem;
+}
+
+.landing-card-label {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  text-transform: none;
+}
+
+.landing-benefit-card h3 {
+  margin-top: 8px;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.landing-benefit-card > p {
+  max-width: 68ch;
+  color: #c7d1df;
+  font-size: 16px;
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+
+.landing-card-result {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 14px;
+}
+
+.landing-card-controls button {
+  border-radius: 12px;
+  background: transparent;
+}
+
+.landing-footer-brand img {
+  border-width: 1px;
+}
+
+.landing-footer h3 {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.landing-footer-grid > div > p,
+.landing-footer-brand p {
+  font-size: 14px;
+}
+
+.landing-copyright,
+.landing-disclaimer {
+  color: #718096;
+  font-size: 13px;
+}
+
+.landing-enter:focus-visible,
+.landing-scroll-link:focus-visible,
+.landing-tabs button:focus-visible,
+.landing-card-controls button:focus-visible {
+  outline: 2px solid #34d399;
+  outline-offset: 3px;
+}
+
+html:not(.dark) .landing-hero-vignette {
+  background: rgba(247, 252, 248, 0.34);
+}
+
+html:not(.dark) .landing-tabs button.is-active {
+  box-shadow: none;
+}
+
+html:not(.dark) .landing-benefit-card {
+  background: #ffffff;
+  border-color: #c8dfce;
+}
+
+html:not(.dark) .landing-card-icon {
+  background: #edf7ef;
+}
+
+@media (max-width: 560px) {
+  .landing-benefit-card {
+    grid-template-columns: 56px 1fr;
+    min-height: 360px;
+    padding: 30px 20px 24px;
+  }
+
+  .landing-card-icon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .landing-info-header p,
+  .landing-benefit-card > p {
+    font-size: 15px;
+  }
+}
+
+/* OVERDRIVE: Living Rice Field. Isolated for clean rollback. */
+.landing-overdrive .landing-hero {
+  isolation: isolate;
+}
+
+.landing-overdrive .landing-image-base {
+  transform-origin: 50% 48%;
+  animation: landing-image-in 1.05s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.landing-overdrive .landing-image-reveal {
+  transition: filter 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  filter: saturate(1.08) contrast(1.03);
+}
+
+.landing-overdrive .landing-wordmark {
+  animation: kawing-wordmark-reveal 920ms 140ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: clip-path, filter, transform;
+}
+
+.landing-overdrive .landing-wordmark span:first-child {
+  animation: kawing-mark-left 850ms 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.landing-overdrive .landing-wordmark span:last-child {
+  animation: kawing-mark-right 850ms 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.landing-overdrive .landing-theme-toggle {
+  animation: kawing-control-arrive 560ms 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.landing-overdrive .landing-hero-actions {
+  animation: kawing-actions-arrive 650ms 720ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.landing-overdrive .landing-enter span {
+  position: relative;
+  animation: kawing-seed-pulse 2.8s 1.5s ease-in-out infinite;
+}
+
+.landing-overdrive .landing-enter span::after {
+  position: absolute;
+  inset: -6px;
+  border: 1px solid rgba(74, 222, 128, 0.5);
+  border-radius: 50%;
+  content: '';
+  animation: kawing-seed-ring 2.8s 1.5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.landing-overdrive.is-exiting {
+  opacity: 1;
+  transition: none;
+}
+
+.landing-overdrive.is-exiting .landing-hero {
+  animation: kawing-hero-exit 300ms cubic-bezier(0.7, 0, 0.84, 0) both;
+}
+
+@keyframes kawing-wordmark-reveal {
+  from {
+    clip-path: inset(0 50% 0 50%);
+    filter: blur(12px);
+    transform: scale(0.985);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    filter: blur(0);
+    transform: scale(1);
+  }
+}
+
+@keyframes kawing-mark-left {
+  from {
+    opacity: 0;
+    transform: translateX(calc(clamp(20px, 4vw, 70px) - 24px));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(clamp(20px, 4vw, 70px));
+  }
+}
+
+@keyframes kawing-mark-right {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes kawing-control-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes kawing-actions-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes kawing-seed-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.72;
+    transform: scale(0.88);
+  }
+}
+
+@keyframes kawing-seed-ring {
+  0% {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+  24% {
+    opacity: 0.7;
+  }
+  70%, 100% {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+
+@keyframes kawing-hero-exit {
+  from {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    filter: blur(8px);
+    transform: scale(1.025);
+  }
+}
+
+@media (max-width: 800px) {
+  .landing-overdrive .landing-wordmark span:first-child {
+    animation-name: kawing-mark-left-tablet;
+  }
+}
+
+@keyframes kawing-mark-left-tablet {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-overdrive .landing-image-base,
+  .landing-overdrive .landing-wordmark,
+  .landing-overdrive .landing-wordmark span,
+  .landing-overdrive .landing-theme-toggle,
+  .landing-overdrive .landing-hero-actions,
+  .landing-overdrive .landing-enter span,
+  .landing-overdrive .landing-enter span::after,
+  .landing-overdrive.is-exiting .landing-hero {
+    animation: none !important;
+    filter: none;
+    transform: none;
+  }
+
+  .landing-overdrive .landing-wordmark span:first-child {
+    transform: translateX(clamp(20px, 4vw, 70px));
+  }
+}
+
+html:not(.dark) .landing-overdrive .landing-image-base {
+  animation: landing-image-in 1.05s cubic-bezier(0.16, 1, 0.3, 1) both;
+  filter: none;
+}
+
+html:not(.dark) .landing-hero-vignette {
+  background: rgba(247, 252, 248, 0.06);
+}
+
+@media (max-width: 800px) and (prefers-reduced-motion: reduce) {
+  .landing-overdrive .landing-wordmark span:first-child {
+    transform: translateX(8px);
+  }
+}
+
+/* Living Field continuation: lower-page motion follows the user's scroll. */
+.landing-overdrive .landing-benefit-card {
+  animation: kawing-benefit-change 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: 50% 100%;
+}
+
+.landing-overdrive .landing-tabs button {
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.landing-overdrive .landing-tabs button:hover {
+  transform: translateY(-2px);
+}
+
+.landing-overdrive .landing-footer-brand img {
+  transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.landing-overdrive .landing-footer-brand:hover img {
+  transform: rotate(-3deg) scale(1.035);
+}
+
+@supports (animation-timeline: view()) {
+  .landing-overdrive .landing-info-header,
+  .landing-overdrive .landing-tabs,
+  .landing-overdrive .landing-benefit-card,
+  .landing-overdrive .landing-card-controls {
+    animation: kawing-field-rise linear both;
+    animation-timeline: view();
+    animation-range: entry 8% cover 34%;
+  }
+
+  .landing-overdrive .landing-footer-grid,
+  .landing-overdrive .landing-copyright,
+  .landing-overdrive .landing-disclaimer {
+    animation: kawing-footer-rise linear both;
+    animation-timeline: view();
+    animation-range: entry 5% cover 25%;
+  }
+}
+
+@keyframes kawing-benefit-change {
+  from {
+    opacity: 0.55;
+    clip-path: inset(12% 0 0 0 round 16px);
+    transform: translateY(12px) scaleY(0.97);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0 round 16px);
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+@keyframes kawing-field-rise {
+  from {
+    opacity: 0.45;
+    clip-path: inset(16% 0 0 0);
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes kawing-footer-rise {
+  from {
+    opacity: 0.4;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-overdrive .landing-benefit-card,
+  .landing-overdrive .landing-info-header,
+  .landing-overdrive .landing-tabs,
+  .landing-overdrive .landing-card-controls,
+  .landing-overdrive .landing-footer-grid,
+  .landing-overdrive .landing-copyright,
+  .landing-overdrive .landing-disclaimer {
+    animation: none !important;
+    clip-path: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .landing-overdrive .landing-tabs button:hover,
+  .landing-overdrive .landing-footer-brand:hover img {
+    transform: none;
+  }
+}

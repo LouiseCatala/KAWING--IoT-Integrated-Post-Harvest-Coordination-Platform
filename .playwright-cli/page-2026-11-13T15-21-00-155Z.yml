@@ -1,0 +1,54 @@
+- generic [ref=e103]:
+  - complementary [ref=e104]:
+    - generic [ref=e105]:
+      - button "D Draven21 My Profile" [ref=e211] [cursor=pointer]:
+        - generic [ref=e108]: D
+        - generic [ref=e212]:
+          - generic [ref=e213]: Draven21
+          - generic [ref=e214]: My Profile
+      - generic [ref=e110]:
+        - generic [ref=e111]:
+          - generic [ref=e220]: Features & Workspace
+          - button "0 unread notifications" [ref=e112]
+        - button "Buy Harvests" [ref=e116] [cursor=pointer]
+        - button "My Price Offers" [ref=e122] [cursor=pointer]
+        - button "Announcements Board" [ref=e129] [cursor=pointer]
+        - button "Loan Management" [ref=e136] [cursor=pointer]
+        - button "Logistics" [active] [ref=e142] [cursor=pointer]
+      - button "Switch to light mode" [ref=e151] [cursor=pointer]:
+        - generic [ref=e231]: Light Mode
+      - button "Log Out" [ref=e232] [cursor=pointer]
+      - generic [ref=e163]:
+        - generic [ref=e234]: Account records secured
+        - generic [ref=e239]: v2.4
+  - main [ref=e164]:
+    - generic [ref=e165]:
+      - generic [ref=e166]:
+        - heading "Harvest Marketplace" [level=1] [ref=e167]
+        - paragraph [ref=e168]: Browse fresh and dry palay listings from local farmers.
+      - textbox "Search crops or fruits..." [ref=e171]
+    - generic [ref=e172]:
+      - generic [ref=e173]:
+        - generic [ref=e174]: Farmer
+        - generic [ref=e175]: Variety
+        - generic [ref=e176]: Moisture
+        - generic [ref=e177]: Bags / Sacks
+        - generic [ref=e178]: Total kg
+        - generic [ref=e179]: Details
+      - generic [ref=e180]:
+        - button "View harvest details for Cholo21" [ref=e181]:
+          - generic [ref=e182]:
+            - paragraph [ref=e184]: Cholo21
+            - generic [ref=e185]: NSIC Rc160
+            - generic [ref=e188]: 16.8%
+            - generic [ref=e191]: 200 sacks/kaban
+            - generic [ref=e193]: 10,000 kg
+            - generic [aria-hidden] [ref=e195]: Open for Bid
+        - button "View harvest details for Catala24" [ref=e196]:
+          - generic [ref=e197]:
+            - paragraph [ref=e199]: Catala24
+            - generic [ref=e200]: JasminEEEEEEE
+            - generic [ref=e203]: 14.6%
+            - generic [ref=e206]: 200 sacks/kaban
+            - generic [ref=e208]: 9,040 kg
+            - generic [aria-hidden] [ref=e210]: Open for Bid

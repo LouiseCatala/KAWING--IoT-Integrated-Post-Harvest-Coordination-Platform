@@ -1,0 +1,68 @@
+- generic [ref=e2]:
+  - generic [ref=e171]:
+    - complementary [ref=e172]:
+      - generic [ref=e173]:
+        - button "B Byron12 My Profile" [ref=e282] [cursor=pointer]:
+          - generic [ref=e176]: B
+          - generic [ref=e283]:
+            - generic [ref=e284]: Byron12
+            - generic [ref=e285]: My Profile
+        - generic [ref=e178]:
+          - generic [ref=e179]:
+            - generic [ref=e291]: Features & Workspace
+            - button "6 unread notifications" [ref=e180]:
+              - generic [ref=e184]: "+6"
+          - button "+5 Buy Harvests" [ref=e292] [cursor=pointer]:
+            - generic [ref=e186]:
+              - generic [ref=e187]: "+5"
+              - generic [ref=e293]: Buy Harvests
+          - button "My Price Offers" [ref=e192] [cursor=pointer]
+          - button "Announcements Board" [ref=e199] [cursor=pointer]
+          - button "+1 Loan Management" [ref=e298] [cursor=pointer]:
+            - generic [ref=e207]:
+              - generic [ref=e208]: "+1"
+              - generic [ref=e299]: Loan Management
+          - button "Logistics" [active] [ref=e213] [cursor=pointer]
+        - button "Switch to light mode" [ref=e222] [cursor=pointer]:
+          - generic [ref=e304]: Light Mode
+        - button "Log Out" [ref=e305] [cursor=pointer]
+        - generic [ref=e234]:
+          - generic [ref=e307]: Account records secured
+          - generic [ref=e312]: v2.4
+    - main [ref=e235]:
+      - generic [ref=e236]:
+        - generic [ref=e237]:
+          - heading "Harvest Marketplace" [level=1] [ref=e238]
+          - paragraph [ref=e239]: Browse fresh and dry palay listings from local farmers.
+        - textbox "Search crops or fruits..." [ref=e242]
+      - generic [ref=e243]:
+        - generic [ref=e244]:
+          - generic [ref=e245]: Farmer
+          - generic [ref=e246]: Variety
+          - generic [ref=e247]: Moisture
+          - generic [ref=e248]: Bags / Sacks
+          - generic [ref=e249]: Total kg
+          - generic [ref=e250]: Details
+        - generic [ref=e251]:
+          - button "View harvest details for Cholo21" [ref=e252]:
+            - generic [ref=e253]:
+              - paragraph [ref=e255]: Cholo21
+              - generic [ref=e256]: NSIC Rc160
+              - generic [ref=e259]: 16.8%
+              - generic [ref=e262]: 200 sacks/kaban
+              - generic [ref=e264]: 10,000 kg
+              - generic [aria-hidden] [ref=e266]: Open for Bid
+          - button "View harvest details for Catala24" [ref=e267]:
+            - generic [ref=e268]:
+              - paragraph [ref=e270]: Catala24
+              - generic [ref=e271]: JasminEEEEEEE
+              - generic [ref=e274]: 14.6%
+              - generic [ref=e277]: 200 sacks/kaban
+              - generic [ref=e279]: 9,040 kg
+              - generic [aria-hidden] [ref=e281]: Open for Bid
+  - generic:
+    - button "Hi, I'm Grainy! Do you need help? Open Grainy assistant" [ref=e313] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e314]: Hi, I'm Grainy! Do you need help?
+    - generic:
+      - button "Open Grainy KAWING Assistant" [ref=e315] [cursor=pointer]
+      - img "Grainy, the KAWING agricultural assistant"

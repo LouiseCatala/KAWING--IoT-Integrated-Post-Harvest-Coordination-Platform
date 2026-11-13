@@ -1,0 +1,45 @@
+- generic [ref=e171]:
+  - complementary [ref=e172]:
+    - generic [ref=e173]:
+      - button "B" [ref=e175] [cursor=pointer]
+      - generic [ref=e178]:
+        - button "6 unread notifications" [ref=e180]:
+          - generic [ref=e184]: "+6"
+        - button "+5" [ref=e185] [cursor=pointer]
+        - button "My Price Offers" [ref=e192] [cursor=pointer]
+        - button "Announcements Board" [ref=e199] [cursor=pointer]
+        - button "+1" [ref=e206] [cursor=pointer]
+        - button "Logistics" [ref=e213] [cursor=pointer]
+      - button "Switch to light mode" [ref=e222] [cursor=pointer]
+      - button [ref=e230] [cursor=pointer]
+  - main [ref=e235]:
+    - generic [ref=e236]:
+      - generic [ref=e237]:
+        - heading "Harvest Marketplace" [level=1] [ref=e238]
+        - paragraph [ref=e239]: Browse fresh and dry palay listings from local farmers.
+      - textbox "Search crops or fruits..." [ref=e242]
+    - generic [ref=e243]:
+      - generic [ref=e244]:
+        - generic [ref=e245]: Farmer
+        - generic [ref=e246]: Variety
+        - generic [ref=e247]: Moisture
+        - generic [ref=e248]: Bags / Sacks
+        - generic [ref=e249]: Total kg
+        - generic [ref=e250]: Details
+      - generic [ref=e251]:
+        - button "View harvest details for Cholo21" [ref=e252]:
+          - generic [ref=e253]:
+            - paragraph [ref=e255]: Cholo21
+            - generic [ref=e256]: NSIC Rc160
+            - generic [ref=e259]: 16.8%
+            - generic [ref=e262]: 200 sacks/kaban
+            - generic [ref=e264]: 10,000 kg
+            - generic [aria-hidden] [ref=e266]: Open for Bid
+        - button "View harvest details for Catala24" [ref=e267]:
+          - generic [ref=e268]:
+            - paragraph [ref=e270]: Catala24
+            - generic [ref=e271]: JasminEEEEEEE
+            - generic [ref=e274]: 14.6%
+            - generic [ref=e277]: 200 sacks/kaban
+            - generic [ref=e279]: 9,040 kg
+            - generic [aria-hidden] [ref=e281]: Open for Bid

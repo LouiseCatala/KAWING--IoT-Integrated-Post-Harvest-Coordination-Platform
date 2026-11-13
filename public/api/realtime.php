@@ -55,7 +55,7 @@ function liveParticipant(array $row, string $email): bool {
 function livePublicUser(array $user): array {
     // Public directory fields only. Verification documents and account settings stay private.
     $public = array_intersect_key($user, array_flip([
-        'userId', 'name', 'email', 'role', 'rating', 'isApproved', 'contactNumber', 'address',
+        'userId', 'name', 'email', 'role', 'rating', 'isApproved', 'address',
         'businessName', 'legalCompanyName', 'serviceCoverageArea', 'operatingAddress', 'avatarUrl',
         'bio', 'isAvailable', 'loanConfig', 'buyerLogisticsEnabled', 'businessCapabilities', 'logisticsServices',
     ]));
@@ -76,9 +76,36 @@ function liveVisibleDatabase(array $database, ?array $identity): array {
     if (!$identity) return ['users' => [], 'harvests' => [], 'services' => [], 'offers' => [], 'offeredServices' => [], 'productionLoans' => [], 'notifications' => [], 'settings' => ['daReferencePrice' => $database['settings']['daReferencePrice'] ?? 22.8]];
     $email = liveEmail($identity['email']);
     $admin = $identity['role'] === 'admin';
+    $coordinatedEmails = [];
+    if (!$admin) {
+        $coordinatedCollections = [
+            ['rows' => $database['offers'], 'statuses' => ['accepted', 'completed'], 'parties' => ['farmerEmail', 'buyerEmail']],
+            ['rows' => $database['services'], 'statuses' => ['matched', 'completed'], 'parties' => ['farmerEmail', 'operatorEmail']],
+            ['rows' => $database['productionLoans'], 'statuses' => ['Approved', 'Active', 'Completed'], 'parties' => ['farmerEmail', 'buyerEmail']],
+        ];
+        foreach ($coordinatedCollections as $definition) {
+            foreach ($definition['rows'] as $record) {
+                if (!in_array($record['status'] ?? '', $definition['statuses'], true) || !liveParticipant($record, $email)) continue;
+                foreach ($definition['parties'] as $field) {
+                    $partyEmail = liveEmail($record[$field] ?? '');
+                    if ($partyEmail !== '' && $partyEmail !== $email) $coordinatedEmails[$partyEmail] = true;
+                }
+            }
+        }
+    }
     foreach ($database['users'] as &$user) {
         unset($user['password'], $user['password_hash'], $user['passwordHash']);
-        if (!$admin && liveEmail($user['email'] ?? '') !== $email) $user = livePublicUser($user);
+        $userEmail = liveEmail($user['email'] ?? '');
+        if (!$admin && $userEmail !== $email) {
+            $privateContactNumber = $user['contactNumber'] ?? null;
+            $privateAdditionalNumbers = $user['additionalContactNumbers'] ?? [];
+            $user = livePublicUser($user);
+            if (isset($user['loanConfig']) && is_array($user['loanConfig'])) unset($user['loanConfig']['contactNumber']);
+            if (isset($coordinatedEmails[$userEmail])) {
+                if (is_string($privateContactNumber) && trim($privateContactNumber) !== '') $user['contactNumber'] = trim($privateContactNumber);
+                if (is_array($privateAdditionalNumbers)) $user['additionalContactNumbers'] = array_values($privateAdditionalNumbers);
+            }
+        }
     }
     unset($user);
     if (!$admin) {
@@ -86,6 +113,10 @@ function liveVisibleDatabase(array $database, ?array $identity): array {
             liveEmail($u['email'] ?? '') === $email || !empty($u['isApproved'])));
         $database['harvests'] = array_values(array_filter($database['harvests'], static fn(array $h): bool =>
             empty($h['targetBuyerEmail']) || liveEmail($h['targetBuyerEmail']) === $email || liveEmail($h['farmerEmail'] ?? '') === $email));
+        $database['harvests'] = array_map(static function (array $harvest) use ($email): array {
+            if (liveEmail($harvest['farmerEmail'] ?? '') !== $email) unset($harvest['farmerPhone']);
+            return $harvest;
+        }, $database['harvests']);
         $visibleHarvests = array_column($database['harvests'], null, 'id');
         $database['offers'] = array_values(array_filter(array_map(static function (array $offer) use ($email, $visibleHarvests): ?array {
             if (liveParticipant($offer, $email)) return $offer;
@@ -96,9 +127,21 @@ function liveVisibleDatabase(array $database, ?array $identity): array {
         }, $database['offers'])));
         $database['services'] = array_values(array_filter($database['services'], static fn(array $r): bool =>
             liveParticipant($r, $email) || ($identity['role'] !== 'farmer' && empty($r['operatorEmail']) && ($r['status'] ?? '') === 'pending')));
+        $database['services'] = array_map(static function (array $request) use ($email): array {
+            if (($request['status'] ?? '') === 'pending' && liveEmail($request['farmerEmail'] ?? '') !== $email) unset($request['farmerPhone']);
+            return $request;
+        }, $database['services']);
         foreach (['productionLoans', 'notifications'] as $collection) {
             $database[$collection] = array_values(array_filter($database[$collection], static fn(array $r): bool => liveParticipant($r, $email)));
         }
+        $database['productionLoans'] = array_map(static function (array $loan) use ($email): array {
+            if (($loan['status'] ?? '') === 'Pending' && liveEmail($loan['farmerEmail'] ?? '') !== $email) unset($loan['farmerPhone']);
+            return $loan;
+        }, $database['productionLoans']);
+        $database['offeredServices'] = array_map(static function (array $service) use ($email, $coordinatedEmails): array {
+            if (liveEmail($service['providerEmail'] ?? '') !== $email && !isset($coordinatedEmails[liveEmail($service['providerEmail'] ?? '')])) unset($service['providerPhone']);
+            return $service;
+        }, $database['offeredServices']);
     }
     $database['settings'] = ['daReferencePrice' => $database['settings']['daReferencePrice'] ?? 22.8];
     return $database;
@@ -189,7 +232,12 @@ function authorizeLiveChange(string $collection, ?array $current, ?array $next, 
         foreach (['id', 'farmerEmail', 'buyerEmail', 'providerEmail', 'userEmail', 'harvestId'] as $field) {
             if (isset($current[$field]) && ($next[$field] ?? null) !== $current[$field]) throw new LiveForbidden('Record ownership cannot be changed.');
         }
-        if (!empty($current['operatorEmail']) && ($next['operatorEmail'] ?? '') !== $current['operatorEmail']) throw new LiveForbidden('This request is already assigned to another provider.');
+        $assignedProviderCancellation = $collection === 'services'
+            && ($current['status'] ?? '') === 'matched'
+            && ($next['status'] ?? '') === 'pending'
+            && liveEmail($current['operatorEmail'] ?? '') === $email
+            && empty($next['operatorEmail']);
+        if (!empty($current['operatorEmail']) && ($next['operatorEmail'] ?? '') !== $current['operatorEmail'] && !$assignedProviderCancellation) throw new LiveForbidden('This request is already assigned to another provider.');
     }
 }
 
@@ -250,9 +298,10 @@ function applyLiveChanges(PDO $pdo, array $changes, array $identity, ?string $re
                 if ($current) unset($current['password'], $current['password_hash'], $current['passwordHash']);
                 if ($after !== null && (string) ($after[$key] ?? '') !== $id) throw new InvalidArgumentException('Record identifier does not match.');
                 if ($collection === 'services' && ($before['status'] ?? '') === 'pending' && $current && ($current['status'] ?? '') !== 'pending' && !liveEqual($current, $after)) throw new LiveConflict('This service request has already been handled. Refresh the list.');
-                authorizeLiveChange($collection, $current, $after, $identity);
+                $alreadyApplied = $current !== null && $after !== null && liveEqual($current, $after);
+                if (!$alreadyApplied) authorizeLiveChange($collection, $current, $after, $identity);
                 $merged = liveMergeRecord($current, $before, $after);
-                validateBusinessWrite($pdo, $collection, $current, $merged, $identity, $topics);
+                if (!$alreadyApplied) validateBusinessWrite($pdo, $collection, $current, $merged, $identity, $topics);
                 if ($merged === null) {
                     $pdo->prepare("DELETE FROM {$table} WHERE {$key} = ?")->execute([$id]);
                 } else {

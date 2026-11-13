@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { UserAccount } from '../types';
-import { User, Phone, MapPin, Building, ShieldCheck, Star, Mail, FileText, X, Edit3, Camera, Check } from 'lucide-react';
+import { User, Phone, MapPin, Building, ShieldCheck, Star, Mail, FileText, X, Edit3, Camera, Check, Plus, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import RatingSummary from './RatingSummary';
+import { getContactNumbers, normalizeAdditionalContactNumbers } from '../lib/contactDetails';
 
 interface UserProfileModalProps {
   user: UserAccount;
@@ -26,6 +27,7 @@ export default function UserProfileModal({
   // Form states
   const [name, setName] = useState(user.name || '');
   const [contactNumber, setContactNumber] = useState(user.contactNumber || '');
+  const [additionalContactNumbers, setAdditionalContactNumbers] = useState<string[]>(user.additionalContactNumbers || []);
   const [address, setAddress] = useState(user.address || '');
   const [businessName, setBusinessName] = useState(user.businessName || user.legalCompanyName || '');
   const [rsbsaNumber, setRsbsaNumber] = useState(user.rsbsaNumber || '');
@@ -44,6 +46,7 @@ export default function UserProfileModal({
       ...user,
       name: name.trim(),
       contactNumber: contactNumber.trim(),
+      additionalContactNumbers: normalizeAdditionalContactNumbers(contactNumber, additionalContactNumbers).slice(0, 1),
       address: address.trim(),
       businessName: businessName.trim(),
       rsbsaNumber: rsbsaNumber.trim(),
@@ -176,9 +179,9 @@ export default function UserProfileModal({
                     <Phone className="w-3 h-3 text-emerald-600" />
                     {lang === 'en' ? 'Phone Number' : 'Numero ng Telepono'}
                   </span>
-                  <strong className="text-sm font-bold text-slate-800 dark:text-slate-200 block font-mono">
-                    {contactNumber}
-                  </strong>
+                  <div className="space-y-1 font-mono text-sm font-bold text-slate-800 dark:text-slate-200">
+                    {getContactNumbers({ contactNumber, additionalContactNumbers }).map(number => <a key={number} href={`tel:${number}`} className="block hover:text-emerald-600">{number}</a>)}
+                  </div>
                 </div>
 
                 <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200/60 dark:border-slate-700/60 space-y-1">
@@ -321,17 +324,23 @@ export default function UserProfileModal({
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-slate-300 block uppercase text-xs">
-                    {lang === 'en' ? 'Barangay & Address' : 'Barangay at Lokasyon'}
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold text-sm"
-                  />
+                  <span className="block h-[16px]" aria-hidden="true" />
+                  <div className="space-y-2">
+                    {additionalContactNumbers.slice(0, 1).map((number, index) => (
+                      <div key={index} className="flex gap-2">
+                        <input type="tel" value={number} onChange={(event) => setAdditionalContactNumbers(current => current.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} placeholder={lang === 'en' ? 'Additional contact number' : 'Karagdagang numero'} className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+                        <button type="button" onClick={() => setAdditionalContactNumbers(current => current.filter((_, itemIndex) => itemIndex !== index))} aria-label={lang === 'en' ? 'Remove contact number' : 'Alisin ang contact number'} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-red-300 text-red-600 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30"><Trash2 className="size-4" /></button>
+                      </div>
+                    ))}
+                    {additionalContactNumbers.length === 0 && <button type="button" onClick={() => setAdditionalContactNumbers([''])} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-500 hover:border-emerald-400 hover:text-emerald-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-emerald-700 dark:hover:text-emerald-300"><Plus className="size-4" />{lang === 'en' ? 'Add contact number' : 'Magdagdag ng numero'}</button>}
+                  </div>
                 </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-bold uppercase text-slate-700 dark:text-slate-300">{lang === 'en' ? 'Barangay & Address' : 'Barangay at Lokasyon'}</label>
+                <input type="text" required value={address} onChange={(e) => setAddress(e.target.value)} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+                <p className="pt-1 text-[11px] text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Contact details are shared only after a connection is accepted.' : 'Ibabahagi lamang ang contact details kapag tinanggap na ang koneksyon.'}</p>
               </div>
 
               {user.role === 'farmer' ? (

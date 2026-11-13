@@ -3,7 +3,7 @@ import { AppNotification, UserAccount } from '../types';
 import { 
   Sprout, Truck, HardDrive, Wind, Wheat, ShoppingBag, 
   Users, BarChart3, Clock, CheckCircle2, Settings, FileText, 
-  Store, Building2, MapPin, DollarSign, Tag, X, ChevronRight, ShieldCheck, User, Edit3, LogOut, Landmark, Mail, Bell
+  Store, Building2, MapPin, DollarSign, Tag, X, ChevronRight, ShieldCheck, User, Edit3, LogOut, Landmark, Mail, Bell, ClipboardList
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import UserProfileModal from './UserProfileModal';
@@ -76,6 +76,7 @@ export default function Sidebar({
       case 'farmer':
         return [
           { id: 'services', labelEn: 'KAWING Partner Hub', labelTl: 'KAWING Partner Hub', icon: <Users className="w-4 h-4 text-cyan-600 dark:text-cyan-400" /> },
+          { id: 'directory', labelEn: 'My Service Requests', labelTl: 'Aking Mga Hiling na Serbisyo', icon: <ClipboardList className="w-4 h-4 text-blue-600 dark:text-blue-400" /> },
           announcementsItem,
           { id: 'loans', labelEn: 'Farm Loans', labelTl: 'Pautang para sa Sakahan', icon: <DollarSign className="w-4 h-4 text-amber-500 dark:text-amber-400" /> },
           { id: 'harvests', labelEn: 'My Harvest Posts', labelTl: 'Aking Mga Na-Post na Ani', icon: <Sprout className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> },
@@ -193,10 +194,10 @@ export default function Sidebar({
 
     if (user.role === 'farmer') {
       if (/loan|pautang/.test(text)) return 'loans';
-      if (/service|serbisyo|kahilingan|logistics/.test(title)) return 'services';
+      if (/service|serbisyo|kahilingan|logistics/.test(title)) return 'directory';
       if (/ani na-post|harvest posted/.test(title)) return 'harvests';
       if (/offer|alok|buyer|mamimili/.test(text)) return 'interests';
-      if (/service|serbisyo|kahilingan|transport|storage|drying|milling/.test(text)) return 'services';
+      if (/service|serbisyo|kahilingan|transport|storage|drying|milling/.test(text)) return 'directory';
       return 'harvests';
     }
 
@@ -317,8 +318,8 @@ export default function Sidebar({
           >
             <Bell className="h-4 w-4" />
             {unreadForUser.length > 0 && (
-              <span className="absolute -right-1.5 -top-1.5 min-w-4 rounded-full bg-red-500 px-1 text-center text-[9px] font-black leading-4 text-white">
-                {unreadForUser.length > 99 ? '99+' : unreadForUser.length}
+              <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-black leading-none text-white shadow-sm ring-2 ring-white dark:ring-slate-900">
+                {unreadForUser.length > 99 ? '+99' : `+${unreadForUser.length}`}
               </span>
             )}
           </button>
@@ -350,8 +351,8 @@ export default function Sidebar({
                 }`}>
                   {item.icon}
                   {badgeCount > 0 && (
-                    <span className="absolute -right-2 -top-1.5 z-20 min-w-4 rounded-full bg-red-500 px-1 text-center text-[9px] font-black leading-4 text-white">
-                      {badgeCount > 99 ? '99+' : badgeCount}
+                    <span className="absolute -right-2.5 -top-2 z-20 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-black leading-none text-white shadow-sm ring-2 ring-white dark:ring-slate-900">
+                      {badgeCount > 99 ? '+99' : `+${badgeCount}`}
                     </span>
                   )}
                 </span>
@@ -383,7 +384,7 @@ export default function Sidebar({
                       >
                         <span className="flex h-6 w-6 shrink-0 items-center justify-center">{child.icon}</span>
                         <span className="min-w-0 flex-1 truncate">{lang === 'en' ? child.labelEn : child.labelTl}</span>
-                        {childBadge > 0 && <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[9px] font-black text-white">{childBadge > 99 ? '99+' : childBadge}</span>}
+                        {childBadge > 0 && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-black text-white">{childBadge > 99 ? '+99' : `+${childBadge}`}</span>}
                       </button>
                     );
                   })}
@@ -395,15 +396,15 @@ export default function Sidebar({
       </div>
 
       {/* Sidebar Logout Button */}
-      <div className="sidebar-theme-container p-3">
+      <div className="sidebar-theme-container px-3 py-1.5">
         <ThemeToggle variant="sidebar" />
       </div>
       {onLogout && (
-        <div className="p-3 border-t border-slate-100 dark:border-slate-800">
+        <div className="border-t border-slate-100 px-3 py-1.5 dark:border-slate-800">
           <button
             id="sidebar-logout-btn"
             onClick={onLogout}
-            className="sidebar-logout-button w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-700 dark:text-red-400 text-xs font-extrabold transition-all cursor-pointer shadow-2xs group"
+            className="sidebar-logout-button flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50/50 px-3 py-2 text-[11px] font-extrabold text-red-700 shadow-2xs transition-all hover:bg-red-100 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-900/40 group"
           >
             <LogOut className="w-4 h-4 text-red-600 dark:text-red-400 group-hover:scale-110 transition-transform" />
             <span className="sidebar-expanded-only">{lang === 'en' ? 'Log Out' : 'Mag-logout'}</span>

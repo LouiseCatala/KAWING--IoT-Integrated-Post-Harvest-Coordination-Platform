@@ -2,7 +2,7 @@ import { IconAlertTriangle, IconArrowRight, IconArrowUpRight, IconCalendar, Icon
 import { useLiveRevision } from '../lib/useLiveRevision';
 import React, { useEffect, useState } from 'react';
 import { Harvest, ServiceRequest, UserAccount, AppNotification, Offer, OfferedService } from '../types';
-import { Plus, Calendar, MapPin, AlertTriangle, TrendingUp, RefreshCw, Check, X, Phone, ShieldCheck, Trash2, Truck, HardDrive, Wind, ChevronDown, ChevronUp, Star, CircleDot, Search } from 'lucide-react';
+import { Plus, Calendar, MapPin, AlertTriangle, TrendingUp, RefreshCw, Check, X, Phone, ShieldCheck, Trash2, Pencil, Truck, HardDrive, Wind, ChevronDown, ChevronUp, Star, CircleDot, Search } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { getMoistureClassification } from '../lib/moisture';
@@ -13,6 +13,7 @@ import RatingSummary from './RatingSummary';
 import AnimatedButton from './AnimatedButton';
 import AnnouncementsBoard from './AnnouncementsBoard';
 import ProductionLoanFarmer from './ProductionLoanFarmer';
+import CoordinatedContactCard from './CoordinatedContactCard';
 import { ProductionLoanRequest } from '../types';
 import farmerBackground from '../assets/images/Farmer_Background.jpg';
 import { alertDialog, askConfirmation } from '../lib/appDialog';
@@ -43,6 +44,9 @@ interface FarmerDashboardProps {
     neededServices?: ('transport' | 'storage' | 'drying' | 'milling' | 'buyer')[]
   ) => void;
   onAddServiceRequest: (harvestId: string, type: 'transport' | 'storage' | 'drying' | 'milling' | 'buyer') => void;
+  onRepostServiceRequest: (requestId: string) => void;
+  onUpdateServiceRequest: (requestId: string, updates: Partial<ServiceRequest>) => Promise<boolean>;
+  onDeleteServiceRequest: (requestId: string) => Promise<boolean>;
   onSubmitLoanRequest?: (request: Omit<ProductionLoanRequest, 'id' | 'createdAt' | 'updatedAt' | 'status'>) => void;
   onCancelLoanRequest?: (requestId: string) => void;
   onAcceptOffer: (id: string) => void;
@@ -67,6 +71,9 @@ export default function FarmerDashboard({
   marketReferencePrice,
   onAddHarvest,
   onAddServiceRequest,
+  onRepostServiceRequest,
+  onUpdateServiceRequest,
+  onDeleteServiceRequest,
   onSubmitLoanRequest,
   onCancelLoanRequest,
   onAcceptOffer,
@@ -85,6 +92,7 @@ export default function FarmerDashboard({
   // Modal states
   const [showRequestServiceModal, setShowRequestServiceModal] = useState(false);
   const [showRequestServiceReview, setShowRequestServiceReview] = useState(false);
+  const [editingServiceRequest, setEditingServiceRequest] = useState<ServiceRequest | null>(null);
   const [showPostHarvestModal, setShowPostHarvestModal] = useState(false);
   const [selectedHarvestPost, setSelectedHarvestPost] = useState<Harvest | null>(null);
   const [harvestEditDraft, setHarvestEditDraft] = useState<Harvest | null>(null);
@@ -126,6 +134,7 @@ export default function FarmerDashboard({
   const [reqAddNotes, setReqAddNotes] = useState<string>('');
 
   const handleOpenRequestServiceModal = () => {
+    setEditingServiceRequest(null);
     setSelectedServiceProvider(null);
     setReqRiceVariety('');
     setReqHarvestDate('');
@@ -141,6 +150,27 @@ export default function FarmerDashboard({
     setReqPrefDate('');
     setReqPrefTime('08:00');
     setReqAddNotes('');
+    setShowRequestServiceModal(true);
+  };
+
+  const handleEditServiceRequest = (request: ServiceRequest) => {
+    if (request.status !== 'pending') return;
+    setEditingServiceRequest(request);
+    setSelectedServiceProvider(null);
+    setReqRiceVariety(request.riceVariety || request.cropType.replace(/^Palay\s*\(|\)$/g, ''));
+    setReqHarvestDate(request.harvestDate || '');
+    setReqContainerType(request.containerType === 'plastic_bags' ? 'plastic_bags' : 'sacks');
+    setReqContainerQuantity(request.containerQuantity || '');
+    setReqEstimatedKgPerContainer(request.estimatedKgPerContainer || '');
+    setReqLocation(request.location || '');
+    setReqUrgency('medium');
+    setReqServices(request.type === 'buyer' ? [] : [request.type]);
+    setReqTruckType(request.truckType?.split(' — ')[0] || DEFAULT_TRUCK_TYPE);
+    setReqPickupPlace(request.pickupLocation || '');
+    setReqDropPlace(request.dropLocation || '');
+    setReqPrefDate(request.preferredDate || '');
+    setReqPrefTime(request.preferredTime || '08:00');
+    setReqAddNotes(request.additionalNotes || '');
     setShowRequestServiceModal(true);
   };
 
@@ -240,10 +270,17 @@ export default function FarmerDashboard({
 
   // Category filter state for service requests
   const [serviceCategory, setServiceCategory] = useState<'all' | 'transport' | 'storage' | 'drying' | 'milling'>('all');
+  const [serviceStatus, setServiceStatus] = useState<'all' | 'pending' | 'matched' | 'completed' | 'expired'>('all');
+  const [requestView, setRequestView] = useState<'posted' | 'accepted' | 'completed'>('posted');
 
   // Filter local harvests and service requests owned by this farmer
   const myHarvests = harvests.filter(h => h.farmerEmail === user.email);
   const myServices = serviceRequests.filter(s => s.farmerEmail === user.email);
+  const visibleMyServices = requestView === 'accepted'
+    ? myServices.filter(service => service.status === 'matched')
+    : requestView === 'completed'
+      ? myServices.filter(service => service.status === 'completed')
+      : myServices;
   const myIncomingOffers = offers.filter(o => o.farmerEmail === user.email);
   const verifiedBuyers = registeredUsers.filter(buyer => hasApprovedBusinessCapability(buyer, 'buyer'));
   const visiblePostedServices = offeredServices.filter(service => {
@@ -325,8 +362,9 @@ export default function FarmerDashboard({
   });
 
   const filteredMyServices = myServices.filter(s => {
-    if (serviceCategory === 'all') return true;
-    return s.type === serviceCategory;
+    const categoryMatches = serviceCategory === 'all' || s.type === serviceCategory;
+    const statusMatches = serviceStatus === 'all' || s.status === serviceStatus;
+    return categoryMatches && statusMatches;
   });
 
   const totalHarvestQty = myHarvests.reduce((sum, h) => sum + h.quantity, 0);
@@ -380,10 +418,37 @@ export default function FarmerDashboard({
     setShowRequestServiceReview(true);
   };
 
-  const confirmRequestService = () => {
+  const confirmRequestService = async () => {
     const finalLocation = reqServices.includes('transport')
       ? `${reqPickupPlace.trim()}  to  ${reqDropPlace.trim()}`
       : (reqLocation.trim() || reqPickupPlace.trim() || user.address || 'Barangay San Jose');
+
+    if (editingServiceRequest) {
+      const saved = await onUpdateServiceRequest(editingServiceRequest.id, {
+        cropType: `Palay (${reqRiceVariety})`,
+        riceVariety: reqRiceVariety,
+        quantity: requestLoadKg,
+        unit: 'kg',
+        quantityAccuracy: reqQuantityAccuracy,
+        estimatedWeightKg: requestLoadKg,
+        containerType: reqContainerType,
+        containerQuantity: Number(reqContainerQuantity),
+        estimatedKgPerContainer: Number(reqEstimatedKgPerContainer),
+        harvestDate: reqHarvestDate,
+        location: finalLocation,
+        preferredDate: reqPrefDate,
+        preferredTime: reqPrefTime,
+        additionalNotes: reqAddNotes,
+        truckType: reqServices.includes('transport') ? `${selectedTruckOption.name} — Maximum capacity: ${selectedTruckOption.maxCapacityKg.toLocaleString()} kg` : undefined,
+        pickupLocation: reqServices.includes('transport') ? reqPickupPlace : undefined,
+        dropLocation: reqServices.includes('transport') ? reqDropPlace : undefined,
+      });
+      if (!saved) return;
+      setEditingServiceRequest(null);
+      setShowRequestServiceModal(false);
+      setShowRequestServiceReview(false);
+      return;
+    }
 
     onAddHarvest({
       cropType: `Palay (${reqRiceVariety})`,
@@ -548,7 +613,7 @@ export default function FarmerDashboard({
 
   return (
     <div
-      className="h-dvh max-h-dvh overflow-hidden bg-cover bg-center bg-scroll md:bg-fixed flex flex-col font-sans transition-colors duration-300"
+      className="farmer-module h-dvh max-h-dvh overflow-hidden bg-cover bg-center bg-scroll md:bg-fixed flex flex-col font-sans transition-colors duration-300"
       style={{ backgroundImage: `url(${farmerBackground})` }}
     >
       
@@ -569,7 +634,7 @@ export default function FarmerDashboard({
         <main className="dashboard-main flex-1 min-w-0 w-full max-w-360 mx-auto h-full overflow-y-auto border-x border-white/30 bg-white/60 px-4 py-8 shadow-2xl backdrop-blur-[3px] scroll-smooth dark:border-slate-700/40 dark:bg-slate-950/65 sm:px-6 lg:px-8">
         
         {/* Top Header Action Buttons Bar */}
-        {activeTab !== 'interests' && <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        {activeTab !== 'interests' && activeTab !== 'directory' && <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h1 className="text-xl font-extrabold text-slate-900 dark:text-white font-display uppercase tracking-wide">
               {activeTab === 'services' && (lang === 'en' ? 'KAWING Partner Hub' : 'KAWING Partner Hub')}
@@ -610,6 +675,283 @@ export default function FarmerDashboard({
 
         {/* Content Panels */}
         <div className="space-y-6">
+          {activeTab === 'directory' && (
+            <section className="space-y-6" aria-label={requestView === 'accepted' ? (lang === 'en' ? 'Accepted services' : 'Mga tinanggap na serbisyo') : requestView === 'completed' ? (lang === 'en' ? 'Completed services' : 'Mga natapos na serbisyo') : (lang === 'en' ? 'Posted service requests' : 'Mga na-post na hiling na serbisyo')}>
+              <div className="overflow-hidden rounded-3xl border border-emerald-800/60 bg-emerald-950 p-5 text-white shadow-xl shadow-emerald-950/15 sm:p-6">
+                <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="flex min-w-0 items-start gap-4">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-400 text-slate-950 shadow-lg shadow-amber-400/20">
+                      <IconTools size={25} stroke={2.2} aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0">
+                      <h1 className="font-display text-lg font-black uppercase tracking-wider text-white sm:text-xl">
+                        {lang === 'en' ? 'My Service Requests' : 'Aking Mga Hiling na Serbisyo'}
+                      </h1>
+                      <p className="mt-1 max-w-3xl text-xs leading-5 text-emerald-100/80 sm:text-sm">
+                        {lang === 'en'
+                          ? 'Track every service request you posted and see which services have been accepted.'
+                          : 'Subaybayan ang iyong mga hiling na serbisyo at tingnan kung alin ang tinanggap na.'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-stretch gap-2.5 min-[390px]:flex-row min-[390px]:items-center lg:shrink-0">
+                    <AnimatedButton
+                      onClick={handleOpenRequestServiceModal}
+                      variant="outline"
+                      className="flex flex-1 items-center justify-center gap-2 rounded-xl border-amber-400! bg-amber-400! px-4 py-2.5 text-xs font-bold text-slate-950! shadow-md shadow-amber-500/20 hover:border-amber-300! hover:bg-amber-300! sm:flex-none sm:text-sm"
+                    >
+                      <Truck className="h-4 w-4" />
+                      {lang === 'en' ? 'Request Service' : 'Humiling ng Serbisyo'}
+                    </AnimatedButton>
+                    <AnimatedButton
+                      onClick={() => handleOpenPostHarvestModal()}
+                      variant="primary"
+                      className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-500 sm:flex-none sm:text-sm"
+                    >
+                      <Plus className="h-4 w-4" />
+                      {lang === 'en' ? 'Post Harvest' : 'Mag-Post ng Ani'}
+                    </AnimatedButton>
+                  </div>
+                </div>
+              </div>
+
+              <div role="tablist" className="grid w-full grid-cols-1 gap-2 rounded-2xl border border-slate-200/80 bg-white/80 p-2 shadow-sm backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/80 min-[520px]:grid-cols-3" aria-label={lang === 'en' ? 'Service request views' : 'Mga view ng hiling na serbisyo'}>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={requestView === 'posted'}
+                  onClick={() => setRequestView('posted')}
+                  className={`flex min-h-12 items-center justify-center gap-2 rounded-xl border px-4 py-3 text-xs font-extrabold transition-all sm:text-sm ${requestView === 'posted' ? 'border-amber-400 bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20' : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-100 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-800'}`}
+                >
+                  <IconFolderOpen size={18} stroke={2.2} aria-hidden="true" />
+                  <span>{lang === 'en' ? 'Posted Requests' : 'Mga Na-post na Hiling'}</span>
+                  <span className="rounded-full bg-black/10 px-2 py-0.5 text-[10px] tabular-nums dark:bg-white/10">{myServices.length}</span>
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={requestView === 'accepted'}
+                  onClick={() => setRequestView('accepted')}
+                  className={`flex min-h-12 items-center justify-center gap-2 rounded-xl border px-4 py-3 text-xs font-extrabold transition-all sm:text-sm ${requestView === 'accepted' ? 'border-emerald-600 bg-emerald-600 text-white shadow-md shadow-emerald-600/20' : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-100 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-800'}`}
+                >
+                  <IconCircleCheck size={18} stroke={2.2} aria-hidden="true" />
+                  <span>{lang === 'en' ? 'Accepted Services' : 'Mga Tinanggap na Serbisyo'}</span>
+                  <span className="rounded-full bg-black/10 px-2 py-0.5 text-[10px] tabular-nums dark:bg-white/10">{myServices.filter(service => service.status === 'matched').length}</span>
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={requestView === 'completed'}
+                  onClick={() => setRequestView('completed')}
+                  className={`flex min-h-12 items-center justify-center gap-2 rounded-xl border px-4 py-3 text-xs font-extrabold transition-all sm:text-sm ${requestView === 'completed' ? 'border-blue-600 bg-blue-600 text-white shadow-md shadow-blue-600/20' : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-100 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-800'}`}
+                >
+                  <IconCheck size={18} stroke={2.2} aria-hidden="true" />
+                  <span>{lang === 'en' ? 'Completed' : 'Natapos'}</span>
+                  <span className="rounded-full bg-black/10 px-2 py-0.5 text-[10px] tabular-nums dark:bg-white/10">{myServices.filter(service => service.status === 'completed').length}</span>
+                </button>
+              </div>
+
+              {visibleMyServices.length === 0 ? (
+                <div className="rounded-2xl border border-slate-200 bg-white px-5 py-14 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                  <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
+                    <IconFolderOpen size={25} stroke={2} aria-hidden="true" />
+                  </span>
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                    {requestView === 'accepted'
+                      ? (lang === 'en' ? 'No accepted services yet' : 'Wala pang tinanggap na serbisyo')
+                      : requestView === 'completed'
+                        ? (lang === 'en' ? 'No completed services yet' : 'Wala pang natapos na serbisyo')
+                      : (lang === 'en' ? 'No service requests yet' : 'Wala pang hiling na serbisyo')}
+                  </h2>
+                  <p className="mt-1 max-w-md text-sm text-slate-600 dark:text-slate-400">
+                    {requestView === 'accepted'
+                      ? (lang === 'en'
+                        ? 'Accepted requests will appear here after a buyer or service provider chooses them.'
+                        : 'Lalabas dito ang mga hiling kapag tinanggap na ng buyer o service provider.')
+                      : requestView === 'completed'
+                        ? (lang === 'en'
+                          ? 'Fulfilled services will appear here for final review and rating.'
+                          : 'Lalabas dito ang mga fulfilled na serbisyo para sa review at rating.')
+                      : (lang === 'en'
+                        ? 'Use Request Service above to post your first request.'
+                        : 'Gamitin ang Humiling ng Serbisyo sa itaas para mag-post ng iyong unang hiling.')}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {[...visibleMyServices]
+                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                    .map((request) => {
+                      const serviceLabels = {
+                        transport: lang === 'en' ? 'Transportation' : 'Transportasyon',
+                        storage: lang === 'en' ? 'Storage' : 'Imbakan',
+                        drying: lang === 'en' ? 'Drying' : 'Patuyuan',
+                        milling: lang === 'en' ? 'Milling' : 'Gilingan',
+                        buyer: lang === 'en' ? 'Buyer Request' : 'Hiling sa Buyer',
+                      };
+                      const statusStyles = {
+                        pending: 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800/70 dark:bg-amber-950/40 dark:text-amber-300',
+                        matched: 'border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-800/70 dark:bg-sky-950/40 dark:text-sky-300',
+                        completed: 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800/70 dark:bg-emerald-950/40 dark:text-emerald-300',
+                        expired: 'border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300',
+                        rejected: 'border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-800/70 dark:bg-rose-950/40 dark:text-rose-300',
+                      };
+                      const statusLabels = {
+                        pending: lang === 'en' ? 'Open' : 'Bukas',
+                        matched: lang === 'en' ? 'Active' : 'Aktibo',
+                        completed: lang === 'en' ? 'Completed' : 'Natapos',
+                        expired: lang === 'en' ? 'Expired' : 'Nag-expire',
+                        rejected: lang === 'en' ? 'Declined' : 'Tinanggihan',
+                      };
+                      const ServiceIcon = {
+                        transport: IconTruck,
+                        storage: IconPackage,
+                        drying: IconWind,
+                        milling: IconWheat,
+                        buyer: IconHeartHandshake,
+                      }[request.type];
+                      const requestedDate = request.preferredDate
+                        ? new Date(`${request.preferredDate}T00:00:00`).toLocaleDateString()
+                        : lang === 'en' ? 'Flexible schedule' : 'Flexible ang iskedyul';
+                      const postedDate = new Date(request.createdAt).toLocaleDateString();
+                      const acceptedDate = request.acceptedAt
+                        ? new Date(request.acceptedAt).toLocaleDateString()
+                        : null;
+                      const acceptedProvider = request.operatorEmail
+                        ? registeredUsers.find(account => account.email?.toLowerCase() === request.operatorEmail?.toLowerCase())
+                        : undefined;
+                      const providerListing = request.operatorEmail
+                        ? offeredServices.find(service => service.providerEmail.toLowerCase() === request.operatorEmail?.toLowerCase() && service.serviceType === request.type)
+                        : undefined;
+                      const providerCapability = acceptedProvider ? getBusinessCapability(acceptedProvider, request.type) : undefined;
+                      const providerName = acceptedProvider?.businessName
+                        || acceptedProvider?.legalCompanyName
+                        || request.operatorName
+                        || (lang === 'en' ? 'Service provider' : 'Service provider');
+                      const providerCapacity = providerListing?.capacity
+                        || providerCapability?.carryingCapacity
+                        || providerCapability?.storageCapacity
+                        || providerCapability?.batchCapacity
+                        || providerCapability?.millingCapacity
+                        || providerCapability?.capacity;
+                      const providerCoverage = providerListing?.locationCoverage
+                        || providerCapability?.locationCoverage
+                        || acceptedProvider?.serviceCoverageArea
+                        || acceptedProvider?.operatingAddress
+                        || acceptedProvider?.address;
+                      const providerRate = providerListing?.rateInfo || providerCapability?.rateInfo;
+                      const providerContact = acceptedProvider?.contactNumber;
+
+                      return (
+                        <motion.article
+                          key={request.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="relative flex flex-col justify-between rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition-all duration-300 dark:border-slate-800 dark:bg-slate-900"
+                        >
+                          <div className="mb-4 flex items-start justify-between gap-3">
+                            <div className="flex min-w-0 items-center gap-3">
+                              <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                                <ServiceIcon size={21} stroke={2} aria-hidden="true" />
+                              </span>
+                              <div className="min-w-0">
+                                <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">{request.riceVariety || request.cropType}</p>
+                                <h2 className="truncate font-display text-base font-black text-slate-900 dark:text-white">{serviceLabels[request.type]}</h2>
+                              </div>
+                            </div>
+                            <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider ${statusStyles[request.status]}`}>
+                              {statusLabels[request.status]}
+                            </span>
+                          </div>
+
+                          <dl className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 text-xs dark:border-slate-800 dark:bg-slate-950/60">
+                            <div>
+                              <dt className="font-semibold text-slate-400">{lang === 'en' ? 'Quantity' : 'Dami'}</dt>
+                              <dd className="mt-1 font-extrabold text-slate-900 dark:text-white">{request.quantity.toLocaleString()} {request.unit}</dd>
+                            </div>
+                            <div>
+                              <dt className="font-semibold text-slate-400">{lang === 'en' ? 'Schedule' : 'Iskedyul'}</dt>
+                              <dd className="mt-1 truncate font-extrabold text-slate-900 dark:text-white">{requestedDate}{request.preferredTime ? `, ${request.preferredTime}` : ''}</dd>
+                            </div>
+                            <div className="col-span-2 border-t border-slate-200/70 pt-3 dark:border-slate-800">
+                              <dt className="flex items-center gap-1 font-semibold text-slate-400"><IconMapPin size={14} stroke={2} aria-hidden="true" />{lang === 'en' ? 'Location' : 'Lokasyon'}</dt>
+                              <dd className="mt-1 truncate font-bold text-slate-800 dark:text-slate-100">{request.location}</dd>
+                            </div>
+                          </dl>
+
+                          {(requestView === 'accepted' || requestView === 'completed') && (
+                            <div className="mt-3 space-y-3 rounded-xl border border-emerald-300 bg-emerald-50 p-3.5 dark:border-emerald-800 dark:bg-emerald-950/30">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+                                    {requestView === 'completed' ? (lang === 'en' ? 'Fulfilled by' : 'Tinapos ni') : (lang === 'en' ? 'Accepted by' : 'Tinanggap ni')}
+                                  </p>
+                                  <p className="mt-0.5 truncate text-sm font-black text-slate-900 dark:text-white">{providerName}</p>
+                                  {acceptedProvider?.contactPersonName && acceptedProvider.contactPersonName !== providerName && (
+                                    <p className="mt-0.5 truncate text-[11px] text-slate-600 dark:text-slate-300">{acceptedProvider.contactPersonName}</p>
+                                  )}
+                                </div>
+                                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white">
+                                  <ShieldCheck className="size-4" aria-hidden="true" />
+                                </span>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2 text-[11px]">
+                                <div className="rounded-lg bg-white/70 p-2.5 dark:bg-slate-900/55">
+                                  <p className="text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Service capacity' : 'Kapasidad'}</p>
+                                  <p className="mt-0.5 font-extrabold text-slate-900 dark:text-white">{providerCapacity || (lang === 'en' ? 'Not provided' : 'Hindi inilagay')}</p>
+                                </div>
+                                <div className="rounded-lg bg-white/70 p-2.5 dark:bg-slate-900/55">
+                                  <p className="text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Service rate' : 'Presyo ng serbisyo'}</p>
+                                  <p className="mt-0.5 font-extrabold text-slate-900 dark:text-white">{providerRate || (lang === 'en' ? 'Confirm with provider' : 'Kumpirmahin sa provider')}</p>
+                                </div>
+                                {providerCoverage && (
+                                  <div className="col-span-2 rounded-lg bg-white/70 p-2.5 dark:bg-slate-900/55">
+                                    <p className="text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Coverage / Address' : 'Sakop / Address'}</p>
+                                    <p className="mt-0.5 flex items-start gap-1.5 font-bold text-slate-900 dark:text-white"><IconMapPin size={14} stroke={2} className="mt-0.5 shrink-0 text-emerald-600" aria-hidden="true" />{providerCoverage}</p>
+                                  </div>
+                                )}
+                              </div>
+
+                              <CoordinatedContactCard user={acceptedProvider} email={request.operatorEmail} primaryNumber={providerContact} title={lang === 'en' ? 'Provider Coordination Contact' : 'Contact ng Service Provider'} />
+                            </div>
+                          )}
+
+                          <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3 text-[11px] text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                            <span className="font-semibold">
+                              {requestView === 'accepted'
+                                ? acceptedDate
+                                  ? `${lang === 'en' ? 'Accepted' : 'Tinanggap'} ${acceptedDate}`
+                                  : (lang === 'en' ? 'Accepted date not recorded' : 'Hindi naitala ang petsa ng pagtanggap')
+                                : requestView === 'completed'
+                                  ? request.completedAt
+                                    ? `${lang === 'en' ? 'Fulfilled' : 'Natapos'} ${new Date(request.completedAt).toLocaleDateString()}`
+                                    : (lang === 'en' ? 'Fulfilled date not recorded' : 'Hindi naitala ang petsa ng fulfillment')
+                                : `${lang === 'en' ? 'Posted' : 'Na-post'} ${postedDate}`}
+                            </span>
+                            {requestView === 'posted' && request.status === 'matched' && (
+                              <span className="truncate font-extrabold text-amber-700 dark:text-amber-300">{lang === 'en' ? 'With pending transaction' : 'May kasalukuyang transaksyon'}</span>
+                            )}
+                          </div>
+                          {requestView === 'posted' && request.status === 'pending' && (
+                            <div className="mt-3 grid grid-cols-2 gap-2">
+                              <button type="button" onClick={() => handleEditServiceRequest(request)} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-emerald-300 px-3 text-xs font-extrabold text-emerald-700 transition-colors hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-950/30"><Pencil className="size-3.5" aria-hidden="true" />{lang === 'en' ? 'Edit Request' : 'I-edit ang Request'}</button>
+                              <button type="button" onClick={() => askConfirmation(lang === 'en' ? 'Delete this open service request?' : 'Burahin ang bukas na service request na ito?', () => { void onDeleteServiceRequest(request.id); }, { title: lang === 'en' ? 'Delete service request' : 'Burahin ang service request', tone: 'danger', confirmLabel: lang === 'en' ? 'Delete Request' : 'Burahin' })} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-red-300 px-3 text-xs font-extrabold text-red-600 transition-colors hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30"><Trash2 className="size-3.5" aria-hidden="true" />{lang === 'en' ? 'Delete' : 'Burahin'}</button>
+                            </div>
+                          )}
+                          {requestView === 'completed' && (
+                            <div className="mt-4 border-t border-slate-100 pt-4 dark:border-slate-800">
+                              <TransactionRating serviceRequestId={request.id} />
+                            </div>
+                          )}
+                        </motion.article>
+                      );
+                    })}
+                </div>
+              )}
+            </section>
+          )}
+
           {activeTab === 'loans' && (
             <ProductionLoanFarmer
               user={user}
@@ -716,7 +1058,7 @@ export default function FarmerDashboard({
           )}
 
         {/* Kawing Logistics & Processing Directory */}
-        {activeTab === 'directory' && (
+        {false && (
         <div className="mb-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-300">
           {/* Header Bar */}
           <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-slate-50/50 dark:bg-slate-900/55">
@@ -928,12 +1270,7 @@ export default function FarmerDashboard({
                                   </div>
                                 )}
 
-                                {operator.contactNumber && (
-                                  <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-semibold">
-                                    <Phone className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
-                                    <span>{operator.contactNumber}</span>
-                                  </div>
-                                )}
+                                <p className="mt-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Contact shared after acceptance' : 'Ibabahagi ang contact pagkatapos tanggapin'}</p>
                               </div>
 
                               <div className="mt-4 pt-3 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between gap-2">
@@ -967,7 +1304,7 @@ export default function FarmerDashboard({
         )}
 
         {/* Posted Buyer & Operator Services Section */}
-        {activeTab === 'directory' && (
+        {false && (
           <div className="mb-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden p-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-3">
@@ -1050,7 +1387,7 @@ export default function FarmerDashboard({
                       <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-between gap-2">
                         <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1">
                           <Phone className="w-3.5 h-3.5 text-emerald-500" />
-                          <span>{service.providerPhone || '0917-555-0100'}</span>
+                          <span>{lang === 'en' ? 'Shared after acceptance' : 'Ibabahagi pagkatapos tanggapin'}</span>
                         </div>
                         <button
                           type="button"
@@ -1242,7 +1579,7 @@ export default function FarmerDashboard({
                 </div>
               )}
             </div>
-          ) : activeTab === 'directory' ? (
+          ) : activeTab === 'directory' ? null : false ? (
             <div className="space-y-6">
               {/* Category sub-tabs without buyer */}
               <div className="flex flex-wrap gap-2 bg-slate-100 dark:bg-slate-900/50 p-1.5 rounded-2xl w-fit border border-slate-200/50 dark:border-slate-800">
@@ -1298,6 +1635,20 @@ export default function FarmerDashboard({
                 </button>
               </div>
 
+              <div className="mb-4 flex gap-2 overflow-x-auto rounded-xl border border-slate-200 bg-white p-2 dark:border-slate-800 dark:bg-slate-900" aria-label={lang === 'en' ? 'Request status' : 'Status ng request'}>
+                {([
+                  ['all', lang === 'en' ? 'All' : 'Lahat'],
+                  ['pending', lang === 'en' ? 'Open' : 'Bukas'],
+                  ['matched', lang === 'en' ? 'Active' : 'Aktibo'],
+                  ['completed', lang === 'en' ? 'Completed' : 'Tapos'],
+                  ['expired', lang === 'en' ? 'Expired' : 'Nag-expire'],
+                ] as const).map(([status, label]) => (
+                  <button key={status} type="button" onClick={() => setServiceStatus(status)} className={`min-h-10 whitespace-nowrap rounded-lg px-3 text-xs font-bold transition-colors ${serviceStatus === status ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'}`}>
+                    {label} ({status === 'all' ? myServices.length : myServices.filter(service => service.status === status).length})
+                  </button>
+                ))}
+              </div>
+
               {/* List */}
               {filteredMyServices.length === 0 ? (
                 <div className="bg-white dark:bg-slate-900 text-center py-16 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm transition-all duration-300">
@@ -1344,11 +1695,13 @@ export default function FarmerDashboard({
                               s.status === 'pending' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400' :
                               s.status === 'matched' ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400' :
                               s.status === 'rejected' ? 'bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400' :
+                              s.status === 'expired' ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' :
                               'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400'
                             }`}>
                               {s.status === 'pending' ? (lang === 'en' ? 'Awaiting Operator' : 'Naghihintay') :
                                s.status === 'matched' ? (lang === 'en' ? 'Matched' : 'Naitugma na') :
                                s.status === 'rejected' ? (lang === 'en' ? 'Declined' : 'Tinanggihan') :
+                               s.status === 'expired' ? (lang === 'en' ? 'Expired' : 'Nag-expire') :
                                (lang === 'en' ? 'Completed' : 'Nakumpleto')}
                             </span>
                           </div>
@@ -1365,6 +1718,12 @@ export default function FarmerDashboard({
                           <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold block mt-1">
                             Operator: {s.operatorName}
                           </span>
+                        )}
+                        {s.status === 'expired' && (
+                          <div className="mt-3 flex gap-2 sm:justify-end">
+                            <button type="button" onClick={() => onRepostServiceRequest(s.id)} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-500">{lang === 'en' ? 'Repost Request' : 'I-post Muli'}</button>
+                            <button type="button" onClick={() => askConfirmation(lang === 'en' ? 'Permanently delete this expired request?' : 'Permanenteng burahin ang expired request na ito?', () => { void onDeleteServiceRequest(s.id); }, { title: lang === 'en' ? 'Delete expired request' : 'Burahin ang expired request', tone: 'danger', confirmLabel: lang === 'en' ? 'Delete Permanently' : 'Burahin' })} className="rounded-lg border border-red-300 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30">{lang === 'en' ? 'Delete Permanently' : 'Burahin'}</button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -1600,6 +1959,7 @@ export default function FarmerDashboard({
                                         <TransactionRating offerId={o.id} />
                                       </div>
                                     </div>
+                                    <CoordinatedContactCard user={registeredUsers.find(account => account.email?.toLowerCase() === o.buyerEmail?.toLowerCase())} email={o.buyerEmail} primaryNumber={o.buyerPhone} title={lang === 'en' ? 'Buyer Coordination Contact' : 'Contact ng Buyer'} />
                                   </div>
                                 ) : (
                                   <div className="text-xs text-slate-400 dark:text-slate-500 italic text-center py-1"><span className="inline-flex items-center gap-1.5 align-middle mr-1.5"><IconCircleX size={16} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>{lang === 'en' ? 'Other offer was selected for this harvest.' : 'Ibang offer ang napili para sa ani na ito.'}
@@ -1738,12 +2098,12 @@ export default function FarmerDashboard({
               <div className="flex items-center gap-2">
                 <Truck className="w-5 h-5" />
                 <div>
-                  <h3 className="font-bold text-base sm:text-lg font-display">{lang === 'en' ? 'Request Service' : 'Humiling ng Serbisyo'}</h3>
+                  <h3 className="font-bold text-base sm:text-lg font-display">{editingServiceRequest ? (lang === 'en' ? 'Edit Service Request' : 'I-edit ang Service Request') : (lang === 'en' ? 'Request Service' : 'Humiling ng Serbisyo')}</h3>
                   <p className="text-[11px] text-blue-100">{lang === 'en' ? 'Request post-harvest logistics & equipment' : 'Mag-request ng transportasyon, patuyuan, imbakan, o gilingan'}</p>
                 </div>
               </div>
               <button
-                onClick={() => setShowRequestServiceModal(false)}
+                onClick={() => { setShowRequestServiceModal(false); setEditingServiceRequest(null); }}
                 className="text-white/80 hover:text-white font-bold text-lg cursor-pointer p-1"
                 aria-label="Close service request"
               ><span className="inline-flex items-center gap-1.5 align-middle"><IconX size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></button>
@@ -1934,6 +2294,7 @@ export default function FarmerDashboard({
                       <button
                         type="button"
                         key={service.id}
+                        disabled={Boolean(editingServiceRequest)}
                         onClick={() => {
                           if (isSelected) {
                             setReqServices(reqServices.filter(s => s !== service.id));
@@ -2103,7 +2464,7 @@ export default function FarmerDashboard({
               <div className="lg:col-span-2 sticky bottom-0 z-10 flex gap-3 border-t border-slate-100 bg-white py-3 dark:border-slate-800 dark:bg-slate-900">
                 <button
                   type="button"
-                  onClick={() => setShowRequestServiceModal(false)}
+                  onClick={() => { setShowRequestServiceModal(false); setEditingServiceRequest(null); }}
                   className="flex-1 py-2.5 px-4 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
                 >
                   {t('btn_cancel')}
@@ -2117,7 +2478,7 @@ export default function FarmerDashboard({
                       : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
                   }`}
                 >
-                  Submit Request
+                  {editingServiceRequest ? (lang === 'en' ? 'Review Changes' : 'Suriin ang Pagbabago') : 'Submit Request'}
                 </button>
               </div>
             </form>
@@ -2137,7 +2498,11 @@ export default function FarmerDashboard({
               <div className="flex min-w-0 items-center gap-2">
                 <span className="text-xl"><span className="inline-flex items-center gap-1.5 align-middle"><IconWheat size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></span>
                 <div className="min-w-0">
-                  <h3 className="font-bold text-base sm:text-lg font-display">{lang === 'en' ? 'Post Harvest' : 'Mag-post ng Ani'}</h3>
+                  <h3 className="font-bold text-base sm:text-lg font-display">
+                    {targetHarvestBuyer
+                      ? (lang === 'en' ? 'Offer Harvest' : 'Mag-alok ng Ani')
+                      : (lang === 'en' ? 'Post Harvest' : 'Mag-post ng Ani')}
+                  </h3>
                   <p className="text-[11px] text-emerald-100">
                     {targetHarvestBuyer
                       ? (lang === 'en' ? `Direct offer to ${targetHarvestBuyer.businessName || targetHarvestBuyer.name}` : `Direktang alok kay ${targetHarvestBuyer.businessName || targetHarvestBuyer.name}`)
@@ -2155,7 +2520,9 @@ export default function FarmerDashboard({
                 <button
                   onClick={() => setShowPostHarvestModal(false)}
                   className="text-white/80 hover:text-white font-bold text-lg cursor-pointer p-1"
-                  aria-label={lang === 'en' ? 'Close post harvest form' : 'Isara ang post harvest form'}
+                  aria-label={targetHarvestBuyer
+                    ? (lang === 'en' ? 'Close offer harvest form' : 'Isara ang form ng pag-aalok ng ani')
+                    : (lang === 'en' ? 'Close post harvest form' : 'Isara ang post harvest form')}
                 ><span className="inline-flex items-center gap-1.5 align-middle"><IconX size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></button>
               </div>
             </div>
@@ -2278,11 +2645,11 @@ export default function FarmerDashboard({
                 </div>
               </div>
 
-              <div className="post-harvest-selling space-y-3 rounded-xl border border-slate-200/70 dark:border-slate-700/70 bg-white/30 dark:bg-slate-900/30 p-4">
+              {!targetHarvestBuyer && <div className="post-harvest-selling space-y-3 rounded-xl border border-slate-200/70 dark:border-slate-700/70 bg-white/30 dark:bg-slate-900/30 p-4">
                 <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300">
                   {lang === 'en' ? 'How do you want to sell?' : 'Paano mo gustong ibenta?'} <span className="text-red-500">*</span>
                 </label>
-                <div className={`grid grid-cols-1 gap-3 ${targetHarvestBuyer ? '' : 'sm:grid-cols-2'}`}>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <button
                     type="button"
                     onClick={() => setPostSellingMethod('fixed_price')}
@@ -2291,16 +2658,16 @@ export default function FarmerDashboard({
                     <span className="block text-xs font-extrabold text-slate-900 dark:text-white"><span className="inline-flex items-center gap-1.5 align-middle mr-1.5"><IconCash size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>{lang === 'en' ? 'Fixed Asking Price' : 'Takdang Presyo'}</span>
                     <span className="mt-1 block text-[10px] text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Receive offers based on your price.' : 'Tumanggap ng alok batay sa iyong presyo.'}</span>
                   </button>
-                  {!targetHarvestBuyer && <button
+                  <button
                     type="button"
                     onClick={() => setPostSellingMethod('bidding')}
                     className={`min-h-20 w-full rounded-xl border p-3 text-left transition-all ${postSellingMethod === 'bidding' ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30' : 'border-slate-200 dark:border-slate-700'}`}
                   >
                     <span className="block text-xs font-extrabold text-slate-900 dark:text-white"><span className="inline-flex items-center gap-1.5 align-middle mr-1.5"><IconHammer size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>{lang === 'en' ? 'Open for Bidding' : 'Bukas para sa Bidding'}</span>
                     <span className="mt-1 block text-[10px] text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Buyers compete with their best price.' : 'Maglalaban ang mga buyer sa presyo.'}</span>
-                  </button>}
+                  </button>
                 </div>
-              </div>
+              </div>}
 
               {postWeightKg > 0 && Number(postTargetPrice) > 0 && (
                 <div className="post-harvest-total grid grid-cols-[auto_1fr] items-center gap-4 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 dark:border-emerald-800 dark:bg-emerald-950/35">
@@ -2418,7 +2785,9 @@ export default function FarmerDashboard({
                       : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
                   }`}
                 >
-                  Post Harvest
+                  {targetHarvestBuyer
+                    ? (lang === 'en' ? 'Offer Harvest' : 'Mag-alok ng Ani')
+                    : (lang === 'en' ? 'Post Harvest' : 'Mag-post ng Ani')}
                 </button>
               </div>
             </form>
@@ -2437,7 +2806,7 @@ export default function FarmerDashboard({
                     <div className="flex justify-between gap-4"><span className="text-slate-500">Quantity</span><strong className="text-right text-slate-900 dark:text-white">{postWeightKg.toLocaleString()} kg</strong></div>
                     <div className="flex justify-between gap-4"><span className="text-slate-500">Packaging</span><strong className="text-right text-slate-900 dark:text-white">{Number(postContainerQuantity).toLocaleString()} {postContainerType === 'sacks' ? 'sacks' : 'plastic bags'}</strong></div>
                     <div className="flex justify-between gap-4"><span className="text-slate-500">Moisture</span><strong className="text-right text-blue-600">{postMoisture}%</strong></div>
-                    <div className="flex justify-between gap-4"><span className="text-slate-500">Selling method</span><strong className="text-right text-slate-900 dark:text-white">{targetHarvestBuyer || postSellingMethod === 'fixed_price' ? 'Fixed asking price' : 'Open for bidding'}</strong></div>
+                    {!targetHarvestBuyer && <div className="flex justify-between gap-4"><span className="text-slate-500">Selling method</span><strong className="text-right text-slate-900 dark:text-white">{postSellingMethod === 'fixed_price' ? 'Fixed asking price' : 'Open for bidding'}</strong></div>}
                     <div className="flex justify-between gap-4"><span className="text-slate-500">Price</span><strong className="text-right text-emerald-600">₱{Number(postTargetPrice).toLocaleString(undefined, { minimumFractionDigits: 2 })}/kg</strong></div>
                     <div className="flex justify-between gap-4 border-t border-slate-200 pt-1.5 dark:border-slate-700"><span className="font-bold text-slate-700 dark:text-slate-300">Total</span><strong className="text-right text-base text-emerald-600">₱{postTotalPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></div>
                     <div className="flex justify-between gap-4"><span className="text-slate-500">Location</span><strong className="max-w-[65%] text-right text-slate-900 dark:text-white">{postLocation.trim() || user.address || 'Barangay San Jose'}</strong></div>
@@ -2521,8 +2890,8 @@ export default function FarmerDashboard({
       {showRequestServiceReview && (
         <div className="fixed inset-0 z-80 flex items-center justify-center overflow-y-auto bg-slate-950/75 p-3 md:p-4 backdrop-blur-sm">
           <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} role="dialog" aria-modal="true" className="w-full max-w-lg rounded-3xl border border-cyan-800 bg-white dark:bg-slate-900 p-6 text-slate-900 dark:text-white shadow-2xl">
-            <h2 className="text-xl font-black">Review Service Request</h2>
-            <p className="mt-1 text-xs text-slate-400">Confirm all details before this request is sent.</p>
+            <h2 className="text-xl font-black">{editingServiceRequest ? 'Confirm Request Changes' : 'Review Service Request'}</h2>
+            <p className="mt-1 text-xs text-slate-400">{editingServiceRequest ? 'Confirm the updated details before saving.' : 'Confirm all details before this request is sent.'}</p>
             <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
               <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><dt className="text-xs text-slate-400">Services</dt><dd className="font-bold capitalize">{reqServices.join(', ')}</dd></div>
               <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><dt className="text-xs text-slate-400">Provider</dt><dd className="font-bold">{selectedServiceProvider?.businessName || selectedServiceProvider?.name || 'Any approved available provider'}</dd></div>
@@ -2532,7 +2901,7 @@ export default function FarmerDashboard({
               <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><dt className="text-xs text-slate-400">Schedule</dt><dd className="font-bold">{reqPrefDate || 'Earliest available'} {reqPrefTime}</dd></div>
               <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><dt className="text-xs text-slate-400">Rate and contact</dt><dd className="font-bold">{selectedServiceProvider ? `${selectedServiceProvider.contactNumber || 'Contact shared after acceptance'} • Rate confirmed by provider` : 'Shown after provider accepts'}</dd></div>
             </dl>
-            <div className="mt-6 flex gap-3"><button type="button" onClick={() => setShowRequestServiceReview(false)} className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 py-3 text-sm font-bold">Back and Edit</button><button type="button" onClick={confirmRequestService} className="flex-1 rounded-xl bg-emerald-600 py-3 text-sm font-black">Submit Request</button></div>
+            <div className="mt-6 flex gap-3"><button type="button" onClick={() => setShowRequestServiceReview(false)} className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 py-3 text-sm font-bold">Back and Edit</button><button type="button" onClick={() => { void confirmRequestService(); }} className="flex-1 rounded-xl bg-emerald-600 py-3 text-sm font-black">{editingServiceRequest ? 'Save Changes' : 'Submit Request'}</button></div>
           </motion.div>
         </div>
       )}
@@ -2569,7 +2938,7 @@ export default function FarmerDashboard({
               </div>
               <div className="rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
                 <p className="flex items-start gap-2"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-cyan-400" />{selectedBuyerModal.address || 'Service location not specified'}</p>
-                <p className="mt-3 flex items-center gap-2"><Phone className="h-4 w-4 shrink-0 text-emerald-400" />{selectedBuyerModal.contactNumber || (lang === 'en' ? 'Shared after a successful match' : 'Ibibigay pagkatapos ng successful match')}</p>
+                <p className="mt-3 flex items-center gap-2"><Phone className="h-4 w-4 shrink-0 text-emerald-400" />{lang === 'en' ? 'Shared after a successful match' : 'Ibibigay pagkatapos ng successful match'}</p>
               </div>
               <p className="text-xs leading-relaxed text-slate-400">
                 {lang === 'en' ? 'Review the buyer above, then submit your harvest details and asking price directly to this buyer.' : 'Suriin muna ang buyer, pagkatapos ay ipadala ang detalye at asking price ng iyong ani.'}
@@ -2649,7 +3018,7 @@ export default function FarmerDashboard({
                   <h4 className="font-bold text-slate-900 dark:text-white">{service.title}</h4>
                   <p className="mt-1 font-extrabold text-cyan-700 dark:text-cyan-300">{service.rateInfo || (lang === 'en' ? 'Rate not specified' : 'Walang nakatakdang bayad')}</p>
                   <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{service.capacity} — {service.locationCoverage}</p>
-                  {service.providerPhone && <p className="mt-2 font-semibold text-slate-900 dark:text-white">{service.providerPhone}</p>}
+                  <p className="mt-2 font-semibold text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Contact shared after acceptance' : 'Ibabahagi ang contact pagkatapos tanggapin'}</p>
                 </div>
               ))}
               <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-100 dark:border-slate-700">

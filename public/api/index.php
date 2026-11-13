@@ -19,6 +19,12 @@ $collections = [
     'productionLoans' => 'production_loans', 'notifications' => 'notifications',
 ];
 
+// Unaccepted requests expire after three months but remain available to the
+// farmer for reposting or permanent removal.
+$pdo->exec("UPDATE service_requests
+    SET status = 'expired', data = JSON_SET(data, '$.status', 'expired'), updated_at = CURRENT_TIMESTAMP
+    WHERE status = 'pending' AND created_at < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 3 MONTH)");
+
 $sessionIdentity = static function () use ($pdo): array {
     $email = strtolower(trim((string) ($_SESSION['kawing_user_email'] ?? '')));
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) respond(['error' => 'Authentication required.'], 401);
@@ -305,13 +311,27 @@ try {
         $identity = $sessionIdentity();
         $body = jsonBody();
         beginEndpointWrite($pdo, ['users-directory', 'users:' . $identity['email']]);
-        $allowedFields = ['name', 'contactNumber', 'address', 'businessName', 'legalCompanyName', 'rsbsaNumber', 'avatarUrl', 'bio', 'emailNotificationsEnabled'];
+        $allowedFields = ['name', 'contactNumber', 'additionalContactNumbers', 'address', 'businessName', 'legalCompanyName', 'rsbsaNumber', 'avatarUrl', 'bio', 'emailNotificationsEnabled'];
         $provided = array_values(array_intersect(array_keys($body), $allowedFields));
         if (!$provided) respond(['error' => 'No profile changes were supplied.'], 422);
 
         foreach ($provided as $field) {
             if (in_array($field, ['emailNotificationsEnabled', 'emailNotificationConsentAsked'], true)) {
                 if (!is_bool($body[$field])) respond(['error' => "{$field} must be true or false."], 422);
+                continue;
+            }
+            if ($field === 'additionalContactNumbers') {
+                if (!is_array($body[$field])) respond(['error' => 'additionalContactNumbers must be a list.'], 422);
+                $primary = strtolower(trim((string) ($body['contactNumber'] ?? '')));
+                $seen = []; $numbers = [];
+                foreach ($body[$field] as $number) {
+                    if (!is_string($number)) respond(['error' => 'Every contact number must be text.'], 422);
+                    $number = trim($number); $key = strtolower($number);
+                    if ($number === '' || $key === $primary || isset($seen[$key])) continue;
+                    $seen[$key] = true; $numbers[] = $number;
+                    if (count($numbers) >= 1) break;
+                }
+                $body[$field] = $numbers;
                 continue;
             }
             if (!is_string($body[$field])) respond(['error' => "{$field} must be text."], 422);

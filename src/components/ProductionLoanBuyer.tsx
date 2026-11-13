@@ -7,11 +7,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import AnimatedButton from './AnimatedButton';
 import { alertDialog, askConfirmation } from '../lib/appDialog';
+import CoordinatedContactCard from './CoordinatedContactCard';
 
 const alert = (message: string) => { void alertDialog(message, { tone: 'info' }); };
 
 interface ProductionLoanBuyerProps {
   user: UserAccount;
+  registeredUsers: UserAccount[];
   loanRequests: ProductionLoanRequest[];
   onUpdateUser: (originalName: string, updated: UserAccount, before?: UserAccount) => void;
   onApproveLoanRequest: (requestId: string, approvedAmount: number, buyerNotes?: string) => void;
@@ -22,6 +24,7 @@ interface ProductionLoanBuyerProps {
 
 export default function ProductionLoanBuyer({
   user,
+  registeredUsers,
   loanRequests,
   onUpdateUser,
   onApproveLoanRequest,
@@ -310,16 +313,16 @@ export default function ProductionLoanBuyer({
       )}
 
       {/* PAGE CONTENT - HIDDEN UNTIL UNLOCKED */}
-      <div className={`mx-auto max-w-6xl space-y-5 ${isPageLocked ? 'hidden' : ''}`}>
+      <div className={`mx-auto max-w-6xl space-y-4 ${isPageLocked ? 'hidden' : ''}`}>
       {/* Top Banner */}
-      <div className="relative overflow-hidden rounded-2xl border border-emerald-900/70 bg-slate-950 p-5 text-white shadow-sm dark:bg-slate-900 md:p-6">
-        <div className="relative z-10 grid gap-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-          <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300">
+      <div className="relative overflow-hidden rounded-2xl border border-emerald-900/70 bg-slate-950 p-4 text-white shadow-sm dark:bg-slate-900 md:px-5 md:py-4">
+        <div className="relative z-10 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+          <div className="max-w-2xl space-y-1.5">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/20 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-300">
               <Landmark className="w-4 h-4 text-emerald-400" />
               <span>{lang === 'en' ? 'Buyer Production Loan Management' : 'Pamamahala ng Pautang sa Pagtatanim'}</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            <h1 className="text-xl font-extrabold tracking-tight sm:text-2xl">
               {lang === 'en' ? 'Rice Farmer Production Financing' : 'Pondo para sa Magsasaka ng Palay'}
             </h1>
             <p className="text-xs leading-relaxed text-slate-300 sm:text-sm">
@@ -438,7 +441,7 @@ export default function ProductionLoanBuyer({
                         <span>{req.farmerName}</span>
                       </h3>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {req.farmerLocation} • {req.farmerPhone}
+                        {req.farmerLocation}
                       </p>
                     </div>
 
@@ -578,6 +581,7 @@ export default function ProductionLoanBuyer({
                       <span className="font-semibold text-slate-800 dark:text-slate-200">{req.preferredRepaymentPeriod}</span>
                     </div>
                   </div>
+                  <CoordinatedContactCard user={registeredUsers.find(account => account.email?.toLowerCase() === req.farmerEmail?.toLowerCase())} email={req.farmerEmail} primaryNumber={req.farmerPhone} title={lang === 'en' ? 'Farmer Coordination Contact' : 'Contact ng Farmer'} />
 
                   <div className="flex items-center justify-end gap-2 pt-2">
                     <button
@@ -610,12 +614,13 @@ export default function ProductionLoanBuyer({
               {completedOrDeclinedLoans.map(req => (
                 <div
                   key={req.id}
-                  className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-xs shadow-2xs dark:border-slate-800 dark:bg-slate-900"
+                  className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-xs shadow-2xs dark:border-slate-800 dark:bg-slate-900"
                 >
-                  <div>
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
                     <span className="font-bold text-slate-900 dark:text-white block">{req.farmerName}</span>
                     <span className="text-slate-500">{req.purpose} • ₱{req.requestedAmount.toLocaleString()}</span>
-                  </div>
+                    </div>
 
                   <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
                     req.status === 'Completed'
@@ -624,6 +629,8 @@ export default function ProductionLoanBuyer({
                   }`}>
                     {req.status}
                   </span>
+                  </div>
+                  {req.status === 'Completed' && <CoordinatedContactCard user={registeredUsers.find(account => account.email?.toLowerCase() === req.farmerEmail?.toLowerCase())} email={req.farmerEmail} primaryNumber={req.farmerPhone} title={lang === 'en' ? 'Farmer Coordination Contact' : 'Contact ng Farmer'} />}
                 </div>
               ))}
             </div>

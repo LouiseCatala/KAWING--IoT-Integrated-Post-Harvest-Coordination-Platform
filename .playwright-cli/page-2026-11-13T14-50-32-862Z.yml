@@ -1,0 +1,35 @@
+- generic [ref=e94]:
+  - generic:
+    - img "Mount Arayat Pampanga"
+  - generic [ref=e95]:
+    - generic [ref=e96]:
+      - button "Switch to dark mode" [ref=e151] [cursor=pointer]
+      - button "Back to Lobby" [ref=e165] [cursor=pointer]
+      - button "Tagalog (TL)" [ref=e166] [cursor=pointer]
+    - generic [ref=e113]:
+      - img "Kawing Logo" [ref=e116]
+      - heading "Create your Account" [level=2] [ref=e176]
+      - paragraph [ref=e118]:
+        - text: Already have an account?
+        - button "Log in here" [active] [ref=e177] [cursor=pointer]
+    - generic [ref=e122]:
+      - generic "Registration progress" [ref=e178]:
+        - generic [ref=e179]:
+          - generic [ref=e180]: "1."
+          - text: Category
+        - generic [ref=e181]:
+          - generic [ref=e182]: "2."
+          - text: Account
+        - generic [ref=e183]:
+          - generic [ref=e184]: "3."
+          - text: Requirements
+      - generic [ref=e185]:
+        - generic [ref=e186]: Choose your Registration Category
+        - generic [ref=e187]:
+          - button "Farmer Post harvests, request dry/storage, and find buyers." [ref=e188] [cursor=pointer]:
+            - generic [ref=e189]: Farmer
+            - generic [ref=e193]: Post harvests, request dry/storage, and find buyers.
+          - button "Agricultural Business User Buy or trade palay, provide loans, transport, storage, drying, or milling services." [ref=e194] [cursor=pointer]:
+            - generic [ref=e195]: Agricultural Business User
+            - generic [ref=e199]: Buy or trade palay, provide loans, transport, storage, drying, or milling services.
+      - button "Continue" [ref=e201]

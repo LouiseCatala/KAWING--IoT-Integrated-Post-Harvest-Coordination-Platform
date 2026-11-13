@@ -1,0 +1,62 @@
+- generic [ref=e249]:
+  - complementary [ref=e250]:
+    - generic [ref=e251]:
+      - button "C Catala24 My Profile" [ref=e456] [cursor=pointer]:
+        - generic [ref=e254]: C
+        - generic [ref=e457]:
+          - generic [ref=e458]: Catala24
+          - generic [ref=e459]: My Profile
+      - generic [ref=e256]:
+        - generic [ref=e257]:
+          - generic [ref=e465]: Features & Workspace
+          - button "0 unread notifications" [ref=e258]
+        - button "KAWING Partner Hub" [ref=e262] [cursor=pointer]
+        - button "My Service Requests" [active] [ref=e270] [cursor=pointer]
+        - button "Announcements Board" [ref=e277] [cursor=pointer]
+        - button "Farm Loans" [ref=e284] [cursor=pointer]
+        - button "My Harvest Posts" [ref=e290] [cursor=pointer]
+        - button "Price Offers Received" [ref=e296] [cursor=pointer]
+      - button "Switch to dark mode" [ref=e303] [cursor=pointer]:
+        - generic [ref=e474]: Dark Mode
+      - button "Log Out" [ref=e475] [cursor=pointer]
+      - generic [ref=e311]:
+        - generic [ref=e477]: Account records secured
+        - generic [ref=e482]: v2.4
+  - main [ref=e312]:
+    - region "Posted service requests" [ref=e483]:
+      - generic [ref=e485]:
+        - generic [ref=e495]:
+          - heading "My Service Requests" [level=1] [ref=e496]
+          - paragraph [ref=e497]: Track every service request you posted and see which services have been accepted.
+        - generic [ref=e498]:
+          - button "Request Service" [ref=e499] [cursor=pointer]
+          - button "Post Harvest" [ref=e506] [cursor=pointer]
+      - tablist "Service request views" [ref=e509]:
+        - tab "Posted Requests 1" [selected] [ref=e510]:
+          - generic [ref=e513]: Posted Requests
+          - generic [ref=e514]: "1"
+        - tab "Accepted Services 1" [ref=e515]:
+          - generic [ref=e519]: Accepted Services
+          - generic [ref=e520]: "1"
+        - tab "Completed 0" [ref=e521]:
+          - generic [ref=e524]: Completed
+          - generic [ref=e525]: "0"
+      - article [ref=e527]:
+        - generic [ref=e528]:
+          - generic [ref=e536]:
+            - paragraph [ref=e537]: Palay (NSIC Rc222)
+            - heading "Storage" [level=2] [ref=e538]
+          - generic [ref=e539]: Active
+        - generic [ref=e540]:
+          - generic [ref=e541]:
+            - term [ref=e542]: Quantity
+            - definition [ref=e543]: 9,000 kg
+          - generic [ref=e544]:
+            - term [ref=e545]: Schedule
+            - definition [ref=e546]: 11/15/2026, 08:00
+          - generic [ref=e547]:
+            - term [ref=e548]: Location
+            - definition [ref=e552]: 277, sampaguita street, nepo subd. A.C
+        - generic [ref=e553]:
+          - generic [ref=e554]: Posted 11/12/2026
+          - generic [ref=e555]: With pending transaction

@@ -78,18 +78,36 @@ function validateBusinessWrite(PDO $pdo, string $collection, ?array $current, ?a
         }
     }
     if ($collection === 'services') {
-        requireTransition($current, $next, ['pending' => ['matched', 'rejected'], 'matched' => ['completed']], 'pending');
+        requireTransition($current, $next, ['pending' => ['matched', 'rejected', 'expired'], 'matched' => ['pending', 'completed'], 'expired' => ['pending']], 'pending');
         if ($next === null) {
-            if ($current && ($current['status'] ?? '') !== 'pending') throw new LiveConflict('An assigned service request cannot be deleted.');
+            if ($current && !in_array($current['status'] ?? '', ['pending', 'expired'], true)) throw new LiveConflict('An assigned service request cannot be deleted.');
+            if ($current && !$admin && liveEmail($current['farmerEmail'] ?? '') !== $email) throw new LiveForbidden('Only the farmer who posted this request can edit or delete it.');
             return;
         }
-        if ($current && ($current['status'] ?? '') !== $next['status'] && !$admin && $next['status'] !== 'rejected' && liveEmail($next['operatorEmail'] ?? '') !== $email) throw new LiveForbidden('Only the assigned provider can update this job.');
+        if ($current && ($current['status'] ?? '') === ($next['status'] ?? '')) {
+            if (($current['status'] ?? '') !== 'pending') throw new LiveConflict('This service request has a transaction and can no longer be edited.');
+            if (!$admin && liveEmail($current['farmerEmail'] ?? '') !== $email) throw new LiveForbidden('Only the farmer who posted this request can edit or delete it.');
+            foreach (['id', 'type', 'harvestId', 'servicesNeeded', 'status', 'farmerEmail', 'farmerName', 'farmerPhone', 'createdAt', 'operatorEmail', 'operatorName', 'acceptedAt', 'completedAt', 'serviceCancelledAt'] as $field) {
+                if (!liveEqual($current[$field] ?? null, $next[$field] ?? null)) throw new LiveConflict('Service transaction fields cannot be edited.');
+            }
+        }
+        $assignedProvider = liveEmail($current['operatorEmail'] ?? $next['operatorEmail'] ?? '');
+        if ($current && ($current['status'] ?? '') !== $next['status'] && !$admin && $next['status'] !== 'rejected' && $assignedProvider !== $email) throw new LiveForbidden('Only the assigned provider can update this job.');
         if ($current && ($current['status'] ?? '') === 'pending' && $next['status'] === 'matched') {
             $provider = lockedRecord($pdo, 'users', liveEmail($next['operatorEmail'] ?? ''));
             if (!$provider || ($provider['isAvailable'] ?? true) === false) throw new LiveConflict('This provider is unavailable.');
             $profile = $provider['businessCapabilities'][$next['type']] ?? $provider['logisticsServices'][$next['type']] ?? null;
             if ($profile && (empty($profile['enabled']) || ($profile['isAvailable'] ?? true) === false || !in_array($profile['approvalStatus'] ?? 'approved', ['approved'], true))) throw new LiveConflict('This service is not currently available.');
             checkServiceCapacity($pdo, $next, $profile ?? []);
+            // The server clock is the source of truth for when the provider accepted.
+            $next['acceptedAt'] = gmdate('c');
+        }
+        if ($current && ($current['status'] ?? '') === 'matched' && $next['status'] === 'pending') {
+            $next['serviceCancelledAt'] = gmdate('c');
+            unset($next['operatorEmail'], $next['operatorName'], $next['acceptedAt'], $next['completedAt']);
+        }
+        if ($current && ($current['status'] ?? '') === 'matched' && $next['status'] === 'completed') {
+            $next['completedAt'] = gmdate('c');
         }
     }
 }

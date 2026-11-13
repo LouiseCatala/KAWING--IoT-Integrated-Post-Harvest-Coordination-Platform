@@ -1,0 +1,58 @@
+- generic [ref=e2]:
+  - generic [ref=e731]:
+    - complementary [ref=e732]:
+      - generic [ref=e733]:
+        - button "D Draven21 My Profile" [ref=e839] [cursor=pointer]:
+          - generic [ref=e736]: D
+          - generic [ref=e840]:
+            - generic [ref=e841]: Draven21
+            - generic [ref=e842]: My Profile
+        - generic [ref=e738]:
+          - generic [ref=e739]:
+            - generic [ref=e848]: Features & Workspace
+            - button "0 unread notifications" [ref=e740]
+          - button "Buy Harvests" [ref=e744] [cursor=pointer]
+          - button "My Price Offers" [ref=e750] [cursor=pointer]
+          - button "Announcements Board" [ref=e757] [cursor=pointer]
+          - button "Loan Management" [ref=e764] [cursor=pointer]
+          - button "Logistics" [active] [ref=e770] [cursor=pointer]
+        - button "Switch to light mode" [ref=e779] [cursor=pointer]:
+          - generic [ref=e859]: Light Mode
+        - button "Log Out" [ref=e860] [cursor=pointer]
+        - generic [ref=e791]:
+          - generic [ref=e862]: Account records secured
+          - generic [ref=e867]: v2.4
+    - main [ref=e792]:
+      - generic [ref=e794]:
+        - heading "Available Logistics Jobs" [level=1] [ref=e893]
+        - paragraph [ref=e796]: View farmer transport requests and hauling needs.
+      - generic [ref=e894]:
+        - generic [ref=e895]:
+          - generic [ref=e896]:
+            - heading "Choose a service category" [level=2] [ref=e897]
+            - paragraph [ref=e898]: Review open farmer requests across every service your business can provide.
+          - generic [ref=e899]:
+            - button "All Services 0" [ref=e900]:
+              - generic [ref=e901]: All Services
+              - generic [ref=e906]: "0"
+            - button "Transport 0" [ref=e907]:
+              - generic [ref=e908]: Transport
+              - generic [ref=e914]: "0"
+            - button "Storage 0" [ref=e915]:
+              - generic [ref=e916]: Storage
+              - generic [ref=e923]: "0"
+            - button "Drying 0" [ref=e924]:
+              - generic [ref=e925]: Drying
+              - generic [ref=e930]: "0"
+            - button "Milling 0" [ref=e931]:
+              - generic [ref=e932]: Milling
+              - generic [ref=e938]: "0"
+        - generic [ref=e939]:
+          - heading "No Available Service Requests" [level=3] [ref=e944]
+          - paragraph [ref=e945]: New farmer service requests will appear here for you to accept.
+  - generic:
+    - button "Hi, I'm Grainy! Do you need help? Open Grainy assistant" [ref=e946] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e947]: Hi, I'm Grainy! Do you need help?
+    - generic:
+      - button "Open Grainy KAWING Assistant" [ref=e948] [cursor=pointer]
+      - img "Grainy, the KAWING agricultural assistant"

@@ -656,7 +656,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
   };
 
   return (
-    <div id="auth-page" className={`relative text-slate-900 dark:text-slate-100 flex flex-col justify-center px-3 md:px-4 sm:px-6 lg:px-8 font-sans transition-colors duration-300 overflow-x-hidden ${isLogin ? 'h-dvh overflow-y-hidden py-3 sm:py-4' : 'min-h-screen overflow-y-auto py-6 md:py-12'}`}>
+    <div id="auth-page" className={`auth-screen relative text-slate-900 dark:text-slate-100 flex flex-col justify-center px-3 md:px-4 sm:px-6 lg:px-8 font-sans transition-colors duration-300 overflow-x-hidden ${isLogin ? 'h-dvh overflow-y-hidden py-3 sm:py-4' : 'min-h-screen overflow-y-auto py-6 md:py-12'}`}>
       
       {/* Mount Arayat Background Image Overlay */}
       <div className="fixed inset-0 z-0 pointer-events-none">
@@ -665,12 +665,12 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
           alt="Mount Arayat Pampanga"
           className="w-full h-full object-cover object-center filter brightness-[0.4] contrast-105"
         />
-        <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm" />
+        <div className="auth-backdrop absolute inset-0 bg-slate-950/70 backdrop-blur-sm" />
       </div>
 
       <div className="relative z-10 w-full">
       {/* Top Floating Controls Bar */}
-      <div className={`absolute right-0 flex items-center z-20 flex-wrap justify-end ${isLogin ? '-top-2 gap-1 sm:top-0 sm:gap-2' : '-top-8 gap-2 sm:-top-6'}`}>
+      <div className={`auth-utility-bar absolute right-0 flex items-center z-20 flex-wrap justify-end ${isLogin ? '-top-2 gap-1 sm:top-0 sm:gap-2' : '-top-8 gap-2 sm:-top-6'}`}>
         <ThemeToggle variant="floating" />
         {onBack && (
           <button
@@ -696,7 +696,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className={`relative flex items-center justify-center rounded-full bg-emerald-600 dark:bg-emerald-700 shadow-xl shadow-emerald-500/20 overflow-hidden border-2 border-emerald-400/40 ${isLogin ? 'w-14 h-14 sm:w-16 sm:h-16' : 'w-20 h-20'}`}>
+          <div className={`auth-logo relative flex items-center justify-center rounded-full bg-emerald-600 dark:bg-emerald-700 shadow-xl shadow-emerald-500/20 overflow-hidden border-2 border-emerald-400/40 ${isLogin ? 'w-14 h-14 sm:w-16 sm:h-16' : 'w-20 h-20'}`}>
             <img
               src={kawingLogo}
               alt="Kawing Logo"
@@ -707,7 +707,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
             />
           </div>
         </div>
-        <h2 className={`${isLogin ? 'mt-2 text-2xl' : 'mt-4 text-3xl'} text-center font-extrabold tracking-tight text-white font-display drop-shadow-md`}>
+        <h2 className={`auth-title ${isLogin ? 'mt-2 text-2xl' : 'mt-4 text-3xl'} text-center font-extrabold tracking-tight text-white font-display drop-shadow-md`}>
           {isLogin ? (lang === 'en' ? 'Log in to Kawing' : 'Mag-login sa Kawing') : (lang === 'en' ? 'Create your Account' : 'Gumawa ng Account')}
         </h2>
         <p className={`${isLogin ? 'mt-1' : 'mt-2'} text-center text-sm text-slate-300 font-medium`}>
@@ -741,7 +741,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
       <div className={`${isLogin ? 'mt-4' : 'mt-8'} sm:mx-auto sm:w-full sm:max-w-xl`}>
         <motion.div
           layout
-          className={`bg-white/90 dark:bg-slate-900/95 text-slate-900 dark:text-slate-100 px-4 shadow-2xl rounded-2xl md:rounded-3xl sm:px-10 border border-slate-200 dark:border-slate-800 backdrop-blur-xl ${isLogin ? 'py-4 sm:py-5' : 'py-6 md:py-8'}`}
+          className={`auth-panel bg-white/90 dark:bg-slate-900/95 text-slate-900 dark:text-slate-100 px-4 shadow-2xl rounded-2xl md:rounded-3xl sm:px-10 border border-slate-200 dark:border-slate-800 backdrop-blur-xl ${isLogin ? 'py-4 sm:py-5' : 'py-6 md:py-8'}`}
         >
           {errorMsg && (
             <motion.div
@@ -777,7 +777,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
 
           <form className={isLogin ? 'space-y-3' : 'space-y-5'} onSubmit={handleSubmit} autoComplete="off" data-lpignore="true" data-1p-ignore="true">
             {!isLogin && (
-              <div className="grid grid-cols-3 gap-2" aria-label="Registration progress">
+              <div className="auth-progress grid grid-cols-3 gap-2" aria-label="Registration progress">
                 {[
                   [1, lang === 'en' ? 'Category' : 'Kategorya'],
                   [2, lang === 'en' ? 'Account' : 'Account'],
@@ -901,7 +901,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
 
             {/* INLINE COLOR CAPTCHA (Login Only) */}
             {isLogin && (
-              <div className="space-y-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-100/60 dark:bg-slate-800/60 p-3">
+              <div className="auth-captcha space-y-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-100/60 dark:bg-slate-800/60 p-3">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="text-sm font-bold text-slate-900 dark:text-white">
@@ -1421,7 +1421,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                   {lang === 'en' ? 'Choose your Registration Category' : 'Pumili ng iyong Kategorya sa Pagpaparehistro'}
                 </label>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-72 overflow-y-auto p-1 border border-slate-100 dark:border-slate-800/80 rounded-xl bg-slate-50/30 dark:bg-slate-900/10">
+                <div className="auth-role-grid grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-72 overflow-y-auto p-1 border border-slate-100 dark:border-slate-800/80 rounded-xl bg-slate-50/30 dark:bg-slate-900/10">
                   {allowedRoles.map((r) => (
                     <button
                       key={r}

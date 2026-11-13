@@ -1,0 +1,751 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/MillerDashboard.tsx");import __vite__cjsImport0_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=3fc12e03"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+var _s = $RefreshSig$();
+import { IconSettings, IconWheat } from "/node_modules/.vite/deps/@tabler_icons-react.js?v=3fc12e03";
+import __vite__cjsImport2_react from "/node_modules/.vite/deps/react.js?v=3fc12e03"; const useState = __vite__cjsImport2_react["useState"];
+import { RefreshCw, Droplets, Percent, Calendar, MapPin, CheckCircle } from "/node_modules/.vite/deps/lucide-react.js?v=3fc12e03";
+import { useApp } from "/src/context/AppContext.tsx";
+import Sidebar from "/src/components/Sidebar.tsx?t=1794580474987";
+import PalayHub from "/src/components/PalayHub.tsx";
+import AnnouncementsBoard from "/src/components/AnnouncementsBoard.tsx";
+import { askConfirmation } from "/src/lib/appDialog.ts";
+export default function MillerDashboard({
+  user,
+  serviceRequests,
+  onAcceptService,
+  onRejectService,
+  onCompleteService,
+  onUpdateUser,
+  notifications,
+  onMarkNotificationRead,
+  onClearAllNotifications,
+  onLogout
+}) {
+  _s();
+  const { t, lang } = useApp();
+  const [activeTab, setActiveTab] = useState("announcements");
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const millingRequests = serviceRequests.filter((s) => s.type === "milling");
+  const availableQueue = millingRequests.filter((s) => s.status === "pending");
+  const activeBatches = millingRequests.filter(
+    (s) => s.status === "matched" && s.operatorEmail === user.email
+  );
+  return /* @__PURE__ */ jsxDEV("div", { className: "h-dvh max-h-dvh overflow-hidden bg-slate-50/80 dark:bg-slate-950/92 backdrop-blur-lg flex flex-col font-sans transition-colors duration-300", children: /* @__PURE__ */ jsxDEV("div", { className: "flex-1 min-h-0 flex w-full overflow-hidden", children: [
+    /* @__PURE__ */ jsxDEV(
+      Sidebar,
+      {
+        user,
+        activeTab: activeTab === "available" ? "requests" : activeTab,
+        onSelectTab: (tabId) => setActiveTab(tabId === "requests" ? "available" : tabId),
+        isMobileOpen: isMobileSidebarOpen,
+        onCloseMobile: () => setIsMobileSidebarOpen(false),
+        onUpdateUser,
+        onLogout,
+        notifications,
+        onMarkNotificationRead
+      },
+      void 0,
+      false,
+      {
+        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+        lineNumber: 55,
+        columnNumber: 9
+      },
+      this
+    ),
+    /* @__PURE__ */ jsxDEV("main", { className: "dashboard-main flex-1 min-w-0 w-full max-w-360 mx-auto h-full overflow-y-auto px-4 sm:px-6 lg:px-8 py-8 scroll-smooth", children: [
+      /* @__PURE__ */ jsxDEV("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 md:mb-8 font-sans", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "bg-white dark:bg-slate-900 p-4 md:p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all duration-300", children: [
+          /* @__PURE__ */ jsxDEV("div", { className: "p-3.5 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl text-emerald-600 dark:text-emerald-400", children: /* @__PURE__ */ jsxDEV(RefreshCw, { className: "w-6 h-6 animate-spin", style: { animationDuration: "6s" } }, void 0, false, {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+            lineNumber: 73,
+            columnNumber: 15
+          }, this) }, void 0, false, {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+            lineNumber: 72,
+            columnNumber: 13
+          }, this),
+          /* @__PURE__ */ jsxDEV("div", { children: [
+            /* @__PURE__ */ jsxDEV("span", { className: "text-xs font-semibold text-slate-500 dark:text-slate-400 block", children: lang === "en" ? "Active Milling Grains" : "Kasalukuyang Ginagiling" }, void 0, false, {
+              fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+              lineNumber: 76,
+              columnNumber: 15
+            }, this),
+            /* @__PURE__ */ jsxDEV("span", { className: "text-2xl font-bold text-slate-900 dark:text-white", children: [
+              activeBatches.length,
+              " Batches"
+            ] }, void 0, true, {
+              fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+              lineNumber: 79,
+              columnNumber: 15
+            }, this)
+          ] }, void 0, true, {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+            lineNumber: 75,
+            columnNumber: 13
+          }, this)
+        ] }, void 0, true, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+          lineNumber: 71,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "bg-white dark:bg-slate-900 p-4 md:p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all duration-300", children: [
+          /* @__PURE__ */ jsxDEV("div", { className: "p-3.5 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl text-emerald-600 dark:text-emerald-400", children: /* @__PURE__ */ jsxDEV(CheckCircle, { className: "w-6 h-6" }, void 0, false, {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+            lineNumber: 85,
+            columnNumber: 15
+          }, this) }, void 0, false, {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+            lineNumber: 84,
+            columnNumber: 13
+          }, this),
+          /* @__PURE__ */ jsxDEV("div", { children: [
+            /* @__PURE__ */ jsxDEV("span", { className: "text-xs font-semibold text-slate-500 dark:text-slate-400 block", children: lang === "en" ? "Completed Today" : "Tapos Na Ngayong Araw" }, void 0, false, {
+              fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+              lineNumber: 88,
+              columnNumber: 15
+            }, this),
+            /* @__PURE__ */ jsxDEV("span", { className: "text-2xl font-bold text-slate-900 dark:text-white", children: "4 Batches" }, void 0, false, {
+              fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+              lineNumber: 91,
+              columnNumber: 15
+            }, this)
+          ] }, void 0, true, {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+            lineNumber: 87,
+            columnNumber: 13
+          }, this)
+        ] }, void 0, true, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+          lineNumber: 83,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "bg-white dark:bg-slate-900 p-4 md:p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all duration-300", children: [
+          /* @__PURE__ */ jsxDEV("div", { className: "p-3.5 bg-blue-50 dark:bg-blue-950/30 rounded-xl text-blue-600 dark:text-blue-400", children: /* @__PURE__ */ jsxDEV(RefreshCw, { className: "w-6 h-6" }, void 0, false, {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+            lineNumber: 97,
+            columnNumber: 15
+          }, this) }, void 0, false, {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+            lineNumber: 96,
+            columnNumber: 13
+          }, this),
+          /* @__PURE__ */ jsxDEV("div", { children: [
+            /* @__PURE__ */ jsxDEV("span", { className: "text-xs font-semibold text-slate-500 dark:text-slate-400 block", children: lang === "en" ? "Pending Queue" : "Mga Nakapilang Gilingin" }, void 0, false, {
+              fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+              lineNumber: 100,
+              columnNumber: 15
+            }, this),
+            /* @__PURE__ */ jsxDEV("span", { className: "text-2xl font-bold text-slate-900 dark:text-white", children: [
+              availableQueue.length,
+              " Batches"
+            ] }, void 0, true, {
+              fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+              lineNumber: 103,
+              columnNumber: 15
+            }, this)
+          ] }, void 0, true, {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+            lineNumber: 99,
+            columnNumber: 13
+          }, this)
+        ] }, void 0, true, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+          lineNumber: 95,
+          columnNumber: 11
+        }, this)
+      ] }, void 0, true, {
+        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+        lineNumber: 70,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "bg-slate-200/60 dark:bg-slate-800/80 p-1 rounded-xl flex self-start mb-6 w-fit", children: [
+        /* @__PURE__ */ jsxDEV(
+          "button",
+          {
+            onClick: () => setActiveTab("available"),
+            className: `px-4 py-2 text-sm font-bold rounded-lg transition-all cursor-pointer ${activeTab === "available" ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"}`,
+            children: [
+              lang === "en" ? "Milling Queue" : "Pila sa Gilingan",
+              " (",
+              availableQueue.length,
+              ")"
+            ]
+          },
+          void 0,
+          true,
+          {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+            lineNumber: 110,
+            columnNumber: 11
+          },
+          this
+        ),
+        /* @__PURE__ */ jsxDEV(
+          "button",
+          {
+            onClick: () => setActiveTab("active"),
+            className: `px-4 py-2 text-sm font-bold rounded-lg transition-all cursor-pointer ${activeTab === "active" ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"}`,
+            children: [
+              lang === "en" ? "Active Milling" : "Kasalukuyang Ginagiling",
+              " (",
+              activeBatches.length,
+              ")"
+            ]
+          },
+          void 0,
+          true,
+          {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+            lineNumber: 118,
+            columnNumber: 11
+          },
+          this
+        ),
+        /* @__PURE__ */ jsxDEV(
+          "button",
+          {
+            onClick: () => setActiveTab("palay"),
+            className: `px-4 py-2 text-sm font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === "palay" ? "bg-amber-500 text-slate-950 shadow-sm font-extrabold" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"}`,
+            children: [
+              /* @__PURE__ */ jsxDEV("span", { className: "inline-flex items-center gap-1.5 align-middle", children: /* @__PURE__ */ jsxDEV(IconWheat, { size: 20, stroke: 2, "aria-hidden": "true", className: "inline-block shrink-0" }, void 0, false, {
+                fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                lineNumber: 131,
+                columnNumber: 79
+              }, this) }, void 0, false, {
+                fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                lineNumber: 131,
+                columnNumber: 15
+              }, this),
+              lang === "en" ? "Sentrong Palay" : "Sentrong Palay"
+            ]
+          },
+          void 0,
+          true,
+          {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+            lineNumber: 126,
+            columnNumber: 11
+          },
+          this
+        )
+      ] }, void 0, true, {
+        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+        lineNumber: 109,
+        columnNumber: 9
+      }, this),
+      activeTab === "announcements" ? /* @__PURE__ */ jsxDEV(
+        AnnouncementsBoard,
+        {
+          user,
+          notifications,
+          onMarkNotificationRead,
+          onClearAllNotifications,
+          onNavigateToFeature: (tabId) => setActiveTab(tabId === "requests" ? "available" : tabId)
+        },
+        void 0,
+        false,
+        {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+          lineNumber: 137,
+          columnNumber: 11
+        },
+        this
+      ) : activeTab === "available" ? availableQueue.length === 0 ? /* @__PURE__ */ jsxDEV("div", { className: "bg-white dark:bg-slate-900 text-center py-16 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm transition-all duration-300", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "w-16 h-16 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl", children: /* @__PURE__ */ jsxDEV("span", { className: "inline-flex items-center gap-1.5 align-middle", children: /* @__PURE__ */ jsxDEV(IconWheat, { size: 24, stroke: 2, "aria-hidden": "true", className: "inline-block shrink-0" }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+          lineNumber: 147,
+          columnNumber: 239
+        }, this) }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+          lineNumber: 147,
+          columnNumber: 175
+        }, this) }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+          lineNumber: 147,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("h3", { className: "text-base font-bold text-slate-900 dark:text-white", children: lang === "en" ? "No Pending Milling Requests" : "Walang Nakapila sa Gilingan" }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+          lineNumber: 148,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { className: "text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto", children: lang === "en" ? "Currently no requests for grain milling or polishing in your area." : "Walang hiling sa paggiling o pagpapakinis sa iyong lugar." }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+          lineNumber: 151,
+          columnNumber: 15
+        }, this)
+      ] }, void 0, true, {
+        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+        lineNumber: 146,
+        columnNumber: 11
+      }, this) : /* @__PURE__ */ jsxDEV("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-6", children: availableQueue.map(
+        (s) => /* @__PURE__ */ jsxDEV(
+          "div",
+          {
+            className: "bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-300",
+            children: [
+              /* @__PURE__ */ jsxDEV("div", { className: "p-6 grow", children: [
+                /* @__PURE__ */ jsxDEV("div", { className: "flex items-start justify-between gap-4 mb-4", children: [
+                  /* @__PURE__ */ jsxDEV("div", { children: [
+                    /* @__PURE__ */ jsxDEV("span", { className: "text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded", children: "PENDING MILLING" }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                      lineNumber: 165,
+                      columnNumber: 25
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("h3", { className: "text-lg font-bold text-slate-900 dark:text-white mt-1 font-display", children: s.cropType }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                      lineNumber: 168,
+                      columnNumber: 25
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                    lineNumber: 164,
+                    columnNumber: 23
+                  }, this),
+                  /* @__PURE__ */ jsxDEV("span", { className: "text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/50", children: lang === "en" ? "NEEDS MILLING" : "KAILANGAN GILINGIN" }, void 0, false, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                    lineNumber: 170,
+                    columnNumber: 23
+                  }, this)
+                ] }, void 0, true, {
+                  fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                  lineNumber: 163,
+                  columnNumber: 21
+                }, this),
+                /* @__PURE__ */ jsxDEV("p", { className: "text-xs text-slate-500 dark:text-slate-400 font-semibold mb-3", children: [
+                  "Farmer: ",
+                  s.farmerName
+                ] }, void 0, true, {
+                  fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                  lineNumber: 175,
+                  columnNumber: 21
+                }, this),
+                /* @__PURE__ */ jsxDEV("div", { className: "space-y-3 text-sm mb-4 text-slate-600 dark:text-slate-300", children: [
+                  /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2", children: [
+                    /* @__PURE__ */ jsxDEV(RefreshCw, { className: "w-4 h-4 text-slate-400" }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                      lineNumber: 179,
+                      columnNumber: 25
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("span", { children: [
+                      lang === "en" ? "Grain Weight" : "Timbang ng Butil",
+                      ": ",
+                      /* @__PURE__ */ jsxDEV("strong", { className: "text-slate-900 dark:text-white", children: [
+                        s.quantity,
+                        " ",
+                        s.unit
+                      ] }, void 0, true, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                        lineNumber: 180,
+                        columnNumber: 86
+                      }, this)
+                    ] }, void 0, true, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                      lineNumber: 180,
+                      columnNumber: 25
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                    lineNumber: 178,
+                    columnNumber: 23
+                  }, this),
+                  /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2", children: [
+                    /* @__PURE__ */ jsxDEV(MapPin, { className: "w-4 h-4 text-slate-400" }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                      lineNumber: 183,
+                      columnNumber: 25
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("span", { children: [
+                      "Location: ",
+                      /* @__PURE__ */ jsxDEV("strong", { className: "text-slate-900 dark:text-white truncate", children: s.location }, void 0, false, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                        lineNumber: 184,
+                        columnNumber: 41
+                      }, this)
+                    ] }, void 0, true, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                      lineNumber: 184,
+                      columnNumber: 25
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                    lineNumber: 182,
+                    columnNumber: 23
+                  }, this),
+                  /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2", children: [
+                    /* @__PURE__ */ jsxDEV(Calendar, { className: "w-4 h-4 text-slate-400" }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                      lineNumber: 187,
+                      columnNumber: 25
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("span", { children: [
+                      "Milling Duration: ",
+                      /* @__PURE__ */ jsxDEV("strong", { className: "text-slate-900 dark:text-white", children: "Same Day" }, void 0, false, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                        lineNumber: 188,
+                        columnNumber: 49
+                      }, this)
+                    ] }, void 0, true, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                      lineNumber: 188,
+                      columnNumber: 25
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                    lineNumber: 186,
+                    columnNumber: 23
+                  }, this)
+                ] }, void 0, true, {
+                  fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                  lineNumber: 177,
+                  columnNumber: 21
+                }, this)
+              ] }, void 0, true, {
+                fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                lineNumber: 162,
+                columnNumber: 19
+              }, this),
+              /* @__PURE__ */ jsxDEV("div", { className: "bg-slate-50 dark:bg-slate-900/50 p-4 border-t border-slate-100 dark:border-slate-800 flex gap-3", children: [
+                /* @__PURE__ */ jsxDEV(
+                  "button",
+                  {
+                    id: `reject-milling-${s.id}`,
+                    onClick: () => askConfirmation(lang === "en" ? "Reject this milling request?" : "Tanggihan ang request na ito?", () => onRejectService(s.id), { tone: "danger", confirmLabel: lang === "en" ? "Reject Request" : "Tanggihan" }),
+                    className: "flex-1 py-2.5 border border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-950/20 text-red-600 dark:text-red-400 font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer font-sans",
+                    children: lang === "en" ? "Reject" : "Tanggihan"
+                  },
+                  void 0,
+                  false,
+                  {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                    lineNumber: 194,
+                    columnNumber: 21
+                  },
+                  this
+                ),
+                /* @__PURE__ */ jsxDEV(
+                  "button",
+                  {
+                    id: `accept-milling-${s.id}`,
+                    onClick: () => askConfirmation(lang === "en" ? "Accept this milling request and take responsibility for it?" : "Tanggapin at akuin ang request na ito?", () => onAcceptService(s.id), { tone: "success", confirmLabel: lang === "en" ? "Accept Request" : "Tanggapin" }),
+                    className: "flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-emerald-600/10 flex items-center justify-center gap-2 cursor-pointer",
+                    children: [
+                      /* @__PURE__ */ jsxDEV(RefreshCw, { className: "w-4 h-4 animate-spin", style: { animationDuration: "3s" } }, void 0, false, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                        lineNumber: 206,
+                        columnNumber: 23
+                      }, this),
+                      " ",
+                      lang === "en" ? "Start Milling" : "Simulan ang Paggiling"
+                    ]
+                  },
+                  void 0,
+                  true,
+                  {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                    lineNumber: 201,
+                    columnNumber: 21
+                  },
+                  this
+                )
+              ] }, void 0, true, {
+                fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                lineNumber: 193,
+                columnNumber: 19
+              }, this)
+            ]
+          },
+          s.id,
+          true,
+          {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+            lineNumber: 158,
+            columnNumber: 13
+          },
+          this
+        )
+      ) }, void 0, false, {
+        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+        lineNumber: 156,
+        columnNumber: 11
+      }, this) : activeTab === "active" ? activeBatches.length === 0 ? /* @__PURE__ */ jsxDEV("div", { className: "bg-white dark:bg-slate-900 text-center py-16 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm transition-all duration-300", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "w-16 h-16 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl", children: /* @__PURE__ */ jsxDEV("span", { className: "inline-flex items-center gap-1.5 align-middle", children: /* @__PURE__ */ jsxDEV(IconWheat, { size: 24, stroke: 2, "aria-hidden": "true", className: "inline-block shrink-0" }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+          lineNumber: 216,
+          columnNumber: 239
+        }, this) }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+          lineNumber: 216,
+          columnNumber: 175
+        }, this) }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+          lineNumber: 216,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("h3", { className: "text-base font-bold text-slate-900 dark:text-white", children: lang === "en" ? "No Active Milling Batches" : "Walang Kasalukuyang Ginagiling" }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+          lineNumber: 217,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { className: "text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto", children: lang === "en" ? "Choose a batch from the queue tab to start the milling process." : "Pumili ng karga sa pila upang simulan ang paggiling." }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+          lineNumber: 220,
+          columnNumber: 15
+        }, this)
+      ] }, void 0, true, {
+        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+        lineNumber: 215,
+        columnNumber: 11
+      }, this) : /* @__PURE__ */ jsxDEV("div", { className: "space-y-6", children: activeBatches.map(
+        (s) => /* @__PURE__ */ jsxDEV(
+          "div",
+          {
+            className: "bg-emerald-50/10 dark:bg-emerald-950/10 p-6 rounded-2xl border border-emerald-100 dark:border-emerald-900/50 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all duration-300",
+            children: [
+              /* @__PURE__ */ jsxDEV("div", { className: "flex items-start gap-4 grow", children: [
+                /* @__PURE__ */ jsxDEV("div", { className: "w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 flex items-center justify-center text-xl shrink-0 font-display", children: /* @__PURE__ */ jsxDEV("span", { className: "inline-flex items-center gap-1.5 align-middle", children: /* @__PURE__ */ jsxDEV(IconSettings, { size: 24, stroke: 2, "aria-hidden": "true", className: "inline-block shrink-0" }, void 0, false, {
+                  fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                  lineNumber: 232,
+                  columnNumber: 263
+                }, this) }, void 0, false, {
+                  fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                  lineNumber: 232,
+                  columnNumber: 199
+                }, this) }, void 0, false, {
+                  fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                  lineNumber: 232,
+                  columnNumber: 21
+                }, this),
+                /* @__PURE__ */ jsxDEV("div", { className: "space-y-2 grow", children: [
+                  /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2 flex-wrap", children: [
+                    /* @__PURE__ */ jsxDEV("h4", { className: "font-extrabold text-slate-900 dark:text-white text-lg font-display", children: s.cropType }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                      lineNumber: 235,
+                      columnNumber: 25
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("span", { className: "text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 uppercase tracking-wider animate-pulse", children: lang === "en" ? "Currently Milling" : "Kasalukuyang Ginagiling" }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                      lineNumber: 236,
+                      columnNumber: 25
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                    lineNumber: 234,
+                    columnNumber: 23
+                  }, this),
+                  /* @__PURE__ */ jsxDEV("p", { className: "text-xs text-slate-500 dark:text-slate-400", children: [
+                    "Farmer: ",
+                    /* @__PURE__ */ jsxDEV("strong", { className: "text-slate-700 dark:text-slate-200", children: s.farmerName }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                      lineNumber: 241,
+                      columnNumber: 33
+                    }, this),
+                    " • ",
+                    lang === "en" ? "Quantity" : "Dami",
+                    ": ",
+                    /* @__PURE__ */ jsxDEV("strong", { className: "text-slate-700 dark:text-slate-200", children: [
+                      s.quantity,
+                      " ",
+                      s.unit
+                    ] }, void 0, true, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                      lineNumber: 241,
+                      columnNumber: 153
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                    lineNumber: 240,
+                    columnNumber: 23
+                  }, this),
+                  /* @__PURE__ */ jsxDEV("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-md pt-2", children: [
+                    /* @__PURE__ */ jsxDEV("div", { className: "bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2.5 rounded-xl flex items-center gap-2", children: [
+                      /* @__PURE__ */ jsxDEV(RefreshCw, { className: "w-4 h-4 text-emerald-600 dark:text-emerald-400" }, void 0, false, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                        lineNumber: 247,
+                        columnNumber: 27
+                      }, this),
+                      /* @__PURE__ */ jsxDEV("div", { children: [
+                        /* @__PURE__ */ jsxDEV("span", { className: "text-[9px] text-slate-400 dark:text-slate-500 block font-semibold uppercase", children: "MILL SPEED" }, void 0, false, {
+                          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                          lineNumber: 249,
+                          columnNumber: 29
+                        }, this),
+                        /* @__PURE__ */ jsxDEV("span", { className: "text-xs font-bold text-slate-800 dark:text-white", children: "1200 RPM" }, void 0, false, {
+                          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                          lineNumber: 250,
+                          columnNumber: 29
+                        }, this)
+                      ] }, void 0, true, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                        lineNumber: 248,
+                        columnNumber: 27
+                      }, this)
+                    ] }, void 0, true, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                      lineNumber: 246,
+                      columnNumber: 25
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("div", { className: "bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2.5 rounded-xl flex items-center gap-2", children: [
+                      /* @__PURE__ */ jsxDEV(Droplets, { className: "w-4 h-4 text-blue-500 dark:text-blue-400" }, void 0, false, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                        lineNumber: 255,
+                        columnNumber: 27
+                      }, this),
+                      /* @__PURE__ */ jsxDEV("div", { children: [
+                        /* @__PURE__ */ jsxDEV("span", { className: "text-[9px] text-slate-400 dark:text-slate-500 block font-semibold uppercase", children: "MOISTURE" }, void 0, false, {
+                          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                          lineNumber: 257,
+                          columnNumber: 29
+                        }, this),
+                        /* @__PURE__ */ jsxDEV("span", { className: "text-xs font-bold text-slate-800 dark:text-white", children: "13.5%" }, void 0, false, {
+                          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                          lineNumber: 258,
+                          columnNumber: 29
+                        }, this)
+                      ] }, void 0, true, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                        lineNumber: 256,
+                        columnNumber: 27
+                      }, this)
+                    ] }, void 0, true, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                      lineNumber: 254,
+                      columnNumber: 25
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("div", { className: "bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2.5 rounded-xl flex items-center gap-2 col-span-2 sm:col-span-1", children: [
+                      /* @__PURE__ */ jsxDEV(Percent, { className: "w-4 h-4 text-emerald-600 dark:text-emerald-400" }, void 0, false, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                        lineNumber: 263,
+                        columnNumber: 27
+                      }, this),
+                      /* @__PURE__ */ jsxDEV("div", { children: [
+                        /* @__PURE__ */ jsxDEV("span", { className: "text-[9px] text-slate-400 dark:text-slate-500 block font-semibold uppercase", children: "RECOVERY RATE" }, void 0, false, {
+                          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                          lineNumber: 265,
+                          columnNumber: 29
+                        }, this),
+                        /* @__PURE__ */ jsxDEV("span", { className: "text-xs font-bold text-slate-800 dark:text-white", children: "68%" }, void 0, false, {
+                          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                          lineNumber: 266,
+                          columnNumber: 29
+                        }, this)
+                      ] }, void 0, true, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                        lineNumber: 264,
+                        columnNumber: 27
+                      }, this)
+                    ] }, void 0, true, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                      lineNumber: 262,
+                      columnNumber: 25
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                    lineNumber: 245,
+                    columnNumber: 23
+                  }, this)
+                ] }, void 0, true, {
+                  fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                  lineNumber: 233,
+                  columnNumber: 21
+                }, this)
+              ] }, void 0, true, {
+                fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                lineNumber: 231,
+                columnNumber: 19
+              }, this),
+              /* @__PURE__ */ jsxDEV("div", { className: "flex flex-col items-stretch md:items-end justify-center", children: /* @__PURE__ */ jsxDEV(
+                "button",
+                {
+                  id: `complete-milling-${s.id}`,
+                  onClick: () => askConfirmation(lang === "en" ? "Mark this milling request as completed? This will close the job." : "Markahan itong completed? Isasara nito ang trabaho.", () => onCompleteService(s.id), { tone: "success", confirmLabel: lang === "en" ? "Mark Completed" : "Markahan na Tapos" }),
+                  className: "py-3 px-5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-600/10 transition-all flex items-center justify-center gap-2 cursor-pointer animate-pulse",
+                  children: [
+                    /* @__PURE__ */ jsxDEV(CheckCircle, { className: "w-4 h-4" }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                      lineNumber: 279,
+                      columnNumber: 23
+                    }, this),
+                    " ",
+                    lang === "en" ? "Complete Milling" : "Tapusin ang Paggiling"
+                  ]
+                },
+                void 0,
+                true,
+                {
+                  fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                  lineNumber: 274,
+                  columnNumber: 21
+                },
+                this
+              ) }, void 0, false, {
+                fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+                lineNumber: 273,
+                columnNumber: 19
+              }, this)
+            ]
+          },
+          s.id,
+          true,
+          {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+            lineNumber: 227,
+            columnNumber: 13
+          },
+          this
+        )
+      ) }, void 0, false, {
+        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+        lineNumber: 225,
+        columnNumber: 11
+      }, this) : /* @__PURE__ */ jsxDEV(PalayHub, {}, void 0, false, {
+        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+        lineNumber: 287,
+        columnNumber: 11
+      }, this)
+    ] }, void 0, true, {
+      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+      lineNumber: 67,
+      columnNumber: 9
+    }, this)
+  ] }, void 0, true, {
+    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+    lineNumber: 54,
+    columnNumber: 7
+  }, this) }, void 0, false, {
+    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx",
+    lineNumber: 51,
+    columnNumber: 5
+  }, this);
+}
+_s(MillerDashboard, "3qjbSw8L9yfYg0tgx4RrJ5ddj6k=", false, function() {
+  return [useApp];
+});
+_c = MillerDashboard;
+var _c;
+$RefreshReg$(_c, "MillerDashboard");
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+function $RefreshReg$(type, id) {
+  return RefreshRuntime.register(type, "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/MillerDashboard.tsx " + id);
+}
+function $RefreshSig$() {
+  return RefreshRuntime.createSignatureFunctionForTransform();
+}
+
+//# sourceMappingURL=data:application/json;base64,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LEVBQUUsR0FBRyxFQUFFQyxNQUFNLFdBQVdDLGNBQWN6QixTQUFTLE9BQU8sbUJBQW1CLG9CQUFvQixDQUFDO0FBQUEsa0JBQ25TLFdBQVU7QUFBQSxrQkFFVjtBQUFBLDJDQUFDLGVBQVksV0FBVSxhQUF2QjtBQUFBO0FBQUE7QUFBQTtBQUFBLDJCQUFnQztBQUFBLG9CQUFHO0FBQUEsb0JBQUVBLFNBQVMsT0FBTyxxQkFBcUI7QUFBQTtBQUFBO0FBQUEsZ0JBTDVFO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQSxjQU1BLEtBUEY7QUFBQTtBQUFBO0FBQUE7QUFBQSxxQkFRQTtBQUFBO0FBQUE7QUFBQSxVQXJES08sRUFBRWdCO0FBQUFBLFVBRFQ7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQSxRQXVEQTtBQUFBLE1BQ0QsS0ExREg7QUFBQTtBQUFBO0FBQUE7QUFBQSxhQTJEQSxJQUdGLHVCQUFDLGNBQUQ7QUFBQTtBQUFBO0FBQUE7QUFBQSxhQUFTO0FBQUEsU0E1Tlg7QUFBQTtBQUFBO0FBQUE7QUFBQSxXQThORjtBQUFBLE9BM09BO0FBQUE7QUFBQTtBQUFBO0FBQUEsU0E0T0EsS0EvT0Y7QUFBQTtBQUFBO0FBQUE7QUFBQSxTQWdQQTtBQUVKO0FBQUN6QixHQTdRdUJYLGlCQUFlO0FBQUEsVUFZakJMLE1BQU07QUFBQTtBQUFBLEtBWkpLO0FBQWUsSUFBQXVDO0FBQUEsYUFBQUEsSUFBQSIsIm5hbWVzIjpbIkljb25TZXR0aW5ncyIsIkljb25XaGVhdCIsInVzZVN0YXRlIiwiUmVmcmVzaEN3IiwiRHJvcGxldHMiLCJQZXJjZW50IiwiQ2FsZW5kYXIiLCJNYXBQaW4iLCJDaGVja0NpcmNsZSIsInVzZUFwcCIsIlNpZGViYXIiLCJQYWxheUh1YiIsIkFubm91bmNlbWVudHNCb2FyZCIsImFza0NvbmZpcm1hdGlvbiIsIk1pbGxlckRhc2hib2FyZCIsInVzZXIiLCJzZXJ2aWNlUmVxdWVzdHMiLCJvbkFjY2VwdFNlcnZpY2UiLCJvblJlamVjdFNlcnZpY2UiLCJvbkNvbXBsZXRlU2VydmljZSIsIm9uVXBkYXRlVXNlciIsIm5vdGlmaWNhdGlvbnMiLCJvbk1hcmtOb3RpZmljYXRpb25SZWFkIiwib25DbGVhckFsbE5vdGlmaWNhdGlvbnMiLCJvbkxvZ291dCIsIl9zIiwidCIsImxhbmciLCJhY3RpdmVUYWIiLCJzZXRBY3RpdmVUYWIiLCJpc01vYmlsZVNpZGViYXJPcGVuIiwic2V0SXNNb2JpbGVTaWRlYmFyT3BlbiIsIm1pbGxpbmdSZXF1ZXN0cyIsImZpbHRlciIsInMiLCJ0eXBlIiwiYXZhaWxhYmxlUXVldWUiLCJzdGF0dXMiLCJhY3RpdmVCYXRjaGVzIiwib3BlcmF0b3JFbWFpbCIsImVtYWlsIiwidGFiSWQiLCJhbmltYXRpb25EdXJhdGlvbiIsImxlbmd0aCIsIm1hcCIsImNyb3BUeXBlIiwiZmFybWVyTmFtZSIsInF1YW50aXR5IiwidW5pdCIsImxvY2F0aW9uIiwiaWQiLCJ0b25lIiwiY29uZmlybUxhYmVsIiwiX2MiXSwiaWdub3JlTGlzdCI6W10sInNvdXJjZXMiOlsiTWlsbGVyRGFzaGJvYXJkLnRzeCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBJY29uU2V0dGluZ3MsIEljb25XaGVhdCB9IGZyb20gJ0B0YWJsZXIvaWNvbnMtcmVhY3QnO1xuaW1wb3J0IFJlYWN0LCB7IHVzZVN0YXRlIH0gZnJvbSAncmVhY3QnO1xuaW1wb3J0IHsgU2VydmljZVJlcXVlc3QsIFVzZXJBY2NvdW50LCBBcHBOb3RpZmljYXRpb24gfSBmcm9tICcuLi90eXBlcyc7XG5pbXBvcnQgeyBSZWZyZXNoQ3csIERyb3BsZXRzLCBQZXJjZW50LCBDYWxlbmRhciwgTWFwUGluLCBDaGVja0NpcmNsZSB9IGZyb20gJ2x1Y2lkZS1yZWFjdCc7XG5pbXBvcnQgeyB1c2VBcHAgfSBmcm9tICcuLi9jb250ZXh0L0FwcENvbnRleHQnO1xuaW1wb3J0IFNpZGViYXIgZnJvbSAnLi9TaWRlYmFyJztcbmltcG9ydCBQYWxheUh1YiBmcm9tICcuL1BhbGF5SHViJztcbmltcG9ydCBBbm5vdW5jZW1lbnRzQm9hcmQgZnJvbSAnLi9Bbm5vdW5jZW1lbnRzQm9hcmQnO1xuaW1wb3J0IHsgYXNrQ29uZmlybWF0aW9uIH0gZnJvbSAnLi4vbGliL2FwcERpYWxvZyc7XG5cbmludGVyZmFjZSBNaWxsZXJEYXNoYm9hcmRQcm9wcyB7XG4gIHVzZXI6IFVzZXJBY2NvdW50O1xuICBzZXJ2aWNlUmVxdWVzdHM6IFNlcnZpY2VSZXF1ZXN0W107XG4gIG9uQWNjZXB0U2VydmljZTogKHJlcXVlc3RJZDogc3RyaW5nKSA9PiB2b2lkO1xuICBvblJlamVjdFNlcnZpY2U6IChyZXF1ZXN0SWQ6IHN0cmluZykgPT4gdm9pZDtcbiAgb25Db21wbGV0ZVNlcnZpY2U6IChyZXF1ZXN0SWQ6IHN0cmluZykgPT4gdm9pZDtcbiAgb25VcGRhdGVVc2VyOiAob3JpZ2luYWxOYW1lOiBzdHJpbmcsIHVwZGF0ZWQ6IFVzZXJBY2NvdW50KSA9PiB2b2lkO1xuICBub3RpZmljYXRpb25zOiBBcHBOb3RpZmljYXRpb25bXTtcbiAgb25NYXJrTm90aWZpY2F0aW9uUmVhZDogKGlkOiBzdHJpbmcpID0+IHZvaWQ7XG4gIG9uQ2xlYXJBbGxOb3RpZmljYXRpb25zOiAoZW1haWw6IHN0cmluZykgPT4gdm9pZDtcbiAgb25Mb2dvdXQ6ICgpID0+IHZvaWQ7XG59XG5cbmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIE1pbGxlckRhc2hib2FyZCh7XG4gIHVzZXIsXG4gIHNlcnZpY2VSZXF1ZXN0cyxcbiAgb25BY2NlcHRTZXJ2aWNlLFxuICBvblJlamVjdFNlcnZpY2UsXG4gIG9uQ29tcGxldGVTZXJ2aWNlLFxuICBvblVwZGF0ZVVzZXIsXG4gIG5vdGlmaWNhdGlvbnMsXG4gIG9uTWFya05vdGlmaWNhdGlvblJlYWQsXG4gIG9uQ2xlYXJBbGxOb3RpZmljYXRpb25zLFxuICBvbkxvZ291dCxcbn06IE1pbGxlckRhc2hib2FyZFByb3BzKSB7XG4gIGNvbnN0IHsgdCwgbGFuZyB9ID0gdXNlQXBwKCk7XG4gIGNvbnN0IFthY3RpdmVUYWIsIHNldEFjdGl2ZVRhYl0gPSB1c2VTdGF0ZTwnYW5ub3VuY2VtZW50cycgfCAnYXZhaWxhYmxlJyB8ICdhY3RpdmUnIHwgJ3BhbGF5Jz4oJ2Fubm91bmNlbWVudHMnKTtcbiAgY29uc3QgW2lzTW9iaWxlU2lkZWJhck9wZW4sIHNldElzTW9iaWxlU2lkZWJhck9wZW5dID0gdXNlU3RhdGUoZmFsc2UpO1xuXG4gIGNvbnN0IG1pbGxpbmdSZXF1ZXN0cyA9IHNlcnZpY2VSZXF1ZXN0cy5maWx0ZXIocyA9PiBzLnR5cGUgPT09ICdtaWxsaW5nJyk7XG5cbiAgLy8gQXZhaWxhYmxlIHJlcXVlc3RzXG4gIGNvbnN0IGF2YWlsYWJsZVF1ZXVlID0gbWlsbGluZ1JlcXVlc3RzLmZpbHRlcihzID0+IHMuc3RhdHVzID09PSAncGVuZGluZycpO1xuXG4gIC8vIEFjdGl2ZSBtaWxsaW5nIGJhdGNoZXMgZm9yIFRISVMgb3BlcmF0b3JcbiAgY29uc3QgYWN0aXZlQmF0Y2hlcyA9IG1pbGxpbmdSZXF1ZXN0cy5maWx0ZXIoXG4gICAgcyA9PiBzLnN0YXR1cyA9PT0gJ21hdGNoZWQnICYmIHMub3BlcmF0b3JFbWFpbCA9PT0gdXNlci5lbWFpbFxuICApO1xuXG4gIHJldHVybiAoXG4gICAgPGRpdiBjbGFzc05hbWU9XCJoLWR2aCBtYXgtaC1kdmggb3ZlcmZsb3ctaGlkZGVuIGJnLXNsYXRlLTUwLzgwIGRhcms6Ymctc2xhdGUtOTUwLzkyIGJhY2tkcm9wLWJsdXItbGcgZmxleCBmbGV4LWNvbCBmb250LXNhbnMgdHJhbnNpdGlvbi1jb2xvcnMgZHVyYXRpb24tMzAwXCI+XG4gICAgICBcbiAgICAgIHsvKiBNYWluIENvbnRhaW5lciB3aXRoIExlZnQgU2lkZWJhciAqL31cbiAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleC0xIG1pbi1oLTAgZmxleCB3LWZ1bGwgb3ZlcmZsb3ctaGlkZGVuXCI+XG4gICAgICAgIDxTaWRlYmFyXG4gICAgICAgICAgdXNlcj17dXNlcn1cbiAgICAgICAgICBhY3RpdmVUYWI9e2FjdGl2ZVRhYiA9PT0gJ2F2YWlsYWJsZScgPyAncmVxdWVzdHMnIDogYWN0aXZlVGFifVxuICAgICAgICAgIG9uU2VsZWN0VGFiPXsodGFiSWQpID0+IHNldEFjdGl2ZVRhYih0YWJJZCA9PT0gJ3JlcXVlc3RzJyA/ICdhdmFpbGFibGUnIDogdGFiSWQgYXMgYW55KX1cbiAgICAgICAgICBpc01vYmlsZU9wZW49e2lzTW9iaWxlU2lkZWJhck9wZW59XG4gICAgICAgICAgb25DbG9zZU1vYmlsZT17KCkgPT4gc2V0SXNNb2JpbGVTaWRlYmFyT3BlbihmYWxzZSl9XG4gICAgICAgICAgb25VcGRhdGVVc2VyPXtvblVwZGF0ZVVzZXJ9XG4gICAgICAgICAgb25Mb2dvdXQ9e29uTG9nb3V0fVxuICAgICAgICAgIG5vdGlmaWNhdGlvbnM9e25vdGlmaWNhdGlvbnN9XG4gICAgICAgICAgb25NYXJrTm90aWZpY2F0aW9uUmVhZD17b25NYXJrTm90aWZpY2F0aW9uUmVhZH1cbiAgICAgICAgLz5cblxuICAgICAgICA8bWFpbiBjbGFzc05hbWU9XCJkYXNoYm9hcmQtbWFpbiBmbGV4LTEgbWluLXctMCB3LWZ1bGwgbWF4LXctMzYwIG14LWF1dG8gaC1mdWxsIG92ZXJmbG93LXktYXV0byBweC00IHNtOnB4LTYgbGc6cHgtOCBweS04IHNjcm9sbC1zbW9vdGhcIj5cbiAgICAgICAgXG4gICAgICAgIHsvKiBTdGF0aXN0aWNzIHBhbmVsICovfVxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImdyaWQgZ3JpZC1jb2xzLTEgc206Z3JpZC1jb2xzLTMgZ2FwLTQgc206Z2FwLTYgbWItNiBtZDptYi04IGZvbnQtc2Fuc1wiPlxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiYmctd2hpdGUgZGFyazpiZy1zbGF0ZS05MDAgcC00IG1kOnAtNiByb3VuZGVkLTJ4bCBib3JkZXIgYm9yZGVyLXNsYXRlLTEwMCBkYXJrOmJvcmRlci1zbGF0ZS04MDAgc2hhZG93LXNtIGZsZXggaXRlbXMtY2VudGVyIGdhcC00IHRyYW5zaXRpb24tYWxsIGR1cmF0aW9uLTMwMFwiPlxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJwLTMuNSBiZy1lbWVyYWxkLTUwIGRhcms6YmctZW1lcmFsZC05NTAvMzAgcm91bmRlZC14bCB0ZXh0LWVtZXJhbGQtNjAwIGRhcms6dGV4dC1lbWVyYWxkLTQwMFwiPlxuICAgICAgICAgICAgICA8UmVmcmVzaEN3IGNsYXNzTmFtZT1cInctNiBoLTYgYW5pbWF0ZS1zcGluXCIgc3R5bGU9e3sgYW5pbWF0aW9uRHVyYXRpb246ICc2cycgfX0gLz5cbiAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgPGRpdj5cbiAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC14cyBmb250LXNlbWlib2xkIHRleHQtc2xhdGUtNTAwIGRhcms6dGV4dC1zbGF0ZS00MDAgYmxvY2tcIj5cbiAgICAgICAgICAgICAgICB7bGFuZyA9PT0gJ2VuJyA/ICdBY3RpdmUgTWlsbGluZyBHcmFpbnMnIDogJ0thc2FsdWt1eWFuZyBHaW5hZ2lsaW5nJ31cbiAgICAgICAgICAgICAgPC9zcGFuPlxuICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LTJ4bCBmb250LWJvbGQgdGV4dC1zbGF0ZS05MDAgZGFyazp0ZXh0LXdoaXRlXCI+e2FjdGl2ZUJhdGNoZXMubGVuZ3RofSBCYXRjaGVzPC9zcGFuPlxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImJnLXdoaXRlIGRhcms6Ymctc2xhdGUtOTAwIHAtNCBtZDpwLTYgcm91bmRlZC0yeGwgYm9yZGVyIGJvcmRlci1zbGF0ZS0xMDAgZGFyazpib3JkZXItc2xhdGUtODAwIHNoYWRvdy1zbSBmbGV4IGl0ZW1zLWNlbnRlciBnYXAtNCB0cmFuc2l0aW9uLWFsbCBkdXJhdGlvbi0zMDBcIj5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicC0zLjUgYmctZW1lcmFsZC01MCBkYXJrOmJnLWVtZXJhbGQtOTUwLzMwIHJvdW5kZWQteGwgdGV4dC1lbWVyYWxkLTYwMCBkYXJrOnRleHQtZW1lcmFsZC00MDBcIj5cbiAgICAgICAgICAgICAgPENoZWNrQ2lyY2xlIGNsYXNzTmFtZT1cInctNiBoLTZcIiAvPlxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICA8ZGl2PlxuICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LXhzIGZvbnQtc2VtaWJvbGQgdGV4dC1zbGF0ZS01MDAgZGFyazp0ZXh0LXNsYXRlLTQwMCBibG9ja1wiPlxuICAgICAgICAgICAgICAgIHtsYW5nID09PSAnZW4nID8gJ0NvbXBsZXRlZCBUb2RheScgOiAnVGFwb3MgTmEgTmdheW9uZyBBcmF3J31cbiAgICAgICAgICAgICAgPC9zcGFuPlxuICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LTJ4bCBmb250LWJvbGQgdGV4dC1zbGF0ZS05MDAgZGFyazp0ZXh0LXdoaXRlXCI+NCBCYXRjaGVzPC9zcGFuPlxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImJnLXdoaXRlIGRhcms6Ymctc2xhdGUtOTAwIHAtNCBtZDpwLTYgcm91bmRlZC0yeGwgYm9yZGVyIGJvcmRlci1zbGF0ZS0xMDAgZGFyazpib3JkZXItc2xhdGUtODAwIHNoYWRvdy1zbSBmbGV4IGl0ZW1zLWNlbnRlciBnYXAtNCB0cmFuc2l0aW9uLWFsbCBkdXJhdGlvbi0zMDBcIj5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicC0zLjUgYmctYmx1ZS01MCBkYXJrOmJnLWJsdWUtOTUwLzMwIHJvdW5kZWQteGwgdGV4dC1ibHVlLTYwMCBkYXJrOnRleHQtYmx1ZS00MDBcIj5cbiAgICAgICAgICAgICAgPFJlZnJlc2hDdyBjbGFzc05hbWU9XCJ3LTYgaC02XCIgLz5cbiAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgPGRpdj5cbiAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC14cyBmb250LXNlbWlib2xkIHRleHQtc2xhdGUtNTAwIGRhcms6dGV4dC1zbGF0ZS00MDAgYmxvY2tcIj5cbiAgICAgICAgICAgICAgICB7bGFuZyA9PT0gJ2VuJyA/ICdQZW5kaW5nIFF1ZXVlJyA6ICdNZ2EgTmFrYXBpbGFuZyBHaWxpbmdpbid9XG4gICAgICAgICAgICAgIDwvc3Bhbj5cbiAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC0yeGwgZm9udC1ib2xkIHRleHQtc2xhdGUtOTAwIGRhcms6dGV4dC13aGl0ZVwiPnthdmFpbGFibGVRdWV1ZS5sZW5ndGh9IEJhdGNoZXM8L3NwYW4+XG4gICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgey8qIFRhYiBzd2l0Y2hlciAqL31cbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJiZy1zbGF0ZS0yMDAvNjAgZGFyazpiZy1zbGF0ZS04MDAvODAgcC0xIHJvdW5kZWQteGwgZmxleCBzZWxmLXN0YXJ0IG1iLTYgdy1maXRcIj5cbiAgICAgICAgICA8YnV0dG9uXG4gICAgICAgICAgICBvbkNsaWNrPXsoKSA9PiBzZXRBY3RpdmVUYWIoJ2F2YWlsYWJsZScpfVxuICAgICAgICAgICAgY2xhc3NOYW1lPXtgcHgtNCBweS0yIHRleHQtc20gZm9udC1ib2xkIHJvdW5kZWQtbGcgdHJhbnNpdGlvbi1hbGwgY3Vyc29yLXBvaW50ZXIgJHtcbiAgICAgICAgICAgICAgYWN0aXZlVGFiID09PSAnYXZhaWxhYmxlJyA/ICdiZy13aGl0ZSBkYXJrOmJnLXNsYXRlLTkwMCB0ZXh0LXNsYXRlLTkwMCBkYXJrOnRleHQtd2hpdGUgc2hhZG93LXNtJyA6ICd0ZXh0LXNsYXRlLTYwMCBkYXJrOnRleHQtc2xhdGUtNDAwIGhvdmVyOnRleHQtc2xhdGUtOTAwIGRhcms6aG92ZXI6dGV4dC13aGl0ZSdcbiAgICAgICAgICAgIH1gfVxuICAgICAgICAgID5cbiAgICAgICAgICAgIHtsYW5nID09PSAnZW4nID8gJ01pbGxpbmcgUXVldWUnIDogJ1BpbGEgc2EgR2lsaW5nYW4nfSAoe2F2YWlsYWJsZVF1ZXVlLmxlbmd0aH0pXG4gICAgICAgICAgPC9idXR0b24+XG4gICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgb25DbGljaz17KCkgPT4gc2V0QWN0aXZlVGFiKCdhY3RpdmUnKX1cbiAgICAgICAgICAgIGNsYXNzTmFtZT17YHB4LTQgcHktMiB0ZXh0LXNtIGZvbnQtYm9sZCByb3VuZGVkLWxnIHRyYW5zaXRpb24tYWxsIGN1cnNvci1wb2ludGVyICR7XG4gICAgICAgICAgICAgIGFjdGl2ZVRhYiA9PT0gJ2FjdGl2ZScgPyAnYmctd2hpdGUgZGFyazpiZy1zbGF0ZS05MDAgdGV4dC1zbGF0ZS05MDAgZGFyazp0ZXh0LXdoaXRlIHNoYWRvdy1zbScgOiAndGV4dC1zbGF0ZS02MDAgZGFyazp0ZXh0LXNsYXRlLTQwMCBob3Zlcjp0ZXh0LXNsYXRlLTkwMCBkYXJrOmhvdmVyOnRleHQtd2hpdGUnXG4gICAgICAgICAgICB9YH1cbiAgICAgICAgICA+XG4gICAgICAgICAgICB7bGFuZyA9PT0gJ2VuJyA/ICdBY3RpdmUgTWlsbGluZycgOiAnS2FzYWx1a3V5YW5nIEdpbmFnaWxpbmcnfSAoe2FjdGl2ZUJhdGNoZXMubGVuZ3RofSlcbiAgICAgICAgICA8L2J1dHRvbj5cbiAgICAgICAgICA8YnV0dG9uXG4gICAgICAgICAgICBvbkNsaWNrPXsoKSA9PiBzZXRBY3RpdmVUYWIoJ3BhbGF5Jyl9XG4gICAgICAgICAgICBjbGFzc05hbWU9e2BweC00IHB5LTIgdGV4dC1zbSBmb250LWJvbGQgcm91bmRlZC1sZyB0cmFuc2l0aW9uLWFsbCBjdXJzb3ItcG9pbnRlciBmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMS41ICR7XG4gICAgICAgICAgICAgIGFjdGl2ZVRhYiA9PT0gJ3BhbGF5JyA/ICdiZy1hbWJlci01MDAgdGV4dC1zbGF0ZS05NTAgc2hhZG93LXNtIGZvbnQtZXh0cmFib2xkJyA6ICd0ZXh0LXNsYXRlLTYwMCBkYXJrOnRleHQtc2xhdGUtNDAwIGhvdmVyOnRleHQtc2xhdGUtOTAwIGRhcms6aG92ZXI6dGV4dC13aGl0ZSdcbiAgICAgICAgICAgIH1gfVxuICAgICAgICAgID48c3BhbiBjbGFzc05hbWU9XCJpbmxpbmUtZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTEuNSBhbGlnbi1taWRkbGVcIj48SWNvbldoZWF0IHNpemU9ezIwfSBzdHJva2U9ezJ9IGFyaWEtaGlkZGVuPVwidHJ1ZVwiIGNsYXNzTmFtZT1cImlubGluZS1ibG9jayBzaHJpbmstMFwiIC8+PC9zcGFuPntsYW5nID09PSAnZW4nID8gJ1NlbnRyb25nIFBhbGF5JyA6ICdTZW50cm9uZyBQYWxheSd9XG4gICAgICAgICAgPC9idXR0b24+XG4gICAgICAgIDwvZGl2PlxuXG4gICAgICAgIHsvKiBEeW5hbWljIFF1ZXVlIGRpc3BsYXkgKi99XG4gICAgICAgIHthY3RpdmVUYWIgPT09ICdhbm5vdW5jZW1lbnRzJyA/IChcbiAgICAgICAgICA8QW5ub3VuY2VtZW50c0JvYXJkXG4gICAgICAgICAgICB1c2VyPXt1c2VyfVxuICAgICAgICAgICAgbm90aWZpY2F0aW9ucz17bm90aWZpY2F0aW9uc31cbiAgICAgICAgICAgIG9uTWFya05vdGlmaWNhdGlvblJlYWQ9e29uTWFya05vdGlmaWNhdGlvblJlYWR9XG4gICAgICAgICAgICBvbkNsZWFyQWxsTm90aWZpY2F0aW9ucz17b25DbGVhckFsbE5vdGlmaWNhdGlvbnN9XG4gICAgICAgICAgICBvbk5hdmlnYXRlVG9GZWF0dXJlPXsodGFiSWQpID0+IHNldEFjdGl2ZVRhYih0YWJJZCA9PT0gJ3JlcXVlc3RzJyA/ICdhdmFpbGFibGUnIDogdGFiSWQgYXMgYW55KX1cbiAgICAgICAgICAvPlxuICAgICAgICApIDogYWN0aXZlVGFiID09PSAnYXZhaWxhYmxlJyA/IChcbiAgICAgICAgICBhdmFpbGFibGVRdWV1ZS5sZW5ndGggPT09IDAgPyAoXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImJnLXdoaXRlIGRhcms6Ymctc2xhdGUtOTAwIHRleHQtY2VudGVyIHB5LTE2IHB4LTQgcm91bmRlZC0yeGwgYm9yZGVyIGJvcmRlci1zbGF0ZS0xMDAgZGFyazpib3JkZXItc2xhdGUtODAwIHNoYWRvdy1zbSB0cmFuc2l0aW9uLWFsbCBkdXJhdGlvbi0zMDBcIj5cbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ3LTE2IGgtMTYgYmctc2xhdGUtNTAgZGFyazpiZy1zbGF0ZS04MDAgdGV4dC1zbGF0ZS00MDAgZGFyazp0ZXh0LXNsYXRlLTYwMCByb3VuZGVkLWZ1bGwgZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgbXgtYXV0byBtYi00IHRleHQtMnhsXCI+PHNwYW4gY2xhc3NOYW1lPVwiaW5saW5lLWZsZXggaXRlbXMtY2VudGVyIGdhcC0xLjUgYWxpZ24tbWlkZGxlXCI+PEljb25XaGVhdCBzaXplPXsyNH0gc3Ryb2tlPXsyfSBhcmlhLWhpZGRlbj1cInRydWVcIiBjbGFzc05hbWU9XCJpbmxpbmUtYmxvY2sgc2hyaW5rLTBcIiAvPjwvc3Bhbj48L2Rpdj5cbiAgICAgICAgICAgICAgPGgzIGNsYXNzTmFtZT1cInRleHQtYmFzZSBmb250LWJvbGQgdGV4dC1zbGF0ZS05MDAgZGFyazp0ZXh0LXdoaXRlXCI+XG4gICAgICAgICAgICAgICAge2xhbmcgPT09ICdlbicgPyAnTm8gUGVuZGluZyBNaWxsaW5nIFJlcXVlc3RzJyA6ICdXYWxhbmcgTmFrYXBpbGEgc2EgR2lsaW5nYW4nfVxuICAgICAgICAgICAgICA8L2gzPlxuICAgICAgICAgICAgICA8cCBjbGFzc05hbWU9XCJ0ZXh0LXNtIHRleHQtc2xhdGUtNTAwIGRhcms6dGV4dC1zbGF0ZS00MDAgbXQtMSBtYXgtdy1zbSBteC1hdXRvXCI+XG4gICAgICAgICAgICAgICAge2xhbmcgPT09ICdlbicgPyAnQ3VycmVudGx5IG5vIHJlcXVlc3RzIGZvciBncmFpbiBtaWxsaW5nIG9yIHBvbGlzaGluZyBpbiB5b3VyIGFyZWEuJyA6ICdXYWxhbmcgaGlsaW5nIHNhIHBhZ2dpbGluZyBvIHBhZ3BhcGFraW5pcyBzYSBpeW9uZyBsdWdhci4nfVxuICAgICAgICAgICAgICA8L3A+XG4gICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICApIDogKFxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJncmlkIGdyaWQtY29scy0xIG1kOmdyaWQtY29scy0yIGdhcC02XCI+XG4gICAgICAgICAgICAgIHthdmFpbGFibGVRdWV1ZS5tYXAoKHMpID0+IChcbiAgICAgICAgICAgICAgICA8ZGl2XG4gICAgICAgICAgICAgICAgICBrZXk9e3MuaWR9XG4gICAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJiZy13aGl0ZSBkYXJrOmJnLXNsYXRlLTkwMCByb3VuZGVkLTJ4bCBib3JkZXIgYm9yZGVyLXNsYXRlLTEwMCBkYXJrOmJvcmRlci1zbGF0ZS04MDAgc2hhZG93LXNtIG92ZXJmbG93LWhpZGRlbiBmbGV4IGZsZXgtY29sIGhvdmVyOmJvcmRlci1zbGF0ZS0yMDAgZGFyazpob3Zlcjpib3JkZXItc2xhdGUtNzAwIHRyYW5zaXRpb24tYWxsIGR1cmF0aW9uLTMwMFwiXG4gICAgICAgICAgICAgICAgPlxuICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJwLTYgZ3Jvd1wiPlxuICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtc3RhcnQganVzdGlmeS1iZXR3ZWVuIGdhcC00IG1iLTRcIj5cbiAgICAgICAgICAgICAgICAgICAgICA8ZGl2PlxuICAgICAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC14cyBmb250LWJvbGQgdGV4dC1lbWVyYWxkLTYwMCBkYXJrOnRleHQtZW1lcmFsZC00MDAgdXBwZXJjYXNlIHRyYWNraW5nLXdpZGVyIGJnLWVtZXJhbGQtNTAgZGFyazpiZy1lbWVyYWxkLTk1MC80MCBweC0yIHB5LTAuNSByb3VuZGVkXCI+XG4gICAgICAgICAgICAgICAgICAgICAgICAgIFBFTkRJTkcgTUlMTElOR1xuICAgICAgICAgICAgICAgICAgICAgICAgPC9zcGFuPlxuICAgICAgICAgICAgICAgICAgICAgICAgPGgzIGNsYXNzTmFtZT1cInRleHQtbGcgZm9udC1ib2xkIHRleHQtc2xhdGUtOTAwIGRhcms6dGV4dC13aGl0ZSBtdC0xIGZvbnQtZGlzcGxheVwiPntzLmNyb3BUeXBlfTwvaDM+XG4gICAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC14cyBweC0yLjUgcHktMSByb3VuZGVkLWZ1bGwgZm9udC1ib2xkIGJnLWVtZXJhbGQtNTAgZGFyazpiZy1lbWVyYWxkLTk1MC8yMCB0ZXh0LWVtZXJhbGQtNzAwIGRhcms6dGV4dC1lbWVyYWxkLTQwMCBib3JkZXIgYm9yZGVyLWVtZXJhbGQtMTAwIGRhcms6Ym9yZGVyLWVtZXJhbGQtOTAwLzUwXCI+XG4gICAgICAgICAgICAgICAgICAgICAgICB7bGFuZyA9PT0gJ2VuJyA/ICdORUVEUyBNSUxMSU5HJyA6ICdLQUlMQU5HQU4gR0lMSU5HSU4nfVxuICAgICAgICAgICAgICAgICAgICAgIDwvc3Bhbj5cbiAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgICAgICAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC14cyB0ZXh0LXNsYXRlLTUwMCBkYXJrOnRleHQtc2xhdGUtNDAwIGZvbnQtc2VtaWJvbGQgbWItM1wiPkZhcm1lcjoge3MuZmFybWVyTmFtZX08L3A+XG5cbiAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJzcGFjZS15LTMgdGV4dC1zbSBtYi00IHRleHQtc2xhdGUtNjAwIGRhcms6dGV4dC1zbGF0ZS0zMDBcIj5cbiAgICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGdhcC0yXCI+XG4gICAgICAgICAgICAgICAgICAgICAgICA8UmVmcmVzaEN3IGNsYXNzTmFtZT1cInctNCBoLTQgdGV4dC1zbGF0ZS00MDBcIiAvPlxuICAgICAgICAgICAgICAgICAgICAgICAgPHNwYW4+e2xhbmcgPT09ICdlbicgPyAnR3JhaW4gV2VpZ2h0JyA6ICdUaW1iYW5nIG5nIEJ1dGlsJ306IDxzdHJvbmcgY2xhc3NOYW1lPVwidGV4dC1zbGF0ZS05MDAgZGFyazp0ZXh0LXdoaXRlXCI+e3MucXVhbnRpdHl9IHtzLnVuaXR9PC9zdHJvbmc+PC9zcGFuPlxuICAgICAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTJcIj5cbiAgICAgICAgICAgICAgICAgICAgICAgIDxNYXBQaW4gY2xhc3NOYW1lPVwidy00IGgtNCB0ZXh0LXNsYXRlLTQwMFwiIC8+XG4gICAgICAgICAgICAgICAgICAgICAgICA8c3Bhbj5Mb2NhdGlvbjogPHN0cm9uZyBjbGFzc05hbWU9XCJ0ZXh0LXNsYXRlLTkwMCBkYXJrOnRleHQtd2hpdGUgdHJ1bmNhdGVcIj57cy5sb2NhdGlvbn08L3N0cm9uZz48L3NwYW4+XG4gICAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMlwiPlxuICAgICAgICAgICAgICAgICAgICAgICAgPENhbGVuZGFyIGNsYXNzTmFtZT1cInctNCBoLTQgdGV4dC1zbGF0ZS00MDBcIiAvPlxuICAgICAgICAgICAgICAgICAgICAgICAgPHNwYW4+TWlsbGluZyBEdXJhdGlvbjogPHN0cm9uZyBjbGFzc05hbWU9XCJ0ZXh0LXNsYXRlLTkwMCBkYXJrOnRleHQtd2hpdGVcIj5TYW1lIERheTwvc3Ryb25nPjwvc3Bhbj5cbiAgICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgICA8L2Rpdj5cblxuICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJiZy1zbGF0ZS01MCBkYXJrOmJnLXNsYXRlLTkwMC81MCBwLTQgYm9yZGVyLXQgYm9yZGVyLXNsYXRlLTEwMCBkYXJrOmJvcmRlci1zbGF0ZS04MDAgZmxleCBnYXAtM1wiPlxuICAgICAgICAgICAgICAgICAgICA8YnV0dG9uXG4gICAgICAgICAgICAgICAgICAgICAgaWQ9e2ByZWplY3QtbWlsbGluZy0ke3MuaWR9YH1cbiAgICAgICAgICAgICAgICAgICAgICBvbkNsaWNrPXsoKSA9PiBhc2tDb25maXJtYXRpb24obGFuZyA9PT0gJ2VuJyA/ICdSZWplY3QgdGhpcyBtaWxsaW5nIHJlcXVlc3Q/JyA6ICdUYW5nZ2loYW4gYW5nIHJlcXVlc3QgbmEgaXRvPycsICgpID0+IG9uUmVqZWN0U2VydmljZShzLmlkKSwgeyB0b25lOiAnZGFuZ2VyJywgY29uZmlybUxhYmVsOiBsYW5nID09PSAnZW4nID8gJ1JlamVjdCBSZXF1ZXN0JyA6ICdUYW5nZ2loYW4nIH0pfVxuICAgICAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cImZsZXgtMSBweS0yLjUgYm9yZGVyIGJvcmRlci1yZWQtMjAwIGRhcms6Ym9yZGVyLXJlZC05MDAvNTAgaG92ZXI6YmctcmVkLTUwIGRhcms6aG92ZXI6YmctcmVkLTk1MC8yMCB0ZXh0LXJlZC02MDAgZGFyazp0ZXh0LXJlZC00MDAgZm9udC1ib2xkIHRleHQtc20gcm91bmRlZC14bCB0cmFuc2l0aW9uLWFsbCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBnYXAtMiBjdXJzb3ItcG9pbnRlciBmb250LXNhbnNcIlxuICAgICAgICAgICAgICAgICAgICA+XG4gICAgICAgICAgICAgICAgICAgICAge2xhbmcgPT09ICdlbicgPyAnUmVqZWN0JyA6ICdUYW5nZ2loYW4nfVxuICAgICAgICAgICAgICAgICAgICA8L2J1dHRvbj5cbiAgICAgICAgICAgICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgICAgICAgICAgIGlkPXtgYWNjZXB0LW1pbGxpbmctJHtzLmlkfWB9XG4gICAgICAgICAgICAgICAgICAgICAgb25DbGljaz17KCkgPT4gYXNrQ29uZmlybWF0aW9uKGxhbmcgPT09ICdlbicgPyAnQWNjZXB0IHRoaXMgbWlsbGluZyByZXF1ZXN0IGFuZCB0YWtlIHJlc3BvbnNpYmlsaXR5IGZvciBpdD8nIDogJ1RhbmdnYXBpbiBhdCBha3VpbiBhbmcgcmVxdWVzdCBuYSBpdG8/JywgKCkgPT4gb25BY2NlcHRTZXJ2aWNlKHMuaWQpLCB7IHRvbmU6ICdzdWNjZXNzJywgY29uZmlybUxhYmVsOiBsYW5nID09PSAnZW4nID8gJ0FjY2VwdCBSZXF1ZXN0JyA6ICdUYW5nZ2FwaW4nIH0pfVxuICAgICAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cImZsZXgtMSBweS0yLjUgYmctZW1lcmFsZC02MDAgaG92ZXI6YmctZW1lcmFsZC01MDAgdGV4dC13aGl0ZSBmb250LWJvbGQgdGV4dC1zbSByb3VuZGVkLXhsIHRyYW5zaXRpb24tYWxsIHNoYWRvdy1tZCBzaGFkb3ctZW1lcmFsZC02MDAvMTAgZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgZ2FwLTIgY3Vyc29yLXBvaW50ZXJcIlxuICAgICAgICAgICAgICAgICAgICA+XG4gICAgICAgICAgICAgICAgICAgICAgPFJlZnJlc2hDdyBjbGFzc05hbWU9XCJ3LTQgaC00IGFuaW1hdGUtc3BpblwiIHN0eWxlPXt7IGFuaW1hdGlvbkR1cmF0aW9uOiAnM3MnIH19IC8+IHtsYW5nID09PSAnZW4nID8gJ1N0YXJ0IE1pbGxpbmcnIDogJ1NpbXVsYW4gYW5nIFBhZ2dpbGluZyd9XG4gICAgICAgICAgICAgICAgICAgIDwvYnV0dG9uPlxuICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICkpfVxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgKVxuICAgICAgICApIDogYWN0aXZlVGFiID09PSAnYWN0aXZlJyA/IChcbiAgICAgICAgICBhY3RpdmVCYXRjaGVzLmxlbmd0aCA9PT0gMCA/IChcbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiYmctd2hpdGUgZGFyazpiZy1zbGF0ZS05MDAgdGV4dC1jZW50ZXIgcHktMTYgcHgtNCByb3VuZGVkLTJ4bCBib3JkZXIgYm9yZGVyLXNsYXRlLTEwMCBkYXJrOmJvcmRlci1zbGF0ZS04MDAgc2hhZG93LXNtIHRyYW5zaXRpb24tYWxsIGR1cmF0aW9uLTMwMFwiPlxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInctMTYgaC0xNiBiZy1zbGF0ZS01MCBkYXJrOmJnLXNsYXRlLTgwMCB0ZXh0LXNsYXRlLTQwMCBkYXJrOnRleHQtc2xhdGUtNjAwIHJvdW5kZWQtZnVsbCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBteC1hdXRvIG1iLTQgdGV4dC0yeGxcIj48c3BhbiBjbGFzc05hbWU9XCJpbmxpbmUtZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTEuNSBhbGlnbi1taWRkbGVcIj48SWNvbldoZWF0IHNpemU9ezI0fSBzdHJva2U9ezJ9IGFyaWEtaGlkZGVuPVwidHJ1ZVwiIGNsYXNzTmFtZT1cImlubGluZS1ibG9jayBzaHJpbmstMFwiIC8+PC9zcGFuPjwvZGl2PlxuICAgICAgICAgICAgICA8aDMgY2xhc3NOYW1lPVwidGV4dC1iYXNlIGZvbnQtYm9sZCB0ZXh0LXNsYXRlLTkwMCBkYXJrOnRleHQtd2hpdGVcIj5cbiAgICAgICAgICAgICAgICB7bGFuZyA9PT0gJ2VuJyA/ICdObyBBY3RpdmUgTWlsbGluZyBCYXRjaGVzJyA6ICdXYWxhbmcgS2FzYWx1a3V5YW5nIEdpbmFnaWxpbmcnfVxuICAgICAgICAgICAgICA8L2gzPlxuICAgICAgICAgICAgICA8cCBjbGFzc05hbWU9XCJ0ZXh0LXNtIHRleHQtc2xhdGUtNTAwIGRhcms6dGV4dC1zbGF0ZS00MDAgbXQtMSBtYXgtdy1zbSBteC1hdXRvXCI+XG4gICAgICAgICAgICAgICAge2xhbmcgPT09ICdlbicgPyAnQ2hvb3NlIGEgYmF0Y2ggZnJvbSB0aGUgcXVldWUgdGFiIHRvIHN0YXJ0IHRoZSBtaWxsaW5nIHByb2Nlc3MuJyA6ICdQdW1pbGkgbmcga2FyZ2Egc2EgcGlsYSB1cGFuZyBzaW11bGFuIGFuZyBwYWdnaWxpbmcuJ31cbiAgICAgICAgICAgICAgPC9wPlxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgKSA6IChcbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwic3BhY2UteS02XCI+XG4gICAgICAgICAgICAgIHthY3RpdmVCYXRjaGVzLm1hcCgocykgPT4gKFxuICAgICAgICAgICAgICAgIDxkaXZcbiAgICAgICAgICAgICAgICAgIGtleT17cy5pZH1cbiAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cImJnLWVtZXJhbGQtNTAvMTAgZGFyazpiZy1lbWVyYWxkLTk1MC8xMCBwLTYgcm91bmRlZC0yeGwgYm9yZGVyIGJvcmRlci1lbWVyYWxkLTEwMCBkYXJrOmJvcmRlci1lbWVyYWxkLTkwMC81MCBzaGFkb3ctc20gZmxleCBmbGV4LWNvbCBtZDpmbGV4LXJvdyBtZDppdGVtcy1jZW50ZXIganVzdGlmeS1iZXR3ZWVuIGdhcC02IHRyYW5zaXRpb24tYWxsIGR1cmF0aW9uLTMwMFwiXG4gICAgICAgICAgICAgICAgPlxuICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLXN0YXJ0IGdhcC00IGdyb3dcIj5cbiAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ3LTEyIGgtMTIgcm91bmRlZC14bCBiZy1lbWVyYWxkLTEwMCBkYXJrOmJnLWVtZXJhbGQtOTUwLzQwIHRleHQtZW1lcmFsZC03MDAgZGFyazp0ZXh0LWVtZXJhbGQtNDAwIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHRleHQteGwgc2hyaW5rLTAgZm9udC1kaXNwbGF5XCI+PHNwYW4gY2xhc3NOYW1lPVwiaW5saW5lLWZsZXggaXRlbXMtY2VudGVyIGdhcC0xLjUgYWxpZ24tbWlkZGxlXCI+PEljb25TZXR0aW5ncyBzaXplPXsyNH0gc3Ryb2tlPXsyfSBhcmlhLWhpZGRlbj1cInRydWVcIiBjbGFzc05hbWU9XCJpbmxpbmUtYmxvY2sgc2hyaW5rLTBcIiAvPjwvc3Bhbj48L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJzcGFjZS15LTIgZ3Jvd1wiPlxuICAgICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTIgZmxleC13cmFwXCI+XG4gICAgICAgICAgICAgICAgICAgICAgICA8aDQgY2xhc3NOYW1lPVwiZm9udC1leHRyYWJvbGQgdGV4dC1zbGF0ZS05MDAgZGFyazp0ZXh0LXdoaXRlIHRleHQtbGcgZm9udC1kaXNwbGF5XCI+e3MuY3JvcFR5cGV9PC9oND5cbiAgICAgICAgICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInRleHQtWzEwcHhdIHB4LTIuNSBweS0wLjUgcm91bmRlZC1mdWxsIGZvbnQtYm9sZCBiZy1lbWVyYWxkLTEwMCBkYXJrOmJnLWVtZXJhbGQtOTUwLzUwIHRleHQtZW1lcmFsZC04MDAgZGFyazp0ZXh0LWVtZXJhbGQtMzAwIHVwcGVyY2FzZSB0cmFja2luZy13aWRlciBhbmltYXRlLXB1bHNlXCI+XG4gICAgICAgICAgICAgICAgICAgICAgICAgIHtsYW5nID09PSAnZW4nID8gJ0N1cnJlbnRseSBNaWxsaW5nJyA6ICdLYXNhbHVrdXlhbmcgR2luYWdpbGluZyd9XG4gICAgICAgICAgICAgICAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC14cyB0ZXh0LXNsYXRlLTUwMCBkYXJrOnRleHQtc2xhdGUtNDAwXCI+XG4gICAgICAgICAgICAgICAgICAgICAgICBGYXJtZXI6IDxzdHJvbmcgY2xhc3NOYW1lPVwidGV4dC1zbGF0ZS03MDAgZGFyazp0ZXh0LXNsYXRlLTIwMFwiPntzLmZhcm1lck5hbWV9PC9zdHJvbmc+IOKAoiB7bGFuZyA9PT0gJ2VuJyA/ICdRdWFudGl0eScgOiAnRGFtaSd9OiA8c3Ryb25nIGNsYXNzTmFtZT1cInRleHQtc2xhdGUtNzAwIGRhcms6dGV4dC1zbGF0ZS0yMDBcIj57cy5xdWFudGl0eX0ge3MudW5pdH08L3N0cm9uZz5cbiAgICAgICAgICAgICAgICAgICAgICA8L3A+XG5cbiAgICAgICAgICAgICAgICAgICAgICB7LyogRXF1aXBtZW50IHBhcmFtZXRlcnMgKi99XG4gICAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJncmlkIGdyaWQtY29scy0yIHNtOmdyaWQtY29scy0zIGdhcC0zIG1heC13LW1kIHB0LTJcIj5cbiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiYmctd2hpdGUgZGFyazpiZy1zbGF0ZS04MDAgYm9yZGVyIGJvcmRlci1zbGF0ZS0xMDAgZGFyazpib3JkZXItc2xhdGUtNzAwIHAtMi41IHJvdW5kZWQteGwgZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTJcIj5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgPFJlZnJlc2hDdyBjbGFzc05hbWU9XCJ3LTQgaC00IHRleHQtZW1lcmFsZC02MDAgZGFyazp0ZXh0LWVtZXJhbGQtNDAwXCIgLz5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgPGRpdj5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LVs5cHhdIHRleHQtc2xhdGUtNDAwIGRhcms6dGV4dC1zbGF0ZS01MDAgYmxvY2sgZm9udC1zZW1pYm9sZCB1cHBlcmNhc2VcIj5NSUxMIFNQRUVEPC9zcGFuPlxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInRleHQteHMgZm9udC1ib2xkIHRleHQtc2xhdGUtODAwIGRhcms6dGV4dC13aGl0ZVwiPjEyMDAgUlBNPC9zcGFuPlxuICAgICAgICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgICAgIDwvZGl2PlxuXG4gICAgICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImJnLXdoaXRlIGRhcms6Ymctc2xhdGUtODAwIGJvcmRlciBib3JkZXItc2xhdGUtMTAwIGRhcms6Ym9yZGVyLXNsYXRlLTcwMCBwLTIuNSByb3VuZGVkLXhsIGZsZXggaXRlbXMtY2VudGVyIGdhcC0yXCI+XG4gICAgICAgICAgICAgICAgICAgICAgICAgIDxEcm9wbGV0cyBjbGFzc05hbWU9XCJ3LTQgaC00IHRleHQtYmx1ZS01MDAgZGFyazp0ZXh0LWJsdWUtNDAwXCIgLz5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgPGRpdj5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LVs5cHhdIHRleHQtc2xhdGUtNDAwIGRhcms6dGV4dC1zbGF0ZS01MDAgYmxvY2sgZm9udC1zZW1pYm9sZCB1cHBlcmNhc2VcIj5NT0lTVFVSRTwvc3Bhbj5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LXhzIGZvbnQtYm9sZCB0ZXh0LXNsYXRlLTgwMCBkYXJrOnRleHQtd2hpdGVcIj4xMy41JTwvc3Bhbj5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cblxuICAgICAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJiZy13aGl0ZSBkYXJrOmJnLXNsYXRlLTgwMCBib3JkZXIgYm9yZGVyLXNsYXRlLTEwMCBkYXJrOmJvcmRlci1zbGF0ZS03MDAgcC0yLjUgcm91bmRlZC14bCBmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMiBjb2wtc3Bhbi0yIHNtOmNvbC1zcGFuLTFcIj5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgPFBlcmNlbnQgY2xhc3NOYW1lPVwidy00IGgtNCB0ZXh0LWVtZXJhbGQtNjAwIGRhcms6dGV4dC1lbWVyYWxkLTQwMFwiIC8+XG4gICAgICAgICAgICAgICAgICAgICAgICAgIDxkaXY+XG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC1bOXB4XSB0ZXh0LXNsYXRlLTQwMCBkYXJrOnRleHQtc2xhdGUtNTAwIGJsb2NrIGZvbnQtc2VtaWJvbGQgdXBwZXJjYXNlXCI+UkVDT1ZFUlkgUkFURTwvc3Bhbj5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LXhzIGZvbnQtYm9sZCB0ZXh0LXNsYXRlLTgwMCBkYXJrOnRleHQtd2hpdGVcIj42OCU8L3NwYW4+XG4gICAgICAgICAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBmbGV4LWNvbCBpdGVtcy1zdHJldGNoIG1kOml0ZW1zLWVuZCBqdXN0aWZ5LWNlbnRlclwiPlxuICAgICAgICAgICAgICAgICAgICA8YnV0dG9uXG4gICAgICAgICAgICAgICAgICAgICAgaWQ9e2Bjb21wbGV0ZS1taWxsaW5nLSR7cy5pZH1gfVxuICAgICAgICAgICAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IGFza0NvbmZpcm1hdGlvbihsYW5nID09PSAnZW4nID8gJ01hcmsgdGhpcyBtaWxsaW5nIHJlcXVlc3QgYXMgY29tcGxldGVkPyBUaGlzIHdpbGwgY2xvc2UgdGhlIGpvYi4nIDogJ01hcmthaGFuIGl0b25nIGNvbXBsZXRlZD8gSXNhc2FyYSBuaXRvIGFuZyB0cmFiYWhvLicsICgpID0+IG9uQ29tcGxldGVTZXJ2aWNlKHMuaWQpLCB7IHRvbmU6ICdzdWNjZXNzJywgY29uZmlybUxhYmVsOiBsYW5nID09PSAnZW4nID8gJ01hcmsgQ29tcGxldGVkJyA6ICdNYXJrYWhhbiBuYSBUYXBvcycgfSl9XG4gICAgICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwicHktMyBweC01IGJnLWVtZXJhbGQtNjAwIGhvdmVyOmJnLWVtZXJhbGQtNTAwIHRleHQtd2hpdGUgZm9udC1ib2xkIHRleHQtc20gcm91bmRlZC14bCBzaGFkb3ctbGcgc2hhZG93LWVtZXJhbGQtNjAwLzEwIHRyYW5zaXRpb24tYWxsIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIGdhcC0yIGN1cnNvci1wb2ludGVyIGFuaW1hdGUtcHVsc2VcIlxuICAgICAgICAgICAgICAgICAgICA+XG4gICAgICAgICAgICAgICAgICAgICAgPENoZWNrQ2lyY2xlIGNsYXNzTmFtZT1cInctNCBoLTRcIiAvPiB7bGFuZyA9PT0gJ2VuJyA/ICdDb21wbGV0ZSBNaWxsaW5nJyA6ICdUYXB1c2luIGFuZyBQYWdnaWxpbmcnfVxuICAgICAgICAgICAgICAgICAgICA8L2J1dHRvbj5cbiAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICApKX1cbiAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgIClcbiAgICAgICAgKSA6IChcbiAgICAgICAgICA8UGFsYXlIdWIgLz5cbiAgICAgICAgKX1cbiAgICAgIDwvbWFpbj5cbiAgICAgIDwvZGl2PlxuICAgIDwvZGl2PlxuICApO1xufVxuIl0sImZpbGUiOiJDOi9Vc2Vycy9ieXJvbi9Eb3dubG9hZHMvS0FXSU5HIG5nYWEgKDIpL0tBV0lORygyKS9zcmMvY29tcG9uZW50cy9NaWxsZXJEYXNoYm9hcmQudHN4In0=

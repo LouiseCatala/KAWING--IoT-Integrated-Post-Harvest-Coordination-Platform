@@ -1,0 +1,58 @@
+- generic [ref=e171]:
+  - complementary [ref=e172]:
+    - generic [ref=e173]:
+      - button "B Byron12 My Profile" [ref=e399] [cursor=pointer]:
+        - generic [ref=e176]: B
+        - generic [ref=e283]:
+          - generic [ref=e284]: Byron12
+          - generic [ref=e285]: My Profile
+      - generic [ref=e178]:
+        - generic [ref=e179]:
+          - generic [ref=e291]: Features & Workspace
+          - button "6 unread notifications" [ref=e180]:
+            - generic [ref=e184]: "+6"
+        - button "+5 Buy Harvests" [ref=e400] [cursor=pointer]:
+          - generic [ref=e186]:
+            - generic [ref=e187]: "+5"
+            - generic [ref=e293]: Buy Harvests
+        - button "My Price Offers" [ref=e192] [cursor=pointer]
+        - button "Announcements Board" [ref=e199] [cursor=pointer]
+        - button "+1 Loan Management" [ref=e401] [cursor=pointer]:
+          - generic [ref=e207]:
+            - generic [ref=e208]: "+1"
+            - generic [ref=e299]: Loan Management
+        - button "Logistics" [active] [ref=e213] [cursor=pointer]
+      - button "Switch to light mode" [ref=e222] [cursor=pointer]:
+        - generic [ref=e304]: Light Mode
+      - button "Log Out" [ref=e402] [cursor=pointer]
+      - generic [ref=e234]:
+        - generic [ref=e307]: Account records secured
+        - generic [ref=e312]: v2.4
+  - main [ref=e235]:
+    - generic [ref=e237]:
+      - heading "Available Logistics Jobs" [level=1] [ref=e338]
+      - paragraph [ref=e239]: View farmer transport requests and hauling needs.
+    - generic [ref=e339]:
+      - generic [ref=e340]:
+        - generic [ref=e341]:
+          - heading "Choose a service category" [level=2] [ref=e342]
+          - paragraph [ref=e343]: Review open farmer requests across every service your business can provide.
+        - generic [ref=e344]:
+          - button "All Services 0" [ref=e345]:
+            - generic [ref=e346]: All Services
+            - generic [ref=e351]: "0"
+          - button "Transport 0" [ref=e352]:
+            - generic [ref=e353]: Transport
+            - generic [ref=e359]: "0"
+          - button "Storage 0" [ref=e360]:
+            - generic [ref=e361]: Storage
+            - generic [ref=e368]: "0"
+          - button "Drying 0" [ref=e369]:
+            - generic [ref=e370]: Drying
+            - generic [ref=e375]: "0"
+          - button "Milling 0" [ref=e376]:
+            - generic [ref=e377]: Milling
+            - generic [ref=e383]: "0"
+      - generic [ref=e384]:
+        - heading "No Available Service Requests" [level=3] [ref=e389]
+        - paragraph [ref=e390]: New farmer service requests will appear here for you to accept.

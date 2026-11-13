@@ -1,0 +1,49 @@
+- generic [ref=e559]:
+  - generic [ref=e560] [cursor=pointer]:
+    - button "Switch to light mode" [ref=e561]
+    - generic "KAWING":
+      - generic [ref=e568]: KA
+      - generic [ref=e569]: WING
+    - generic [ref=e571]:
+      - button "CLICK ANYWHERE TO ENTER KAWING" [ref=e572]
+      - link "Discover KAWING" [ref=e574]:
+        - /url: "#kawing-benefits"
+  - main [ref=e577]:
+    - generic [ref=e578]:
+      - generic [ref=e579]:
+        - generic [ref=e580]: How KAWING helps
+        - heading "From harvest to market, connected at every step." [level=2] [ref=e581]
+        - paragraph [ref=e582]: Farm tools, opportunities, and trusted services in one place.
+      - tablist "KAWING benefits" [ref=e583]:
+        - tab "Better Market Access" [selected] [ref=e584] [cursor=pointer]
+        - tab "PalaySense Guidance" [ref=e592] [cursor=pointer]
+        - tab "Connected Farm Services" [ref=e597] [cursor=pointer]
+        - tab "₱ Production Support" [ref=e604] [cursor=pointer]:
+          - generic [ref=e605]: ₱
+          - text: Production Support
+      - article [ref=e606]:
+        - generic [ref=e609]: 01 / 04
+        - generic [ref=e617]:
+          - generic [ref=e618]: Better Market Access
+          - heading "Bring Your Harvest Directly to Buyers" [level=3] [ref=e619]
+        - paragraph [ref=e620]: Post palay and compare offers from verified buyers.
+        - strong [ref=e621]: Clearer choices and stronger market connections
+      - generic [ref=e625]:
+        - button "Pause" [ref=e626] [cursor=pointer]
+        - generic [ref=e630]:
+          - button "Previous benefit" [ref=e631] [cursor=pointer]
+          - button "Next benefit" [ref=e634] [cursor=pointer]
+  - contentinfo [ref=e637]:
+    - generic [ref=e638]:
+      - generic [ref=e639]:
+        - img "KAWING" [ref=e640]
+        - paragraph [ref=e641]: Connecting Pampanga’s farmers to trusted buyers, reliable services, and better opportunities.
+      - generic [ref=e642]:
+        - heading "Address" [level=3] [ref=e643]
+        - paragraph [ref=e644]: 6M67+94C, Magalang, Pampanga
+      - generic [ref=e645]:
+        - heading "Office Hours" [level=3] [ref=e646]
+        - paragraph [ref=e647]: "Monday–Friday: 8:00 AM–5:00 PM"
+        - paragraph [ref=e648]: "Saturday–Sunday: Closed"
+    - generic [ref=e649]: © 2026 KAWING Agricultural Platform. All rights reserved.
+    - paragraph [ref=e650]: KAWING only connects farmers, buyers, and delivery or service providers. All deals are made between the users.

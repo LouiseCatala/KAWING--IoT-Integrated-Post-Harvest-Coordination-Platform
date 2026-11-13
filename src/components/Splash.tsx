@@ -62,7 +62,7 @@ export default function Splash({ onComplete }: SplashProps) {
 
   const fact = facts[activeFact];
   return (
-    <div className={`kawing-landing ${isExiting ? 'is-exiting' : ''}`}>
+    <div className={`kawing-landing landing-overdrive ${isExiting ? 'is-exiting' : ''}`}>
       <section ref={heroRef} className="landing-hero" onClick={enterKawing} onPointerMove={handlePointerMove} onPointerLeave={handlePointerLeave}>
         <ThemeToggle variant="landing" />
         <div className="landing-wordmark" aria-label="KAWING"><span>KA</span><span>WING</span></div>

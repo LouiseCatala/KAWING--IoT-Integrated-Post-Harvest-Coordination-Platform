@@ -1,0 +1,38 @@
+- generic [ref=e111]:
+  - generic:
+    - img "Mount Arayat Pampanga"
+  - generic [ref=e112]:
+    - generic [ref=e113]:
+      - button "Switch to light mode" [ref=e114] [cursor=pointer]
+      - button "Back to Lobby" [ref=e121] [cursor=pointer]
+      - button "Tagalog (TL)" [ref=e125] [cursor=pointer]
+    - generic [ref=e130]:
+      - img "Kawing Logo" [ref=e133]
+      - heading "Log in to Kawing" [level=2] [ref=e134]
+      - paragraph [ref=e135]:
+        - text: Don't have an account?
+        - button "Sign up here" [ref=e136] [cursor=pointer]
+    - generic [ref=e139]:
+      - generic [ref=e140]:
+        - generic [ref=e141]: Username / Company Name
+        - textbox "Username / Company Name" [ref=e143]:
+          - /placeholder: e.g. juancruz26
+      - generic [ref=e144]:
+        - generic [ref=e145]: Password
+        - generic [ref=e146]:
+          - textbox "Password" [ref=e147]:
+            - /placeholder: ••••••••
+          - button [ref=e148] [cursor=pointer]
+      - generic [ref=e152]:
+        - generic [ref=e153]:
+          - generic [ref=e154]:
+            - paragraph [ref=e155]: What color is this circle?
+            - paragraph [ref=e156]: Choose the correct color to enable Log In.
+          - generic "Circle color to identify" [ref=e157]
+        - generic "Color choices" [ref=e158]:
+          - button "Red" [ref=e159] [cursor=pointer]
+          - button "Blue" [ref=e161] [cursor=pointer]
+          - button "Green" [ref=e163] [cursor=pointer]
+          - button "Yellow" [ref=e165] [cursor=pointer]
+      - generic [ref=e167]:
+        - button "Login" [disabled]

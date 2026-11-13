@@ -1,8 +1,10 @@
 import { IconAlertTriangle, IconBuildingBank, IconBuildingFactory, IconBulb, IconCalendar, IconCash, IconCheck, IconCircleCheck, IconCircleX, IconCoin, IconConfetti, IconDroplet, IconFlame, IconHeartHandshake, IconHourglass, IconMail, IconMapPin, IconMessage, IconPackage, IconScale, IconSettings, IconSun, IconTruck, IconWheat, IconX } from '@tabler/icons-react';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Harvest, Offer, ServiceRequest, UserAccount, AppNotification, OfferedService } from '../types';
-import { Search, MapPin, Calendar, Star, Clock, CheckCircle, Ban, Check, ShieldCheck, Phone, X, Truck, CheckCircle2, Navigation, Compass, Plus } from 'lucide-react';
+import { Search, MapPin, Calendar, Star, Clock, CheckCircle, Ban, Check, ShieldCheck, Phone, X, Truck, CheckCircle2, Compass, Plus, ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { useApp } from '../context/AppContext';
 import { getMoistureClassification } from '../lib/moisture';
 import Sidebar from './Sidebar';
@@ -10,16 +12,21 @@ import TransactionRating from './TransactionRating';
 import AnimatedButton from './AnimatedButton';
 import AnnouncementsBoard from './AnnouncementsBoard';
 import ProductionLoanBuyer from './ProductionLoanBuyer';
+import CoordinatedContactCard from './CoordinatedContactCard';
 import { ProductionLoanRequest, ProductionLoanStatus } from '../types';
 import buyerBackground from '../assets/images/buyer_background.jpg';
-import { hasApprovedBusinessCapability, hasBusinessCapability } from '../lib/businessCapabilities';
+import { hasApprovedBusinessCapability } from '../lib/businessCapabilities';
+import { isAvailableServiceRequestFor } from '../lib/serviceRequestVisibility';
 import { alertDialog, askConfirmation, confirmDialog } from '../lib/appDialog';
+
+gsap.registerPlugin(useGSAP);
 
 interface BuyerDashboardProps {
   user: UserAccount;
   harvests: Harvest[];
   offers: Offer[];
   serviceRequests: ServiceRequest[];
+  registeredUsers?: UserAccount[];
   offeredServices?: OfferedService[];
   productionLoans?: ProductionLoanRequest[];
   marketReferencePrice: number;
@@ -32,6 +39,7 @@ interface BuyerDashboardProps {
   onCancelOffer: (offerId: string, reason: string) => void;
   onAcceptService: (requestId: string) => void;
   onRejectService: (requestId: string) => void;
+  onCancelService?: (requestId: string) => void;
   onCompleteService?: (requestId: string) => void;
   onApproveLoanRequest?: (requestId: string, approvedAmount: number, buyerNotes?: string) => void;
   onDeclineLoanRequest?: (requestId: string, buyerNotes?: string) => void;
@@ -48,6 +56,7 @@ export default function BuyerDashboard({
   harvests,
   offers,
   serviceRequests = [],
+  registeredUsers = [],
   offeredServices = [],
   productionLoans = [],
   marketReferencePrice,
@@ -60,6 +69,7 @@ export default function BuyerDashboard({
   onCancelOffer,
   onAcceptService,
   onRejectService,
+  onCancelService,
   onCompleteService,
   onApproveLoanRequest,
   onDeclineLoanRequest,
@@ -73,9 +83,6 @@ export default function BuyerDashboard({
   const { t, lang } = useApp();
   const canBuy = hasApprovedBusinessCapability(user, 'buyer');
   const approvedServices = (['transport', 'storage', 'drying', 'milling'] as const).filter(capability => hasApprovedBusinessCapability(user, capability));
-  const listedServiceTypes = (['transport', 'storage', 'drying', 'milling'] as const).filter(type =>
-    hasBusinessCapability(user, type) || offeredServices.some(service => service.providerEmail === user.email && service.serviceType === type)
-  );
   const [activeTab, setActiveTab] = useState<'announcements' | 'browse' | 'farmer_offers' | 'offers' | 'logistics_jobs' | 'posted_services' | 'services' | 'requests' | 'palay' | 'loans'>(canBuy ? 'browse' : 'announcements');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -85,6 +92,7 @@ export default function BuyerDashboard({
   const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
   const [cancelOfferTarget, setCancelOfferTarget] = useState<Offer | null>(null);
   const [cancelOfferReason, setCancelOfferReason] = useState('');
+  const [reviewServiceRequest, setReviewServiceRequest] = useState<ServiceRequest | null>(null);
   
   // Post Service Modal state
   const [showPostServiceModal, setShowPostServiceModal] = useState(false);
@@ -126,8 +134,10 @@ export default function BuyerDashboard({
   // Verification & Offer details
   const [offerStatusFilter, setOfferStatusFilter] = useState<'all' | 'pending' | 'accepted' | 'declined' | 'cancelled'>('all');
   
-  // Logistics Jobs Filter for Buyers with Trucks
-  const [logisticsFilter, setLogisticsFilter] = useState<'available' | 'active' | 'completed'>('available');
+  const availableRequestsRef = useRef<HTMLDivElement>(null);
+  const bookingListRef = useRef<HTMLDivElement>(null);
+  const reviewModalRef = useRef<HTMLDivElement>(null);
+  const [jobTypeFilter, setJobTypeFilter] = useState<'all' | 'transport' | 'storage' | 'drying' | 'milling'>('all');
   const [bookingFilter, setBookingFilter] = useState<'all' | ServiceRequest['status']>('all');
   const [buyerPhone, setBuyerPhone] = useState(user.contactNumber || '0917-555-0100');
   const [buyerName, setBuyerName] = useState(user.name || '');
@@ -168,19 +178,60 @@ export default function BuyerDashboard({
   const pendingOffersCount = myOffers.filter(o => o.status === 'pending').length;
   const acceptedOffersCount = myOffers.filter(o => o.status === 'accepted').length;
 
-  // Filter transport requests for Buyers who own trucks / logistics
-  const transportRequests = serviceRequests.filter(s => s.type === 'transport');
-  const availableTransportRequests = transportRequests.filter(
-    request => request.status === 'pending' && (!request.operatorEmail || request.operatorEmail === user.email)
-  );
-  const myAcceptedTransportJobs = transportRequests.filter(s => s.status === 'matched' && s.operatorEmail === user.email);
-  const myCompletedTransportJobs = transportRequests.filter(s => s.status === 'completed' && s.operatorEmail === user.email);
+  const serviceJobs = serviceRequests.filter(request => request.type !== 'buyer');
+  const availableTransportRequests = serviceJobs.filter(request => isAvailableServiceRequestFor(request, user.email));
+  const visibleAvailableJobs = jobTypeFilter === 'all' ? availableTransportRequests : availableTransportRequests.filter(request => request.type === jobTypeFilter);
+
+  useGSAP(() => {
+    if (activeTab !== 'logistics_jobs') return;
+
+    const media = gsap.matchMedia();
+    media.add('(prefers-reduced-motion: no-preference)', () => {
+      gsap.fromTo('.service-request-card',
+        { opacity: 0, x: -14 },
+        { opacity: 1, x: 0, duration: 0.36, stagger: 0.055, ease: 'power3.out', clearProps: 'transform,opacity' },
+      );
+    });
+
+    return () => media.revert();
+  }, { scope: availableRequestsRef, dependencies: [activeTab, jobTypeFilter, visibleAvailableJobs.length], revertOnUpdate: true });
+
+  useGSAP(() => {
+    if (!reviewServiceRequest) return;
+
+    const media = gsap.matchMedia();
+    media.add('(prefers-reduced-motion: no-preference)', () => {
+      gsap.fromTo('.request-review-backdrop', { opacity: 0 }, { opacity: 1, duration: 0.2, ease: 'power2.out' });
+      gsap.fromTo('.request-review-panel',
+        { opacity: 0, y: 18, clipPath: 'inset(0 0 12% 0 round 16px)' },
+        { opacity: 1, y: 0, clipPath: 'inset(0 0 0% 0 round 16px)', duration: 0.34, ease: 'power3.out', clearProps: 'transform,clipPath' },
+      );
+    });
+
+    return () => media.revert();
+  }, { scope: reviewModalRef, dependencies: [reviewServiceRequest?.id], revertOnUpdate: true });
+
+  const visibleServiceJobs = availableTransportRequests;
   const myServiceBookings = serviceRequests.filter(
     request => request.type !== 'buyer' && request.operatorEmail === user.email
   );
   const visibleServiceBookings = bookingFilter === 'all'
     ? myServiceBookings
     : myServiceBookings.filter(request => request.status === bookingFilter);
+
+  useGSAP(() => {
+    if (activeTab !== 'services') return;
+
+    const media = gsap.matchMedia();
+    media.add('(prefers-reduced-motion: no-preference)', () => {
+      gsap.fromTo('.service-booking-row',
+        { opacity: 0, y: 12, clipPath: 'inset(0 0 8% 0 round 16px)' },
+        { opacity: 1, y: 0, clipPath: 'inset(0 0 0% 0 round 16px)', duration: 0.34, stagger: 0.05, ease: 'power3.out', clearProps: 'transform,opacity,clipPath' },
+      );
+    });
+
+    return () => media.revert();
+  }, { scope: bookingListRef, dependencies: [activeTab, bookingFilter, visibleServiceBookings.length], revertOnUpdate: true });
 
   const handleOpenOffer = (harvest: Harvest) => {
     setEditingOffer(null);
@@ -256,7 +307,7 @@ export default function BuyerDashboard({
 
   return (
     <div
-      className="h-dvh max-h-dvh overflow-hidden bg-cover bg-center bg-scroll md:bg-fixed flex flex-col font-sans transition-colors duration-300"
+      className="buyer-module h-dvh max-h-dvh overflow-hidden bg-cover bg-center bg-scroll md:bg-fixed flex flex-col font-sans transition-colors duration-300"
       style={{ backgroundImage: `url(${buyerBackground})` }}
     >
       
@@ -274,13 +325,13 @@ export default function BuyerDashboard({
           onMarkNotificationRead={onMarkNotificationRead}
         />
 
-        <main className="dashboard-main flex-1 min-w-0 w-full max-w-[1440px] mx-auto h-full overflow-y-auto border-x border-white/30 bg-white/60 px-4 py-8 shadow-2xl backdrop-blur-[3px] scroll-smooth dark:border-slate-700/40 dark:bg-slate-950/65 sm:px-6 lg:px-8">
+        <main className="dashboard-main flex-1 min-w-0 w-full max-w-[1440px] mx-auto h-full overflow-y-auto border-x border-white/30 bg-white/60 px-4 py-5 shadow-2xl backdrop-blur-[3px] scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden dark:border-slate-700/40 dark:bg-slate-950/65 sm:px-6 lg:px-8">
         
         {/* Active Tab Section Header */}
         {activeTab !== 'loans' && (
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div className="mb-4 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-xl font-extrabold text-slate-900 dark:text-white font-display uppercase tracking-wide">
+            <h1 className="font-display text-lg font-extrabold uppercase tracking-wide text-slate-900 dark:text-white">
               {activeTab === 'browse' && (lang === 'en' ? 'Harvest Marketplace' : 'Marketplace ng Ani')}
               {activeTab === 'farmer_offers' && (lang === 'en' ? "Farmers' Harvest Offers" : 'Mga Alok na Ani ng Farmers')}
               {activeTab === 'announcements' && (lang === 'en' ? 'Updates & Platform Announcements' : 'Mga Anunsyo at Update')}
@@ -304,7 +355,7 @@ export default function BuyerDashboard({
             {(approvedServices.length > 0 || activeTab === 'posted_services') && <button
               type="button"
               onClick={() => openServiceForm()}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 text-xs sm:text-sm font-bold rounded-xl bg-blue-600 text-white shadow-sm hover:bg-blue-500 transition-colors"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-blue-500 sm:flex-none"
             >
               <Truck className="w-4 h-4" />
               {lang === 'en' ? 'Post Logistics Service' : 'Mag-post ng Logistics Service'}
@@ -333,6 +384,7 @@ export default function BuyerDashboard({
         {activeTab === 'loans' && (
           <ProductionLoanBuyer
             user={user}
+            registeredUsers={registeredUsers}
             loanRequests={productionLoans}
             onUpdateUser={onUpdateUser || (() => {})}
             onApproveLoanRequest={(id, amt, notes) => onApproveLoanRequest && onApproveLoanRequest(id, amt, notes)}
@@ -583,6 +635,7 @@ export default function BuyerDashboard({
                             </div>
                             <TransactionRating offerId={o.id} />
                           </div>
+                          <div className="mt-3"><CoordinatedContactCard user={registeredUsers.find(account => account.email?.toLowerCase() === o.farmerEmail?.toLowerCase())} email={o.farmerEmail} primaryNumber={o.farmerPhone} title={lang === 'en' ? 'Farmer Coordination Contact' : 'Contact ng Farmer'} /></div>
                         </div>
                       </div>
                     ) : o.status === 'pending' ? (
@@ -612,293 +665,88 @@ export default function BuyerDashboard({
 
         {activeTab === 'logistics_jobs' && (
           <div className="mx-auto max-w-6xl space-y-5">
-            {/* Services selected on the account or published by this provider. */}
-            <div className="flex flex-col justify-between gap-4 rounded-2xl border border-blue-200/80 bg-blue-50/70 p-4 shadow-sm dark:border-blue-900/60 dark:bg-slate-900 md:flex-row md:items-center sm:p-5">
-              <div className="flex items-start sm:items-center gap-3">
-                <div>
-                  {listedServiceTypes.length > 0 && (
-                    <div className="mb-2 flex flex-wrap items-center gap-2">
-                      {listedServiceTypes.map(type => (
-                        <span key={type} className="inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-                          {React.createElement(({ transport: IconTruck, storage: IconPackage, drying: IconSun, milling: IconWheat })[type], { size: 18, stroke: 2, 'aria-hidden': true })}
-                          {({ transport: lang === 'en' ? 'Transportation / Trucking' : 'Transportasyon', storage: lang === 'en' ? 'Storage & Warehouse' : 'Imbakan', drying: lang === 'en' ? 'Drying' : 'Patuyuan', milling: lang === 'en' ? 'Milling' : 'Gilingan' })[type]}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">
-                    {lang === 'en'
-                      ? 'Accept farmer requests to haul palay to mills, storage, or buying stations.'
-                      : 'Tumanggap ng hiling na maghakot ng palay sa gilingan, imbakan, o buying station.'}
-                  </p>
-                </div>
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 sm:p-5">
+              <div className="mb-4">
+                <h2 className="text-base font-extrabold text-slate-900 dark:text-white">{lang === 'en' ? 'Choose a service category' : 'Pumili ng uri ng serbisyo'}</h2>
+                <p className="mt-1 max-w-2xl text-sm text-slate-600 dark:text-slate-400">
+                  {lang === 'en' ? 'Review open farmer requests across every service your business can provide.' : 'Tingnan ang mga bukas na request ng farmer para sa lahat ng serbisyong maaari mong ibigay.'}
+                </p>
               </div>
-
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+                {([
+                  ['all', lang === 'en' ? 'All Services' : 'Lahat', <Compass className="h-[18px] w-[18px]" aria-hidden="true" />],
+                  ['transport', lang === 'en' ? 'Transport' : 'Transport', <IconTruck size={18} stroke={2} aria-hidden="true" />],
+                  ['storage', lang === 'en' ? 'Storage' : 'Imbakan', <IconPackage size={18} stroke={2} aria-hidden="true" />],
+                  ['drying', lang === 'en' ? 'Drying' : 'Patuyuan', <IconSun size={18} stroke={2} aria-hidden="true" />],
+                  ['milling', lang === 'en' ? 'Milling' : 'Gilingan', <IconWheat size={18} stroke={2} aria-hidden="true" />],
+                ] as const).map(([type, label, icon]) => {
+                  const count = type === 'all' ? visibleServiceJobs.length : visibleServiceJobs.filter(request => request.type === type).length;
+                  const selected = jobTypeFilter === type;
+                  return (
+                    <button key={type} type="button" onClick={() => setJobTypeFilter(type)} className={`flex min-h-12 items-center justify-between gap-2 rounded-xl border px-3 py-2 text-left text-xs font-bold transition-colors ${selected ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-emerald-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
+                      <span className="flex min-w-0 items-center gap-2">{icon}<span className="truncate">{label}</span></span>
+                      <span className={`tabular-nums ${selected ? 'text-emerald-50' : 'text-slate-500 dark:text-slate-400'}`}>{count}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Filter Pills for Jobs */}
-            <div className="grid grid-cols-1 gap-2 rounded-2xl border border-slate-200 bg-white/80 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 sm:grid-cols-3">
-              <button
-                onClick={() => setLogisticsFilter('available')}
-                className={`flex items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-2.5 text-xs font-extrabold transition-all cursor-pointer ${
-                  logisticsFilter === 'available'
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-blue-400'
-                }`}
-              ><span className="inline-flex items-center gap-1.5 align-middle"><IconTruck size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>{lang === 'en' ? 'Available Farmer Job Requests' : 'Mga Hiling na Biyahe ng Magsasaka'} ({availableTransportRequests.length})
-              </button>
-              <button
-                onClick={() => setLogisticsFilter('active')}
-                className={`flex items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-2.5 text-xs font-extrabold transition-all cursor-pointer ${
-                  logisticsFilter === 'active'
-                    ? 'bg-amber-600 text-white shadow-xs'
-                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-amber-400'
-                }`}
-              ><span className="inline-flex items-center gap-1.5 align-middle"><IconHourglass size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>{lang === 'en' ? 'My Active Trips' : 'Aking Active na Biyahe'} ({myAcceptedTransportJobs.length})
-              </button>
-              <button
-                onClick={() => setLogisticsFilter('completed')}
-                className={`flex items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-2.5 text-xs font-extrabold transition-all cursor-pointer ${
-                  logisticsFilter === 'completed'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-emerald-400'
-                }`}
-              ><span className="inline-flex items-center gap-1.5 align-middle"><IconCircleCheck size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>{lang === 'en' ? 'Completed Trips' : 'Natapos na Biyahe'} ({myCompletedTransportJobs.length})
-              </button>
-            </div>
-
-            {/* Content List Based on Filter */}
-            {logisticsFilter === 'available' && (
-              availableTransportRequests.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-blue-200 bg-blue-50/40 px-4 py-10 text-center dark:border-blue-900/60 dark:bg-blue-950/20">
-                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-500 dark:bg-blue-950/60"><span className="inline-flex items-center gap-1.5 align-middle"><IconTruck size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></div>
+            {
+              visibleAvailableJobs.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-10 text-center dark:border-slate-700 dark:bg-slate-900">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><Compass className="h-6 w-6" aria-hidden="true" /></div>
                   <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                    {lang === 'en' ? 'No Available Transport Requests' : 'Walang Bakanteng Hiling na Biyahe'}
+                    {lang === 'en' ? 'No Available Service Requests' : 'Walang Available na Hiling sa Serbisyo'}
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
                     {lang === 'en'
-                      ? 'When farmers post new harvest transport/hauling requests, they will appear here for you to accept.'
-                      : 'Lalabas dito ang bagong hiling sa paghakot ng ani.'}
+                      ? 'New farmer service requests will appear here for you to accept.'
+                      : 'Lalabas dito ang mga bagong hiling ng farmer para sa serbisyo.'}
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
-                  {availableTransportRequests.map((req) => (
-                    <motion.div
+                <div ref={availableRequestsRef} className="space-y-3">
+                  {visibleAvailableJobs.map((req) => (
+                    <button
                       key={req.id}
-                      whileHover={{ y: -3 }}
-                      className="flex flex-col justify-between rounded-2xl border border-blue-200/80 bg-blue-50/50 p-4 shadow-sm transition-all duration-300 hover:border-blue-400 dark:border-blue-900/50 dark:bg-slate-900"
+                      type="button"
+                      onClick={() => setReviewServiceRequest(req)}
+                      aria-label={`${lang === 'en' ? 'Review' : 'Suriin'} ${req.riceVariety || req.cropType} ${({ transport: 'transport', storage: 'storage', drying: 'drying', milling: 'milling', buyer: 'service' })[req.type]} request`}
+                      className="service-request-card group relative grid w-full cursor-pointer gap-4 overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition-[border-color,background-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-emerald-400 hover:bg-emerald-50/40 hover:shadow-lg hover:shadow-emerald-900/5 active:translate-y-0 active:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-emerald-500 dark:hover:bg-emerald-950/20 dark:focus-visible:ring-offset-slate-950 sm:p-5 lg:grid-cols-[minmax(230px,1.5fr)_repeat(3,minmax(105px,0.7fr))_auto] lg:items-center lg:gap-6"
                     >
-                      <div>
-                        <div className="mb-3 flex items-start justify-between gap-3">
-                          <div className="flex items-center gap-3">
-                            <div className="rounded-xl bg-blue-100 p-2.5 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400">
-                              <Truck className="w-6 h-6" />
-                            </div>
-                            <div>
-                              <span className="text-[10px] font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-wider block">
-                                {lang === 'en' ? 'Transport Request' : 'Hiling na Biyahe'}
-                              </span>
-                              <h3 className="text-base font-bold text-slate-900 dark:text-white font-display">{req.cropType}</h3>
-                            </div>
-                          </div>
-                          <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400 uppercase">
-                            Pending Match
-                          </span>
-                        </div>
-
-                        <div className="mb-4 space-y-2 rounded-xl border border-blue-100 bg-white/80 p-3 text-xs text-slate-600 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-slate-300">
-                          {req.truckType && (
-                            <div className="flex justify-between items-center text-blue-700 dark:text-blue-300 font-extrabold bg-blue-50 dark:bg-blue-950/40 p-1.5 rounded-lg">
-                              <span className="text-slate-500 font-medium">{lang === 'en' ? 'Truck Type' : 'Klase ng Truck'}:</span>
-                              <span>{req.truckType}</span>
-                            </div>
-                          )}
-                          <div className="flex justify-between">
-                            <span className="text-slate-400 font-medium">{t('label_farmer')}:</span>
-                            <span className="font-bold text-slate-900 dark:text-white">{req.farmerName}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-400 font-medium">{lang === 'en' ? 'Volume' : 'Dami'}:</span>
-                            <span className="font-extrabold text-blue-600 dark:text-blue-400">{req.quantity} {req.unit}</span>
-                          </div>
-                          {req.pickupLocation && (
-                            <div className="flex justify-between items-center">
-                              <span className="text-slate-400 font-medium">{lang === 'en' ? 'Pick-up Place' : 'Sakayan'}:</span>
-                              <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[200px] text-emerald-600 dark:text-emerald-400 font-bold">{req.pickupLocation}</span>
-                            </div>
-                          )}
-                          {req.dropLocation && (
-                            <div className="flex justify-between items-center">
-                              <span className="text-slate-400 font-medium">{lang === 'en' ? 'Drop Place' : 'Bagsakan'}:</span>
-                              <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[200px] text-rose-600 dark:text-rose-400 font-bold">{req.dropLocation}</span>
-                            </div>
-                          )}
-                          {!req.pickupLocation && !req.dropLocation && (
-                            <div className="flex justify-between items-center">
-                              <span className="text-slate-400 font-medium">{lang === 'en' ? 'Location' : 'Lugar'}:</span>
-                              <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[200px]">{req.location}</span>
-                            </div>
-                          )}
-                          {req.preferredDate && (
-                            <div className="flex justify-between">
-                              <span className="text-slate-400 font-medium">{lang === 'en' ? 'Schedule' : 'Petsa'}:</span>
-                              <span className="font-semibold text-slate-800 dark:text-slate-200">{req.preferredDate} {req.preferredTime || ''}</span>
-                            </div>
-                          )}
-                          {req.additionalNotes && (
-                            <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700 text-[11px] italic text-slate-500">
-                              "{req.additionalNotes}"
-                            </div>
-                          )}
-                        </div>
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105 ${({ transport: 'bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300', storage: 'bg-violet-100 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300', drying: 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300', milling: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300', buyer: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' })[req.type]}`}>
+                          {React.createElement(({ transport: IconTruck, storage: IconPackage, drying: IconSun, milling: IconWheat, buyer: IconTruck })[req.type], { size: 23, stroke: 2, 'aria-hidden': true })}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="mb-0.5 block text-[11px] font-extrabold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-400">{({ transport: 'Transport request', storage: 'Storage request', drying: 'Drying request', milling: 'Milling request', buyer: 'Service request' })[req.type]}</span>
+                          <span className="block truncate text-base font-extrabold text-slate-950 dark:text-white">{req.riceVariety || req.cropType}</span>
+                        </span>
                       </div>
-
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() => askConfirmation(lang === 'en' ? 'Accept this hauling request and take responsibility for the trip?' : 'Tanggapin at akuin ang hauling request na ito?', () => onAcceptService(req.id), { tone: 'success', confirmLabel: lang === 'en' ? 'Accept Request' : 'Tanggapin' })}
-                          className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl transition-all shadow-md shadow-emerald-600/20 cursor-pointer flex items-center justify-center gap-1.5"
-                        >
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span>{lang === 'en' ? 'Accept & Haul Trip' : 'Tanggapin ang Biyahe'}</span>
-                        </button>
-                        <button
-                          onClick={() => askConfirmation(lang === 'en' ? 'Decline this hauling request?' : 'Tanggihan ang hauling request na ito?', () => onRejectService(req.id), { tone: 'danger', confirmLabel: lang === 'en' ? 'Decline Request' : 'Tanggihan' })}
-                          className="py-3 px-4 bg-slate-100 hover:bg-red-50 dark:bg-slate-800 dark:hover:bg-red-950/30 text-slate-600 hover:text-red-600 dark:text-slate-400 font-bold text-xs rounded-xl transition-all cursor-pointer"
-                        >
-                          {lang === 'en' ? 'Decline' : 'Tanggihan'}
-                        </button>
+                      <div className="grid grid-cols-3 gap-x-4 gap-y-1 border-y border-slate-200 py-3 text-sm dark:border-slate-700 lg:contents">
+                        <span><span className="block text-[11px] font-semibold uppercase tracking-wide text-slate-500">{lang === 'en' ? 'Quantity' : 'Dami'}</span><strong className="mt-0.5 block tabular-nums text-slate-950 dark:text-white">{req.quantity.toLocaleString()} {req.unit}</strong></span>
+                        <span><span className="block text-[11px] font-semibold uppercase tracking-wide text-slate-500">{lang === 'en' ? 'Schedule' : 'Iskedyul'}</span><strong className="mt-0.5 block text-slate-950 dark:text-white">{req.preferredDate || req.createdAt}</strong></span>
+                        <span><span className="block text-[11px] font-semibold uppercase tracking-wide text-slate-500">{lang === 'en' ? 'Posted' : 'Na-post'}</span><strong className="mt-0.5 block text-slate-950 dark:text-white">{req.createdAt}</strong></span>
                       </div>
-                    </motion.div>
+                      <span className="flex items-center justify-end gap-2 font-bold text-emerald-700 dark:text-emerald-400">
+                        <span className="text-sm">{lang === 'en' ? 'Review details' : 'Tingnan ang detalye'}</span>
+                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-600 text-white transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true"><ArrowRight className="h-4 w-4" /></span>
+                      </span>
+                    </button>
                   ))}
                 </div>
               )
-            )}
+            }
 
-            {logisticsFilter === 'active' && (
-              myAcceptedTransportJobs.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-amber-200 bg-amber-50/40 px-4 py-10 text-center dark:border-amber-900/60 dark:bg-amber-950/20">
-                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-500 dark:bg-amber-950/60"><span className="inline-flex items-center gap-1.5 align-middle"><IconHourglass size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                    {lang === 'en' ? 'No Active Hauling Trips' : 'Walang Active na Biyahe'}
-                  </h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
-                    {lang === 'en'
-                      ? 'You have no accepted active hauling trips at the moment. Accept available requests from the list.'
-                      : 'Wala kang active na biyahe ngayon. Mag-accept ng biyahe mula sa listahan ng mga hiling.'}
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
-                  {myAcceptedTransportJobs.map((req) => (
-                    <motion.div
-                      key={req.id}
-                      whileHover={{ y: -3 }}
-                      className="flex flex-col justify-between rounded-2xl border border-emerald-300 bg-emerald-50/60 p-4 shadow-sm dark:border-emerald-800 dark:bg-slate-900"
-                    >
-                      <div>
-                        <div className="mb-3 flex items-start justify-between gap-3">
-                          <div className="flex items-center gap-3">
-                            <div className="rounded-xl bg-emerald-100 p-2.5 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
-                              <Navigation className="w-6 h-6 animate-spin-slow" />
-                            </div>
-                            <div>
-                              <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">
-                                {lang === 'en' ? 'Active Hauling Trip' : 'Kasalukuyang Biyahe'}
-                              </span>
-                              <h3 className="text-base font-bold text-slate-900 dark:text-white font-display">{req.cropType}</h3>
-                            </div>
-                          </div>
-                          <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 uppercase"><span className="inline-flex items-center gap-1.5 align-middle"><span aria-hidden="true" className="inline-block h-2 w-2 shrink-0 rounded-full bg-emerald-500" />{"In Progress"}</span></span>
-                        </div>
-
-                        <div className="mb-4 space-y-2 rounded-xl border border-emerald-100 bg-white/80 p-3 text-xs text-slate-600 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-slate-300">
-                          <div className="flex justify-between">
-                            <span className="text-slate-400 font-medium">{t('label_farmer')}:</span>
-                            <span className="font-bold text-slate-900 dark:text-white">{req.farmerName}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-400 font-medium">{lang === 'en' ? 'Volume' : 'Dami'}:</span>
-                            <span className="font-extrabold text-emerald-600 dark:text-emerald-400">{req.quantity} {req.unit}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-400 font-medium">{lang === 'en' ? 'Pickup Location' : 'Lugar ng Sakay'}:</span>
-                            <span className="font-semibold text-slate-800 dark:text-slate-200">{req.location}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        {onCompleteService && (
-                          <button
-                            onClick={() => askConfirmation(lang === 'en' ? 'Mark this delivery as completed? This will close the trip.' : 'Markahan itong completed? Isasara nito ang biyahe.', () => onCompleteService(req.id), { tone: 'success', confirmLabel: lang === 'en' ? 'Mark Completed' : 'Markahan na Tapos' })}
-                            className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl transition-all shadow-md shadow-emerald-600/20 cursor-pointer flex items-center justify-center gap-2"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                            <span>{lang === 'en' ? 'Mark Delivery Completed' : 'I-marka na Natapos ang Biyahe'}</span>
-                          </button>
-                        )}
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              )
-            )}
-
-            {logisticsFilter === 'completed' && (
-              myCompletedTransportJobs.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/40 px-4 py-10 text-center dark:border-emerald-900/60 dark:bg-emerald-950/20">
-                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-500 dark:bg-emerald-950/60"><span className="inline-flex items-center gap-1.5 align-middle"><IconCircleCheck size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                    {lang === 'en' ? 'No Completed Trips Yet' : 'Wala pa Natatapos na Biyahe'}
-                  </h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
-                    {lang === 'en'
-                      ? 'Completed hauling trips will be archived here.'
-                      : 'Ang mga natapos mong biyahe sa paghahakot ay malalagay rito.'}
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                  {myCompletedTransportJobs.map((req) => (
-                    <div
-                      key={req.id}
-                      className="flex flex-col justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4 shadow-sm dark:border-emerald-800/60 dark:bg-emerald-950/20 sm:flex-row sm:items-center"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 rounded-xl shrink-0">
-                          <CheckCircle2 className="w-6 h-6" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-extrabold text-slate-900 dark:text-white text-base font-display">{req.cropType}</h4>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 uppercase">
-                              Completed
-                            </span>
-                          </div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                            {t('label_farmer')}: <strong className="text-slate-700 dark:text-slate-200">{req.farmerName}</strong> • {lang === 'en' ? 'Volume' : 'Dami'}: <strong className="text-slate-700 dark:text-slate-200">{req.quantity} {req.unit}</strong> • {req.location}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 inline-block"><span className="inline-flex items-center gap-1.5 align-middle"><IconCircleCheck size={16} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Delivered & Completed"}</span></span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )
-            )}
           </div>
         )}
 
         {activeTab === 'services' && (
-          <div className="space-y-5">
-            <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="space-y-4">
+            <div className="flex w-fit max-w-full gap-1.5 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden dark:border-slate-800 dark:bg-slate-900">
               {([
                 ['all', lang === 'en' ? 'All Bookings' : 'Lahat'],
-                ['pending', lang === 'en' ? 'Pending' : 'Naghihintay'],
-                ['matched', lang === 'en' ? 'Accepted' : 'Tinanggap'],
                 ['completed', lang === 'en' ? 'Completed' : 'Tapos'],
                 ['rejected', lang === 'en' ? 'Declined' : 'Tinanggihan'],
               ] as const).map(([status, label]) => {
@@ -910,10 +758,10 @@ export default function BuyerDashboard({
                     key={status}
                     type="button"
                     onClick={() => setBookingFilter(status)}
-                    className={`flex shrink-0 items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-extrabold transition-colors ${
+                    className={`flex shrink-0 items-center gap-2 rounded-lg px-4 py-2 text-xs font-extrabold transition-colors ${
                       bookingFilter === status
-                        ? 'border-cyan-600 bg-cyan-600 text-white shadow-sm'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-cyan-400 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300'
+                        ? 'bg-cyan-600 text-white'
+                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
                     }`}
                   >
                     {label}
@@ -940,8 +788,12 @@ export default function BuyerDashboard({
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+              <div ref={bookingListRef} className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                 {visibleServiceBookings.map(request => {
+                  const farmerContact = request.farmerPhone || registeredUsers.find(account =>
+                    account.email?.toLowerCase() === request.farmerEmail.toLowerCase()
+                    || account.name === request.farmerName
+                  )?.contactNumber;
                   const serviceLabel = request.type === 'transport'
                     ? (lang === 'en' ? 'Transportation' : 'Transportasyon')
                     : request.type === 'storage'
@@ -965,14 +817,14 @@ export default function BuyerDashboard({
                         : 'border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300';
 
                   return (
-                    <article key={request.id} className="flex flex-col rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <article key={request.id} className="service-booking-row flex min-w-0 flex-col gap-3 rounded-xl border border-slate-200 bg-white p-3.5 transition-colors hover:border-cyan-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-cyan-800">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex min-w-0 items-center gap-3">
-                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-600 dark:bg-cyan-950/40 dark:text-cyan-400">
-                            {request.type === 'transport' ? <IconTruck size={25} stroke={2} />
-                              : request.type === 'storage' ? <IconBuildingFactory size={25} stroke={2} />
-                              : request.type === 'drying' ? <IconSun size={25} stroke={2} />
-                              : <IconSettings size={25} stroke={2} />}
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-50 text-cyan-600 dark:bg-cyan-950/40 dark:text-cyan-400">
+                            {request.type === 'transport' ? <IconTruck size={21} stroke={2} />
+                              : request.type === 'storage' ? <IconBuildingFactory size={21} stroke={2} />
+                              : request.type === 'drying' ? <IconSun size={21} stroke={2} />
+                              : <IconSettings size={21} stroke={2} />}
                           </div>
                           <div className="min-w-0">
                             <p className="text-[10px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400">{serviceLabel}</p>
@@ -982,7 +834,7 @@ export default function BuyerDashboard({
                         <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-extrabold uppercase ${statusClass}`}>{statusLabel}</span>
                       </div>
 
-                      <div className="mt-5 grid grid-cols-2 gap-x-5 gap-y-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 text-xs dark:border-slate-700/70 dark:bg-slate-800/50">
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-2.5 rounded-lg bg-slate-50 p-3 text-[11px] dark:bg-slate-800/60">
                         <div>
                           <p className="text-slate-400">{lang === 'en' ? 'Farmer' : 'Magsasaka'}</p>
                           <p className="mt-0.5 font-bold text-slate-900 dark:text-white">{request.farmerName}</p>
@@ -1012,35 +864,46 @@ export default function BuyerDashboard({
                       </div>
 
                       {(request.status === 'matched' || request.status === 'completed') && (
-                        <div className="mt-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950/30">
+                        <div className="rounded-lg border border-emerald-300 bg-emerald-50 p-3 dark:border-emerald-800 dark:bg-emerald-950/30">
                           <p className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">{lang === 'en' ? 'Farmer Contact' : 'Contact ng Magsasaka'}</p>
                           <div className="mt-2 flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-white"><Phone className="h-5 w-5" /></div>
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-600 text-white"><Phone className="h-4 w-4" /></div>
                             <div>
                               <p className="font-extrabold text-slate-900 dark:text-white">{request.farmerName}</p>
-                              <p className="text-lg font-black tracking-wide text-emerald-700 dark:text-emerald-300">{request.farmerPhone || (lang === 'en' ? 'Not provided' : 'Walang numero')}</p>
+                              <p className="text-base font-black tracking-wide text-emerald-700 dark:text-emerald-300">{farmerContact || (lang === 'en' ? 'Not provided' : 'Walang numero')}</p>
                             </div>
                           </div>
+                          <div className="mt-3"><CoordinatedContactCard user={registeredUsers.find(account => account.email?.toLowerCase() === request.farmerEmail?.toLowerCase())} email={request.farmerEmail} primaryNumber={farmerContact} title={lang === 'en' ? 'Farmer Coordination Contact' : 'Contact ng Farmer'} /></div>
                         </div>
                       )}
 
-                      <div className="mt-auto flex gap-3 pt-4">
+                      <div className="mt-auto flex gap-3">
                         {request.status === 'pending' && (
                           <>
-                            <button type="button" onClick={() => askConfirmation(lang === 'en' ? 'Accept this service booking?' : 'Tanggapin ang booking na ito?', () => onAcceptService(request.id), { tone: 'success', confirmLabel: lang === 'en' ? 'Accept Booking' : 'Tanggapin' })} className="flex-1 rounded-xl bg-emerald-600 px-4 py-3 text-xs font-extrabold text-white shadow-sm transition-colors hover:bg-emerald-500">
+                            <button type="button" onClick={() => askConfirmation(lang === 'en' ? 'Accept this service booking?' : 'Tanggapin ang booking na ito?', () => onAcceptService(request.id), { tone: 'success', confirmLabel: lang === 'en' ? 'Accept Booking' : 'Tanggapin' })} className="flex-1 rounded-lg bg-emerald-600 px-3 py-2.5 text-xs font-extrabold text-white shadow-sm transition-colors hover:bg-emerald-500">
                               {lang === 'en' ? 'Accept Booking' : 'Tanggapin'}
                             </button>
-                            <button type="button" onClick={() => askConfirmation(lang === 'en' ? 'Decline this service booking?' : 'Tanggihan ang booking na ito?', () => onRejectService(request.id), { tone: 'danger', confirmLabel: lang === 'en' ? 'Decline Booking' : 'Tanggihan' })} className="rounded-xl border border-red-300 px-4 py-3 text-xs font-extrabold text-red-600 transition-colors hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30">
+                            <button type="button" onClick={() => askConfirmation(lang === 'en' ? 'Decline this service booking?' : 'Tanggihan ang booking na ito?', () => onRejectService(request.id), { tone: 'danger', confirmLabel: lang === 'en' ? 'Decline Booking' : 'Tanggihan' })} className="rounded-lg border border-red-300 px-3 py-2.5 text-xs font-extrabold text-red-600 transition-colors hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30">
                               {lang === 'en' ? 'Decline' : 'Tanggihan'}
                             </button>
                           </>
                         )}
                         {request.status === 'matched' && onCompleteService && (
-                          <button type="button" onClick={() => askConfirmation(lang === 'en' ? 'Mark this service booking as completed?' : 'Markahan ang booking bilang tapos?', () => onCompleteService(request.id), { tone: 'success', confirmLabel: lang === 'en' ? 'Complete Service' : 'Tapusin' })} className="w-full rounded-xl bg-blue-600 px-4 py-3 text-xs font-extrabold text-white shadow-sm transition-colors hover:bg-blue-500">
-                            {lang === 'en' ? 'Mark Service Completed' : 'Markahan na Tapos'}
-                          </button>
+                          <>
+                            {onCancelService && <button type="button" onClick={() => askConfirmation(lang === 'en' ? 'Cancel this accepted service? The request will return to Available Jobs.' : 'Kanselahin ang serbisyong ito? Babalik ang request sa Available Jobs.', () => onCancelService(request.id), { tone: 'danger', confirmLabel: lang === 'en' ? 'Cancel Service' : 'Kanselahin' })} className="flex-1 rounded-lg border border-red-300 px-3 py-2.5 text-xs font-extrabold text-red-600 transition-colors hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30">
+                              {lang === 'en' ? 'Cancel' : 'Kanselahin'}
+                            </button>}
+                            <button type="button" onClick={() => askConfirmation(lang === 'en' ? 'Mark this service as fulfilled?' : 'Markahan ang serbisyong ito bilang fulfilled?', () => onCompleteService(request.id), { tone: 'success', confirmLabel: lang === 'en' ? 'Mark Fulfilled' : 'Markahan na Fulfilled' })} className="flex-1 rounded-lg bg-blue-600 px-3 py-2.5 text-xs font-extrabold text-white shadow-sm transition-colors hover:bg-blue-500">
+                              {lang === 'en' ? 'Mark Fulfilled' : 'Markahan na Fulfilled'}
+                            </button>
+                          </>
                         )}
                       </div>
+                      {request.status === 'completed' && (
+                        <div className="border-t border-slate-100 pt-3 dark:border-slate-800">
+                          <TransactionRating serviceRequestId={request.id} />
+                        </div>
+                      )}
                     </article>
                   );
                 })}
@@ -1164,6 +1027,90 @@ export default function BuyerDashboard({
 
       </main>
       </div>
+
+      {reviewServiceRequest && (
+        <div ref={reviewModalRef} className="request-review-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/75 p-4" role="presentation">
+          <section role="alertdialog" aria-modal="true" aria-labelledby="review-service-title" className="request-review-panel max-h-[calc(100dvh-2rem)] w-full max-w-3xl overflow-y-auto rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden dark:border-slate-700 dark:bg-slate-900 dark:text-white">
+            <div className="h-1.5 bg-emerald-500" />
+            <div className="p-6 sm:p-7">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300">
+                  {React.createElement(({ transport: IconTruck, storage: IconPackage, drying: IconSun, milling: IconWheat, buyer: IconMail })[reviewServiceRequest.type], { size: 26, stroke: 2, 'aria-hidden': true })}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-3">
+                    <h2 id="review-service-title" className="pt-1 text-xl font-black tracking-tight">{lang === 'en' ? 'Review service request' : 'Suriin ang service request'}</h2>
+                    <button type="button" onClick={() => setReviewServiceRequest(null)} aria-label="Close review" className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:hover:bg-slate-800 dark:hover:text-white"><IconX size={20} stroke={2} /></button>
+                  </div>
+                  <p className="mt-2 text-sm font-medium leading-6 text-slate-600 dark:text-slate-300">{lang === 'en' ? 'Confirm the job details before accepting this request.' : 'Kumpirmahin ang detalye bago tanggapin ang request na ito.'}</p>
+                </div>
+              </div>
+
+              <div className="mt-6 grid overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 lg:grid-cols-[1.15fr_0.85fr]">
+              <div className="p-5 sm:p-6">
+                <div className="flex flex-col gap-4 rounded-xl bg-cyan-50 p-5 dark:bg-cyan-950/35 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <span className="text-xs font-semibold text-cyan-700 dark:text-cyan-300">{lang === 'en' ? 'Harvest' : 'Ani'}</span>
+                    <p className="truncate text-lg font-extrabold text-slate-950 dark:text-white">{reviewServiceRequest.riceVariety || reviewServiceRequest.cropType}</p>
+                  </div>
+                  <div className="sm:text-right">
+                    <span className="text-xs font-semibold text-cyan-700 dark:text-cyan-300">{lang === 'en' ? 'Quantity' : 'Dami'}</span>
+                    <p className="text-lg font-extrabold tabular-nums text-slate-950 dark:text-white">{reviewServiceRequest.quantity.toLocaleString()} {reviewServiceRequest.unit}</p>
+                  </div>
+                </div>
+
+                <div className="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2">
+                {([
+                  [lang === 'en' ? 'Service' : 'Serbisyo', ({ transport: 'Transportation', storage: 'Storage', drying: 'Drying', milling: 'Milling', buyer: 'Buying' })[reviewServiceRequest.type]],
+                  [lang === 'en' ? 'Posted date' : 'Petsa ng post', reviewServiceRequest.createdAt],
+                  [lang === 'en' ? 'Farmer' : 'Magsasaka', reviewServiceRequest.farmerName],
+                  [lang === 'en' ? 'Packaging' : 'Lalagyan', reviewServiceRequest.containerQuantity ? `${reviewServiceRequest.containerQuantity.toLocaleString()} ${reviewServiceRequest.containerType === 'sacks' ? 'sacks' : 'plastic bags'}` : '—'],
+                  [lang === 'en' ? 'Schedule' : 'Iskedyul', `${reviewServiceRequest.preferredDate || '—'} ${reviewServiceRequest.preferredTime || ''}`.trim()],
+                ] as const).map(([label, value]) => <div key={label}><span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{label}</span><p className="mt-1 break-words text-sm font-bold text-slate-900 dark:text-white">{value}</p></div>)}
+                </div>
+              </div>
+
+              <div className="space-y-6 border-t border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950/40 sm:p-6 lg:border-l lg:border-t-0">
+                <div>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Service location' : 'Lugar ng serbisyo'}</span>
+                  <p className="mt-2 text-sm font-bold leading-6 text-slate-900 dark:text-white">{reviewServiceRequest.pickupLocation && reviewServiceRequest.dropLocation ? `${reviewServiceRequest.pickupLocation} → ${reviewServiceRequest.dropLocation}` : reviewServiceRequest.location}</p>
+                </div>
+                <div className="border-t border-slate-200 pt-5 dark:border-slate-800">
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Additional notes' : 'Karagdagang tala'}</span>
+                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700 dark:text-slate-300">{reviewServiceRequest.additionalNotes || (lang === 'en' ? 'No additional notes.' : 'Walang karagdagang tala.')}</p>
+                </div>
+              </div>
+            </div>
+
+              <div className="mt-7 grid grid-cols-2 gap-3">
+                <button type="button" onClick={() => setReviewServiceRequest(null)} className="rounded-xl border border-slate-300 px-4 py-3 text-sm font-extrabold text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">{lang === 'en' ? 'Not Now' : 'Huwag Muna'}</button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const confirmed = await confirmDialog(
+                      lang === 'en'
+                        ? `Accept this ${reviewServiceRequest.type} request from ${reviewServiceRequest.farmerName}? You will become responsible for this service job.`
+                        : `Tanggapin ang ${reviewServiceRequest.type} request ni ${reviewServiceRequest.farmerName}? Ikaw na ang magiging responsable sa serbisyong ito.`,
+                      {
+                        title: lang === 'en' ? 'Accept service request?' : 'Tanggapin ang service request?',
+                        tone: 'success',
+                        confirmLabel: lang === 'en' ? 'Yes, Accept Request' : 'Oo, Tanggapin',
+                        cancelLabel: lang === 'en' ? 'Go Back' : 'Bumalik',
+                      },
+                    );
+                    if (!confirmed) return;
+                    onAcceptService(reviewServiceRequest.id);
+                    setReviewServiceRequest(null);
+                  }}
+                  className="rounded-xl bg-emerald-600 px-4 py-3 text-sm font-extrabold text-white shadow-lg transition hover:bg-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 dark:ring-offset-slate-900"
+                >
+                  {lang === 'en' ? 'Accept Request' : 'Tanggapin'}
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      )}
 
       {/* Modal for posting a logistics service */}
       {showPostServiceModal && (

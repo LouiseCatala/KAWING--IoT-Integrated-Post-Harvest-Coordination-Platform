@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react';
 import { IconStar } from '@tabler/icons-react';
 import { useApp } from '../context/AppContext';
 
-export default function TransactionRating({ offerId }: { offerId: string }) {
+type TransactionRatingProps =
+  | { offerId: string; serviceRequestId?: never }
+  | { offerId?: never; serviceRequestId: string };
+
+export default function TransactionRating({ offerId, serviceRequestId }: TransactionRatingProps) {
   const { lang } = useApp();
   const [selected, setSelected] = useState(0);
   const [saved, setSaved] = useState<number | null>(null);
@@ -14,7 +18,10 @@ export default function TransactionRating({ offerId }: { offerId: string }) {
     setLoading(true);
     setSelected(0);
     setSaved(null);
-    fetch(`/api/ratings?offerId=${encodeURIComponent(offerId)}`, { credentials: 'include' })
+    const query = serviceRequestId
+      ? `serviceRequestId=${encodeURIComponent(serviceRequestId)}`
+      : `offerId=${encodeURIComponent(offerId || '')}`;
+    fetch(`/api/ratings?${query}`, { credentials: 'include' })
       .then(async response => {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Unable to load rating.');
@@ -22,13 +29,13 @@ export default function TransactionRating({ offerId }: { offerId: string }) {
       }).catch(reason => { if (active) setError(reason.message); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [offerId]);
+  }, [offerId, serviceRequestId]);
   const submit = async () => {
     if (!selected || busy || saved !== null) return;
     setBusy(true);
     setError('');
     try {
-      const response = await fetch('/api/ratings', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ offerId, score: selected }) });
+      const response = await fetch('/api/ratings', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(serviceRequestId ? { serviceRequestId, score: selected } : { offerId, score: selected }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Unable to save rating.');
       setSaved(data.score);

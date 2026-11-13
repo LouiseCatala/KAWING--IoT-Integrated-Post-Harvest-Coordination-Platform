@@ -432,6 +432,7 @@ export default function App() {
         before,
         name: updated.name,
         contactNumber: updated.contactNumber || '',
+        additionalContactNumbers: updated.additionalContactNumbers || [],
         address: updated.address || '',
         businessName: updated.businessName || '',
         legalCompanyName: updated.legalCompanyName || '',
@@ -632,7 +633,7 @@ export default function App() {
       originalUser?.emailNotificationConsentAsked !== updated.emailNotificationConsentAsked
     );
     const profileChanged = isSelf && [
-      'name', 'contactNumber', 'address', 'businessName', 'legalCompanyName',
+      'name', 'contactNumber', 'additionalContactNumbers', 'address', 'businessName', 'legalCompanyName',
       'rsbsaNumber', 'avatarUrl', 'bio',
     ].some((field) => originalUser?.[field as keyof UserAccount] !== updated[field as keyof UserAccount]);
     const providerSettingsChanged = isSelf && (
@@ -702,8 +703,7 @@ export default function App() {
   };
 
   // Notifications helper
-  const addNotification = (userEmail: string, title: string, message: string, type: 'info' | 'success' | 'alert' = 'info', sendEmail = false, emailDetails?: Record<string, string>) => {
-    const newNotif: AppNotification = {
+  const createNotification = (userEmail: string, title: string, message: string, type: 'info' | 'success' | 'alert' = 'info', sendEmail = false, emailDetails?: Record<string, string>): AppNotification => ({
       id: 'n_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
       userEmail,
       title,
@@ -713,7 +713,9 @@ export default function App() {
       isRead: false,
       sendEmail,
       emailDetails,
-    };
+    });
+  const addNotification = (userEmail: string, title: string, message: string, type: 'info' | 'success' | 'alert' = 'info', sendEmail = false, emailDetails?: Record<string, string>) => {
+    const newNotif = createNotification(userEmail, title, message, type, sendEmail, emailDetails);
     setNotifications(prev => {
       const updated = [newNotif, ...prev];
       localStorage.setItem('kawing_notifications', JSON.stringify(updated));
@@ -721,20 +723,24 @@ export default function App() {
     });
   };
 
-  const notifyOpenServiceRequest = (request: ServiceRequest) => {
-    if (request.type === 'buyer' || request.operatorEmail) return;
+  const openServiceNotifications = (request: ServiceRequest): AppNotification[] => {
+    if (request.type === 'buyer' || request.operatorEmail) return [];
     const category = request.type;
-    registeredUsers.filter(account => account.email && account.isApproved !== false && account.email !== request.farmerEmail && (
+    return registeredUsers.filter(account => account.email && account.isApproved !== false && account.email !== request.farmerEmail && (
       hasApprovedBusinessCapability(account, category)
       || (category === 'transport' && (account.role === 'buyer' || account.role === 'agricultural_business') && account.buyerLogisticsEnabled)
-    )).forEach(account => {
+    )).map(account => {
       const business = account.role === 'buyer' || account.role === 'agricultural_business';
-      // The business jobs screen currently displays transport only.
-      if (business && category !== 'transport') return;
-      addNotification(account.email!, 'New Logistics Job', `${request.farmerName} requested ${category} for ${request.cropType}.`, 'info', false, {
+      return createNotification(account.email!, 'New Logistics Job', `${request.farmerName} requested ${category} for ${request.cropType}.`, 'info', true, {
         Page: business ? 'logistics_jobs' : account.role === 'logistics' ? `service_${category}` : 'available',
       });
     });
+  };
+
+  const notifyOpenServiceRequest = (request: ServiceRequest) => {
+    const notices = openServiceNotifications(request);
+    if (!notices.length) return;
+    setNotifications(current => [...notices, ...current]);
   };
 
   const notifyAdminPage = (page: string, title: string, message: string) => {
@@ -845,6 +851,7 @@ export default function App() {
         createdAt: new Date().toISOString().split('T')[0],
         farmerEmail: activeUser.email || 'magsasaka@kawing.com',
         farmerName: activeUser.name,
+        farmerPhone: activeUser.contactNumber,
         location: (serviceType === 'transport' && (newHarvest.pickupLocation || newHarvest.dropLocation))
           ? ` Pickup: ${newHarvest.pickupLocation || newHarvest.location}  to  Drop: ${newHarvest.dropLocation || 'Buying Station'}`
           : newHarvest.location,
@@ -979,6 +986,26 @@ export default function App() {
       `Matagumpay na naidagdag ang hiling para sa ${serviceNameFilipino} para sa iyong ani na ${harvest.cropType}.`,
       'success'
     );
+  };
+
+  const handleRepostServiceRequest = (requestId: string) => {
+    const updated = serviceRequests.map(request => request.id === requestId
+      ? { ...request, status: 'pending' as const, createdAt: new Date().toISOString().split('T')[0], operatorEmail: undefined, operatorName: undefined }
+      : request);
+    setServiceRequests(updated);
+    localStorage.setItem('kawing_services', JSON.stringify(updated));
+  };
+
+  const handleUpdateServiceRequest = async (requestId: string, updates: Partial<ServiceRequest>): Promise<boolean> => {
+    const service = serviceRequests.find(request => request.id === requestId);
+    if (!service || service.status !== 'pending' || service.farmerEmail !== activeUser?.email) return false;
+    return Boolean(await persistServiceTransition(service, { ...service, ...updates }, []));
+  };
+
+  const handleDeleteServiceRequest = async (requestId: string): Promise<boolean> => {
+    const service = serviceRequests.find(request => request.id === requestId);
+    if (!service || !['pending', 'expired'].includes(service.status) || service.farmerEmail !== activeUser?.email) return false;
+    return persistServiceDeletion(service);
   };
 
   // Buyer callbacks
@@ -1324,45 +1351,74 @@ export default function App() {
     localStorage.setItem('kawing_offers', JSON.stringify(updated));
   };
 
-  // Operator callbacks (Accept service)
-  const handleAcceptService = (requestId: string) => {
-    if (!activeUser) return;
-    let farmerEmail = '';
-    let cropType = '';
-    let serviceType = '';
-
-    const updatedServices = serviceRequests.map(s => {
-      if (s.id === requestId) {
-        farmerEmail = s.farmerEmail;
-        cropType = s.cropType;
-        serviceType = s.type;
-        return {
-          ...s,
-          status: 'matched' as const,
-          operatorEmail: activeUser.email,
-          operatorName: activeUser.name,
-        };
-      }
-      return s;
-    });
-    setServiceRequests(updatedServices);
-    localStorage.setItem('kawing_services', JSON.stringify(updatedServices));
-
-    if (farmerEmail) {
-      const serviceNameFilipino = 
-        serviceType === 'transport' ? 'Transportasyon' :
-        serviceType === 'storage' ? 'Cold Storage' :
-        serviceType === 'drying' ? 'Patuyuan' :
-        serviceType === 'milling' ? 'Gilingan' : 'Pagbili';
-      
-      addNotification(
-        farmerEmail,
-        'Tinatanggap ang Kahilingan!',
-        `Tinanggap ni ${activeUser.name} ang iyong kahilingan para sa ${serviceNameFilipino} para sa ${cropType}.`,
-        'success',
-        true
-      );
+  const persistServiceTransition = async (before: ServiceRequest, after: ServiceRequest, notices: AppNotification[]): Promise<ServiceRequest | null> => {
+    try {
+      const response = await fetch('/api/realtime/changes', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requestId: newRecordId('service'),
+          changes: [
+            { collection: 'services', id: before.id, before, after },
+            ...notices.map(notice => ({ collection: 'notifications', id: notice.id, before: null, after: notice })),
+          ],
+        }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || 'The service change could not be saved.');
+      const saved = (result.data?.services as ServiceRequest[] | undefined)?.find(service => service.id === before.id);
+      if (!saved) throw new Error('The saved service could not be confirmed. Refresh and try again.');
+      setServiceRequests(current => current.map(service => service.id === saved.id ? saved : service));
+      setSyncError('');
+      return saved;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'The service change could not be saved.';
+      setSyncError(message);
+      void alertDialog(message, { tone: 'danger' });
+      return null;
     }
+  };
+
+  const persistServiceDeletion = async (service: ServiceRequest): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/realtime/changes', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requestId: newRecordId('service-delete'),
+          changes: [{ collection: 'services', id: service.id, before: service, after: null }],
+        }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || 'The service request could not be deleted.');
+      setServiceRequests(current => current.filter(request => request.id !== service.id));
+      setSyncError('');
+      return true;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'The service request could not be deleted.';
+      setSyncError(message);
+      void alertDialog(message, { tone: 'danger' });
+      return false;
+    }
+  };
+
+  // Operator callbacks (Accept service)
+  const handleAcceptService = async (requestId: string) => {
+    if (!activeUser?.email) return;
+    const service = serviceRequests.find(item => item.id === requestId);
+    if (!service || service.status !== 'pending' || service.operatorEmail) return;
+    const acceptanceNotice = createNotification(service.farmerEmail, 'Tinatanggap ang Kahilingan!', `Tinanggap ni ${activeUser.name} ang iyong kahilingan para sa ${service.type} para sa ${service.cropType}.`, 'success', true);
+    const saved = await persistServiceTransition(service, {
+      ...service,
+      status: 'matched',
+      operatorEmail: activeUser.email,
+      operatorName: activeUser.name,
+      acceptedAt: new Date().toISOString(),
+    }, [acceptanceNotice]);
+
+    if (!saved) return;
   };
 
   // Operator callbacks (Reject service)
@@ -1407,43 +1463,34 @@ export default function App() {
   };
 
   // Operator callbacks (Complete service)
-  const handleCompleteService = (requestId: string) => {
+  const handleCancelAcceptedService = async (requestId: string) => {
+    if (!activeUser?.email) return;
     const service = serviceRequests.find(s => s.id === requestId);
-    if (!service) return;
+    if (!service || service.status !== 'matched' || service.operatorEmail !== activeUser.email) return;
+    const cancellationNotice = createNotification(service.farmerEmail, 'Service Booking Cancelled', `${service.operatorName || 'The provider'} cancelled the accepted ${service.type} service. Your request is available to providers again.`, 'alert', true);
+    const reopenedDraft: ServiceRequest = {
+      ...service,
+      status: 'pending',
+      operatorEmail: undefined,
+      operatorName: undefined,
+      acceptedAt: undefined,
+      completedAt: undefined,
+      serviceCancelledAt: new Date().toISOString(),
+    };
+    const saved = await persistServiceTransition(service, reopenedDraft, [cancellationNotice, ...openServiceNotifications(reopenedDraft)]);
+    if (!saved) return;
+  };
 
-    const updatedServices = serviceRequests.map(s => {
-      if (s.id === requestId) {
-        return { ...s, status: 'completed' as const };
-      }
-      return s;
-    });
-    setServiceRequests(updatedServices);
-    localStorage.setItem('kawing_services', JSON.stringify(updatedServices));
-
-    // Also update the associated harvest to "completed" in global list!
-    const updatedHarvests = harvests.map(h => {
-      if (h.id === service.harvestId) {
-        return { ...h, status: 'completed' as const };
-      }
-      return h;
-    });
-    setHarvests(updatedHarvests);
-    localStorage.setItem('kawing_harvests', JSON.stringify(updatedHarvests));
-
-    // Send completed notification to Farmer
-    const serviceNameFilipino = 
-      service.type === 'transport' ? 'Transportasyon' :
-      service.type === 'storage' ? 'Cold Storage' :
-      service.type === 'drying' ? 'Patuyuan' :
-      service.type === 'milling' ? 'Gilingan' : 'Pagbili';
-
-    addNotification(
-      service.farmerEmail,
-      'Nakumpleto ang Serbisyo!',
-      `Nakumpleto na ni ${service.operatorName || 'Operator'} ang serbisyong ${serviceNameFilipino} para sa iyong ${service.cropType}!`,
-      'success',
-      true
-    );
+  const handleCompleteService = async (requestId: string) => {
+    const service = serviceRequests.find(s => s.id === requestId);
+    if (!service || !activeUser?.email || service.status !== 'matched' || service.operatorEmail !== activeUser.email) return;
+    const fulfillmentNotice = createNotification(service.farmerEmail, 'Nakumpleto ang Serbisyo!', `Nakumpleto na ni ${service.operatorName || 'Operator'} ang serbisyong ${service.type} para sa iyong ${service.cropType}!`, 'success', true);
+    const saved = await persistServiceTransition(service, {
+      ...service,
+      status: 'completed',
+      completedAt: new Date().toISOString(),
+    }, [fulfillmentNotice]);
+    if (!saved) return;
   };
 
   // Dispatch correct view
@@ -1464,6 +1511,9 @@ export default function App() {
             marketReferencePrice={settings.daReferencePrice}
             onAddHarvest={handleAddHarvest}
             onAddServiceRequest={handleAddServiceRequest}
+            onRepostServiceRequest={handleRepostServiceRequest}
+            onUpdateServiceRequest={handleUpdateServiceRequest}
+            onDeleteServiceRequest={handleDeleteServiceRequest}
             onSubmitLoanRequest={handleSubmitLoanRequest}
             onCancelLoanRequest={handleCancelLoanRequest}
             onAcceptOffer={handleAcceptOffer}
@@ -1485,6 +1535,7 @@ export default function App() {
             harvests={harvests}
             offers={offers}
             serviceRequests={serviceRequests}
+            registeredUsers={registeredUsers}
             offeredServices={offeredServices}
             productionLoans={productionLoans}
             marketReferencePrice={settings.daReferencePrice}
@@ -1494,6 +1545,7 @@ export default function App() {
             onDeleteOfferedService={handleDeleteOfferedService}
             onAcceptService={handleAcceptService}
             onRejectService={handleRejectService}
+            onCancelService={handleCancelAcceptedService}
             onCompleteService={handleCompleteService}
             onApproveLoanRequest={handleApproveLoanRequest}
             onDeclineLoanRequest={handleDeclineLoanRequest}

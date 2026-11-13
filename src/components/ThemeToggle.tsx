@@ -65,7 +65,7 @@ export default function ThemeToggle({ variant }: { variant: 'landing' | 'sidebar
       onClick={handleToggle}
       aria-label={label}
       title={label}
-      className={variant === 'landing' ? 'landing-theme-toggle' : `${variant === 'sidebar' ? 'sidebar-theme-toggle w-full gap-2 rounded-xl px-3 py-2.5 text-xs font-extrabold' : 'h-10 w-10 rounded-full'} shrink-0 flex cursor-pointer items-center justify-center border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800`}
+      className={variant === 'landing' ? 'landing-theme-toggle' : `${variant === 'sidebar' ? 'sidebar-theme-toggle w-full gap-2 rounded-lg px-3 py-2 text-[11px] font-extrabold' : 'h-10 w-10 rounded-full'} shrink-0 flex cursor-pointer items-center justify-center border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800`}
     >
       {theme === 'dark' ? <Sun className="h-[18px] w-[18px] shrink-0" aria-hidden="true" /> : <Moon className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />}
       {variant === 'sidebar' && <span className="sidebar-expanded-only">{modeLabel}</span>}

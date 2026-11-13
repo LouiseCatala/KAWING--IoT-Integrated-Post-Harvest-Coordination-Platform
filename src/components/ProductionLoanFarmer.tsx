@@ -6,6 +6,7 @@ import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import AnimatedButton from './AnimatedButton';
 import { hasApprovedBusinessCapability } from '../lib/businessCapabilities';
+import CoordinatedContactCard from './CoordinatedContactCard';
 
 interface ProductionLoanFarmerProps {
   user: UserAccount;
@@ -438,6 +439,8 @@ export default function ProductionLoanFarmer({
             <div className="space-y-3">
               {filteredMyRequests.map(req => {
                 const isApproved = req.status === 'Approved' || req.status === 'Active';
+                const isCoordinated = isApproved || req.status === 'Completed';
+                const coordinatedBuyer = registeredUsers.find(account => account.email?.toLowerCase() === req.buyerEmail?.toLowerCase());
                 return (
                   <div
                     key={req.id}
@@ -517,6 +520,7 @@ export default function ProductionLoanFarmer({
                       </span>
                     </div>
                   </div>
+                  {isCoordinated && <CoordinatedContactCard user={coordinatedBuyer} email={req.buyerEmail} title={lang === 'en' ? 'Lender Coordination Contact' : 'Contact ng Lender'} />}
 
 
                   <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">

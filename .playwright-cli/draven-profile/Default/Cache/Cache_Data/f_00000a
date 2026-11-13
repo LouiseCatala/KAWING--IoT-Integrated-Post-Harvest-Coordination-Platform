@@ -1,0 +1,210 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/StartupSkeleton.tsx");import __vite__cjsImport0_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=3fc12e03"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+var _s = $RefreshSig$();
+import { useApp } from "/src/context/AppContext.tsx";
+export default function StartupSkeleton() {
+  _s();
+  const { lang } = useApp();
+  const block = "rounded-lg bg-slate-200/80 dark:bg-slate-800/80";
+  return /* @__PURE__ */ jsxDEV("div", { role: "status", "aria-label": lang === "en" ? "Loading KAWING" : "Nilo-load ang KAWING", "aria-busy": "true", className: "min-h-dvh bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white", children: [
+    /* @__PURE__ */ jsxDEV("span", { className: "sr-only", children: lang === "en" ? "Loading KAWING. Please wait." : "Nilo-load ang KAWING. Mangyaring maghintay." }, void 0, false, {
+      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+      lineNumber: 9,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV("header", { className: "border-b border-slate-200/70 px-5 py-5 dark:border-slate-800/70 sm:px-10", children: /* @__PURE__ */ jsxDEV("div", { className: "mx-auto flex max-w-6xl items-center justify-between", children: [
+      /* @__PURE__ */ jsxDEV("span", { className: "font-display text-lg font-black tracking-[0.18em] text-emerald-600 dark:text-emerald-400", children: "KAWING" }, void 0, false, {
+        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+        lineNumber: 12,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { "aria-hidden": "true", className: "flex gap-3 motion-safe:animate-pulse", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: `${block} hidden h-3 w-20 sm:block` }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+          lineNumber: 14,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: `${block} h-3 w-12` }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+          lineNumber: 15,
+          columnNumber: 13
+        }, this)
+      ] }, void 0, true, {
+        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+        lineNumber: 13,
+        columnNumber: 11
+      }, this)
+    ] }, void 0, true, {
+      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+      lineNumber: 11,
+      columnNumber: 9
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+      lineNumber: 10,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV("div", { "aria-hidden": "true", className: "mx-auto max-w-6xl space-y-8 px-5 py-8 motion-safe:animate-pulse sm:px-10 sm:py-12", children: [
+      /* @__PURE__ */ jsxDEV("div", { className: "flex flex-wrap items-center justify-between gap-6", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "w-full max-w-sm space-y-3", children: [
+          /* @__PURE__ */ jsxDEV("div", { className: `${block} h-7 w-3/4` }, void 0, false, {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+            lineNumber: 22,
+            columnNumber: 13
+          }, this),
+          /* @__PURE__ */ jsxDEV("div", { className: `${block} h-3 w-full` }, void 0, false, {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+            lineNumber: 23,
+            columnNumber: 13
+          }, this)
+        ] }, void 0, true, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+          lineNumber: 21,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: `${block} h-10 w-36` }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+          lineNumber: 25,
+          columnNumber: 11
+        }, this)
+      ] }, void 0, true, {
+        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+        lineNumber: 20,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "flex items-center justify-between gap-4 rounded-2xl border border-slate-200/70 bg-white p-4 dark:border-slate-800/70 dark:bg-slate-900/40", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "flex flex-1 gap-3", children: [0, 1, 2].map((item) => /* @__PURE__ */ jsxDEV("div", { className: `${block} h-8 w-20 ${item === 2 ? "hidden sm:block" : ""}` }, item, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+          lineNumber: 29,
+          columnNumber: 38
+        }, this)) }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+          lineNumber: 28,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: `${block} hidden h-8 w-48 md:block` }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+          lineNumber: 31,
+          columnNumber: 11
+        }, this)
+      ] }, void 0, true, {
+        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+        lineNumber: 27,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "grid gap-4 sm:grid-cols-2 lg:grid-cols-3", children: [0, 1, 2, 3, 4, 5].map(
+        (item) => /* @__PURE__ */ jsxDEV("div", { className: `space-y-5 rounded-2xl border border-slate-200/70 bg-white p-5 dark:border-slate-800/70 dark:bg-slate-900/40 ${item > 2 ? "hidden sm:block" : ""}`, children: [
+          /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-3", children: [
+            /* @__PURE__ */ jsxDEV("div", { className: `${block} h-10 w-10 shrink-0 rounded-xl` }, void 0, false, {
+              fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+              lineNumber: 37,
+              columnNumber: 17
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { className: "flex-1 space-y-2", children: [
+              /* @__PURE__ */ jsxDEV("div", { className: `${block} h-3 w-3/4` }, void 0, false, {
+                fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+                lineNumber: 39,
+                columnNumber: 19
+              }, this),
+              /* @__PURE__ */ jsxDEV("div", { className: `${block} h-2 w-1/2` }, void 0, false, {
+                fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+                lineNumber: 40,
+                columnNumber: 19
+              }, this)
+            ] }, void 0, true, {
+              fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+              lineNumber: 38,
+              columnNumber: 17
+            }, this)
+          ] }, void 0, true, {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+            lineNumber: 36,
+            columnNumber: 15
+          }, this),
+          /* @__PURE__ */ jsxDEV("div", { className: "space-y-2.5", children: [
+            /* @__PURE__ */ jsxDEV("div", { className: `${block} h-2 w-full` }, void 0, false, {
+              fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+              lineNumber: 44,
+              columnNumber: 17
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { className: `${block} h-2 w-5/6` }, void 0, false, {
+              fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+              lineNumber: 45,
+              columnNumber: 17
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { className: `${block} h-2 w-2/3` }, void 0, false, {
+              fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+              lineNumber: 46,
+              columnNumber: 17
+            }, this)
+          ] }, void 0, true, {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+            lineNumber: 43,
+            columnNumber: 15
+          }, this),
+          /* @__PURE__ */ jsxDEV("div", { className: "flex justify-between border-t border-slate-100 pt-4 dark:border-slate-800", children: [
+            /* @__PURE__ */ jsxDEV("div", { className: `${block} h-3 w-16` }, void 0, false, {
+              fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+              lineNumber: 49,
+              columnNumber: 17
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { className: `${block} h-3 w-20` }, void 0, false, {
+              fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+              lineNumber: 50,
+              columnNumber: 17
+            }, this)
+          ] }, void 0, true, {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+            lineNumber: 48,
+            columnNumber: 15
+          }, this)
+        ] }, item, true, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+          lineNumber: 35,
+          columnNumber: 11
+        }, this)
+      ) }, void 0, false, {
+        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+        lineNumber: 33,
+        columnNumber: 9
+      }, this)
+    ] }, void 0, true, {
+      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+      lineNumber: 19,
+      columnNumber: 7
+    }, this)
+  ] }, void 0, true, {
+    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx",
+    lineNumber: 8,
+    columnNumber: 5
+  }, this);
+}
+_s(StartupSkeleton, "EGFi/X9JF0MJm4L2xP1Xbnaa8k4=", false, function() {
+  return [useApp];
+});
+_c = StartupSkeleton;
+var _c;
+$RefreshReg$(_c, "StartupSkeleton");
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+function $RefreshReg$(type, id) {
+  return RefreshRuntime.register(type, "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/StartupSkeleton.tsx " + id);
+}
+function $RefreshSig$() {
+  return RefreshRuntime.createSignatureFunctionForTransform();
+}
+
+//# sourceMappingURL=data:application/json;base64,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QUFBQSxxQkFBcUM7QUFBQSxpQkFGdkM7QUFBQTtBQUFBO0FBQUE7QUFBQSxtQkFHQTtBQUFBLGVBTEY7QUFBQTtBQUFBO0FBQUE7QUFBQSxpQkFNQTtBQUFBLFVBQ0EsdUJBQUMsU0FBSSxXQUFVLGVBQ2I7QUFBQSxtQ0FBQyxTQUFJLFdBQVcsR0FBR0EsS0FBSyxpQkFBeEI7QUFBQTtBQUFBO0FBQUE7QUFBQSxtQkFBc0M7QUFBQSxZQUN0Qyx1QkFBQyxTQUFJLFdBQVcsR0FBR0EsS0FBSyxnQkFBeEI7QUFBQTtBQUFBO0FBQUE7QUFBQSxtQkFBcUM7QUFBQSxZQUNyQyx1QkFBQyxTQUFJLFdBQVcsR0FBR0EsS0FBSyxnQkFBeEI7QUFBQTtBQUFBO0FBQUE7QUFBQSxtQkFBcUM7QUFBQSxlQUh2QztBQUFBO0FBQUE7QUFBQTtBQUFBLGlCQUlBO0FBQUEsVUFDQSx1QkFBQyxTQUFJLFdBQVUsNkVBQ2I7QUFBQSxtQ0FBQyxTQUFJLFdBQVcsR0FBR0EsS0FBSyxlQUF4QjtBQUFBO0FBQUE7QUFBQTtBQUFBLG1CQUFvQztBQUFBLFlBQ3BDLHVCQUFDLFNBQUksV0FBVyxHQUFHQSxLQUFLLGVBQXhCO0FBQUE7QUFBQTtBQUFBO0FBQUEsbUJBQW9DO0FBQUEsZUFGdEM7QUFBQTtBQUFBO0FBQUE7QUFBQSxpQkFHQTtBQUFBLGFBaEJRRSxNQUFWO0FBQUE7QUFBQTtBQUFBO0FBQUEsZUFpQkE7QUFBQSxNQUNELEtBcEJIO0FBQUE7QUFBQTtBQUFBO0FBQUEsYUFxQkE7QUFBQSxTQW5DRjtBQUFBO0FBQUE7QUFBQTtBQUFBLFdBb0NBO0FBQUEsT0EvQ0Y7QUFBQTtBQUFBO0FBQUE7QUFBQSxTQWdEQTtBQUVKO0FBQUNKLEdBdkR1QkQsaUJBQWU7QUFBQSxVQUNwQkQsTUFBTTtBQUFBO0FBQUEsS0FEREM7QUFBZSxJQUFBTTtBQUFBLGFBQUFBLElBQUEiLCJuYW1lcyI6WyJ1c2VBcHAiLCJTdGFydHVwU2tlbGV0b24iLCJfcyIsImxhbmciLCJibG9jayIsIm1hcCIsIml0ZW0iLCJfYyJdLCJpZ25vcmVMaXN0IjpbXSwic291cmNlcyI6WyJTdGFydHVwU2tlbGV0b24udHN4Il0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IHVzZUFwcCB9IGZyb20gJy4uL2NvbnRleHQvQXBwQ29udGV4dCc7XG5cbmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIFN0YXJ0dXBTa2VsZXRvbigpIHtcbiAgY29uc3QgeyBsYW5nIH0gPSB1c2VBcHAoKTtcbiAgY29uc3QgYmxvY2sgPSAncm91bmRlZC1sZyBiZy1zbGF0ZS0yMDAvODAgZGFyazpiZy1zbGF0ZS04MDAvODAnO1xuXG4gIHJldHVybiAoXG4gICAgPGRpdiByb2xlPVwic3RhdHVzXCIgYXJpYS1sYWJlbD17bGFuZyA9PT0gJ2VuJyA/ICdMb2FkaW5nIEtBV0lORycgOiAnTmlsby1sb2FkIGFuZyBLQVdJTkcnfSBhcmlhLWJ1c3k9XCJ0cnVlXCIgY2xhc3NOYW1lPVwibWluLWgtZHZoIGJnLXNsYXRlLTUwIHRleHQtc2xhdGUtOTAwIGRhcms6Ymctc2xhdGUtOTUwIGRhcms6dGV4dC13aGl0ZVwiPlxuICAgICAgPHNwYW4gY2xhc3NOYW1lPVwic3Itb25seVwiPntsYW5nID09PSAnZW4nID8gJ0xvYWRpbmcgS0FXSU5HLiBQbGVhc2Ugd2FpdC4nIDogJ05pbG8tbG9hZCBhbmcgS0FXSU5HLiBNYW5neWFyaW5nIG1hZ2hpbnRheS4nfTwvc3Bhbj5cbiAgICAgIDxoZWFkZXIgY2xhc3NOYW1lPVwiYm9yZGVyLWIgYm9yZGVyLXNsYXRlLTIwMC83MCBweC01IHB5LTUgZGFyazpib3JkZXItc2xhdGUtODAwLzcwIHNtOnB4LTEwXCI+XG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwibXgtYXV0byBmbGV4IG1heC13LTZ4bCBpdGVtcy1jZW50ZXIganVzdGlmeS1iZXR3ZWVuXCI+XG4gICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwiZm9udC1kaXNwbGF5IHRleHQtbGcgZm9udC1ibGFjayB0cmFja2luZy1bMC4xOGVtXSB0ZXh0LWVtZXJhbGQtNjAwIGRhcms6dGV4dC1lbWVyYWxkLTQwMFwiPktBV0lORzwvc3Bhbj5cbiAgICAgICAgICA8ZGl2IGFyaWEtaGlkZGVuPVwidHJ1ZVwiIGNsYXNzTmFtZT1cImZsZXggZ2FwLTMgbW90aW9uLXNhZmU6YW5pbWF0ZS1wdWxzZVwiPlxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9e2Ake2Jsb2NrfSBoaWRkZW4gaC0zIHctMjAgc206YmxvY2tgfSAvPlxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9e2Ake2Jsb2NrfSBoLTMgdy0xMmB9IC8+XG4gICAgICAgICAgPC9kaXY+XG4gICAgICAgIDwvZGl2PlxuICAgICAgPC9oZWFkZXI+XG4gICAgICA8ZGl2IGFyaWEtaGlkZGVuPVwidHJ1ZVwiIGNsYXNzTmFtZT1cIm14LWF1dG8gbWF4LXctNnhsIHNwYWNlLXktOCBweC01IHB5LTggbW90aW9uLXNhZmU6YW5pbWF0ZS1wdWxzZSBzbTpweC0xMCBzbTpweS0xMlwiPlxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggZmxleC13cmFwIGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWJldHdlZW4gZ2FwLTZcIj5cbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInctZnVsbCBtYXgtdy1zbSBzcGFjZS15LTNcIj5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPXtgJHtibG9ja30gaC03IHctMy80YH0gLz5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPXtgJHtibG9ja30gaC0zIHctZnVsbGB9IC8+XG4gICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9e2Ake2Jsb2NrfSBoLTEwIHctMzZgfSAvPlxuICAgICAgICA8L2Rpdj5cbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWJldHdlZW4gZ2FwLTQgcm91bmRlZC0yeGwgYm9yZGVyIGJvcmRlci1zbGF0ZS0yMDAvNzAgYmctd2hpdGUgcC00IGRhcms6Ym9yZGVyLXNsYXRlLTgwMC83MCBkYXJrOmJnLXNsYXRlLTkwMC80MFwiPlxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBmbGV4LTEgZ2FwLTNcIj5cbiAgICAgICAgICAgIHtbMCwgMSwgMl0ubWFwKGl0ZW0gPT4gPGRpdiBrZXk9e2l0ZW19IGNsYXNzTmFtZT17YCR7YmxvY2t9IGgtOCB3LTIwICR7aXRlbSA9PT0gMiA/ICdoaWRkZW4gc206YmxvY2snIDogJyd9YH0gLz4pfVxuICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPXtgJHtibG9ja30gaGlkZGVuIGgtOCB3LTQ4IG1kOmJsb2NrYH0gLz5cbiAgICAgICAgPC9kaXY+XG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZ3JpZCBnYXAtNCBzbTpncmlkLWNvbHMtMiBsZzpncmlkLWNvbHMtM1wiPlxuICAgICAgICAgIHtbMCwgMSwgMiwgMywgNCwgNV0ubWFwKGl0ZW0gPT4gKFxuICAgICAgICAgICAgPGRpdiBrZXk9e2l0ZW19IGNsYXNzTmFtZT17YHNwYWNlLXktNSByb3VuZGVkLTJ4bCBib3JkZXIgYm9yZGVyLXNsYXRlLTIwMC83MCBiZy13aGl0ZSBwLTUgZGFyazpib3JkZXItc2xhdGUtODAwLzcwIGRhcms6Ymctc2xhdGUtOTAwLzQwICR7aXRlbSA+IDIgPyAnaGlkZGVuIHNtOmJsb2NrJyA6ICcnfWB9PlxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGdhcC0zXCI+XG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9e2Ake2Jsb2NrfSBoLTEwIHctMTAgc2hyaW5rLTAgcm91bmRlZC14bGB9IC8+XG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4LTEgc3BhY2UteS0yXCI+XG4gICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT17YCR7YmxvY2t9IGgtMyB3LTMvNGB9IC8+XG4gICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT17YCR7YmxvY2t9IGgtMiB3LTEvMmB9IC8+XG4gICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInNwYWNlLXktMi41XCI+XG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9e2Ake2Jsb2NrfSBoLTIgdy1mdWxsYH0gLz5cbiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT17YCR7YmxvY2t9IGgtMiB3LTUvNmB9IC8+XG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9e2Ake2Jsb2NrfSBoLTIgdy0yLzNgfSAvPlxuICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGp1c3RpZnktYmV0d2VlbiBib3JkZXItdCBib3JkZXItc2xhdGUtMTAwIHB0LTQgZGFyazpib3JkZXItc2xhdGUtODAwXCI+XG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9e2Ake2Jsb2NrfSBoLTMgdy0xNmB9IC8+XG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9e2Ake2Jsb2NrfSBoLTMgdy0yMGB9IC8+XG4gICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgKSl9XG4gICAgICAgIDwvZGl2PlxuICAgICAgPC9kaXY+XG4gICAgPC9kaXY+XG4gICk7XG59XG4iXSwiZmlsZSI6IkM6L1VzZXJzL2J5cm9uL0Rvd25sb2Fkcy9LQVdJTkcgbmdhYSAoMikvS0FXSU5HKDIpL3NyYy9jb21wb25lbnRzL1N0YXJ0dXBTa2VsZXRvbi50c3gifQ==

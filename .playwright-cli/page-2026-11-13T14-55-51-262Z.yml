@@ -1,0 +1,78 @@
+- generic [ref=e2]:
+  - generic [ref=e249]:
+    - complementary [ref=e250]:
+      - generic [ref=e251]:
+        - button "C" [ref=e556] [cursor=pointer]
+        - generic [ref=e256]:
+          - button "0 unread notifications" [ref=e258]
+          - button "KAWING Partner Hub" [ref=e262] [cursor=pointer]
+          - button "My Service Requests" [ref=e270] [cursor=pointer]
+          - button "Announcements Board" [ref=e277] [cursor=pointer]
+          - button "Farm Loans" [ref=e284] [cursor=pointer]
+          - button "My Harvest Posts" [ref=e290] [cursor=pointer]
+          - button "Price Offers Received" [ref=e296] [cursor=pointer]
+        - button "Switch to dark mode" [ref=e303] [cursor=pointer]
+        - button [ref=e557] [cursor=pointer]
+    - main [ref=e312]:
+      - region "Accepted services" [ref=e558]:
+        - generic [ref=e485]:
+          - generic [ref=e495]:
+            - heading "My Service Requests" [level=1] [ref=e496]
+            - paragraph [ref=e497]: Track every service request you posted and see which services have been accepted.
+          - generic [ref=e498]:
+            - button "Request Service" [ref=e499] [cursor=pointer]
+            - button "Post Harvest" [ref=e506] [cursor=pointer]
+        - tablist "Service request views" [ref=e509]:
+          - tab "Posted Requests 1" [ref=e510]:
+            - generic [ref=e513]: Posted Requests
+            - generic [ref=e514]: "1"
+          - tab "Accepted Services 1" [active] [selected] [ref=e515]:
+            - generic [ref=e519]: Accepted Services
+            - generic [ref=e520]: "1"
+          - tab "Completed 0" [ref=e521]:
+            - generic [ref=e524]: Completed
+            - generic [ref=e525]: "0"
+        - article [ref=e527]:
+          - generic [ref=e528]:
+            - generic [ref=e536]:
+              - paragraph [ref=e537]: Palay (NSIC Rc222)
+              - heading "Storage" [level=2] [ref=e538]
+            - generic [ref=e539]: Active
+          - generic [ref=e540]:
+            - generic [ref=e541]:
+              - term [ref=e542]: Quantity
+              - definition [ref=e543]: 9,000 kg
+            - generic [ref=e544]:
+              - term [ref=e545]: Schedule
+              - definition [ref=e546]: 11/15/2026, 08:00
+            - generic [ref=e547]:
+              - term [ref=e548]: Location
+              - definition [ref=e552]: 277, sampaguita street, nepo subd. A.C
+          - generic [ref=e559]:
+            - generic [ref=e561]:
+              - paragraph [ref=e562]: Accepted by
+              - paragraph [ref=e563]: JB. CORP
+            - generic [ref=e568]:
+              - generic [ref=e569]:
+                - paragraph [ref=e570]: Service capacity
+                - paragraph [ref=e571]: 60000 kg
+              - generic [ref=e572]:
+                - paragraph [ref=e573]: Service rate
+                - paragraph [ref=e574]: ₱30 per transaction
+              - generic [ref=e575]:
+                - paragraph [ref=e576]: Coverage / Address
+                - paragraph [ref=e577]: Angeles City
+            - generic [ref=e581]:
+              - paragraph [ref=e582]: Provider Coordination Contact
+              - generic [ref=e583]:
+                - link "catalaorlandlouise@gmail.com" [ref=e584] [cursor=pointer]:
+                  - /url: mailto:catalaorlandlouise@gmail.com
+                - link "09682384567" [ref=e588] [cursor=pointer]:
+                  - /url: tel:09682384567
+          - generic [ref=e553]: Accepted date not recorded
+  - generic:
+    - button "Hi, I'm Grainy! Do you need help? Open Grainy assistant" [ref=e591] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e592]: Hi, I'm Grai
+    - generic:
+      - button "Open Grainy KAWING Assistant" [ref=e594] [cursor=pointer]
+      - img "Grainy, the KAWING agricultural assistant"

@@ -44,6 +44,7 @@ export interface UserAccount {
   rating?: number;
   isApproved?: boolean; // if false, needs admin approval
   contactNumber?: string;
+  additionalContactNumbers?: string[];
   address?: string;
   businessName?: string;
   rsbsaNumber?: string;
@@ -137,7 +138,7 @@ export interface ServiceRequest {
   preferredDate?: string;
   preferredTime?: string;
   additionalNotes?: string;
-  status: 'pending' | 'matched' | 'rejected' | 'completed';
+  status: 'pending' | 'matched' | 'rejected' | 'completed' | 'expired';
   createdAt: string;
   farmerEmail: string;
   farmerName: string;
@@ -154,6 +155,9 @@ export interface ServiceRequest {
   dropLocation?: string;
   operatorEmail?: string;
   operatorName?: string;
+  acceptedAt?: string;
+  serviceCancelledAt?: string;
+  completedAt?: string;
   // Extra details depending on type
   details?: {
     distance?: string;

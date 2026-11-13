@@ -1,0 +1,660 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/TruckDashboard.tsx");import __vite__cjsImport0_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=3fc12e03"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+var _s = $RefreshSig$();
+import { IconCompass, IconTruck } from "/node_modules/.vite/deps/@tabler_icons-react.js?v=3fc12e03";
+import __vite__cjsImport2_react from "/node_modules/.vite/deps/react.js?v=3fc12e03"; const useState = __vite__cjsImport2_react["useState"];
+import { Truck, MapPin, Calendar, CheckCircle2, Navigation, Play } from "/node_modules/.vite/deps/lucide-react.js?v=3fc12e03";
+import { useApp } from "/src/context/AppContext.tsx";
+import Sidebar from "/src/components/Sidebar.tsx?t=1794580474987";
+import AnnouncementsBoard from "/src/components/AnnouncementsBoard.tsx";
+import { askConfirmation } from "/src/lib/appDialog.ts";
+export default function TruckDashboard({
+  user,
+  serviceRequests,
+  onAcceptService,
+  onRejectService,
+  onCompleteService,
+  onUpdateUser,
+  notifications,
+  onMarkNotificationRead,
+  onClearAllNotifications,
+  onLogout
+}) {
+  _s();
+  const { t, lang } = useApp();
+  const [activeTab, setActiveTab] = useState("announcements");
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const transportRequests = serviceRequests.filter((s) => s.type === "transport");
+  const availableDeliveries = transportRequests.filter((s) => s.status === "pending");
+  const activeDeliveries = transportRequests.filter(
+    (s) => s.status === "matched" && s.operatorEmail === user.email
+  );
+  const completedTodayCount = transportRequests.filter(
+    (s) => s.status === "completed" && s.operatorEmail === user.email
+  ).length;
+  return /* @__PURE__ */ jsxDEV("div", { className: "h-dvh max-h-dvh overflow-hidden bg-slate-50/80 dark:bg-slate-950/92 backdrop-blur-lg flex flex-col font-sans transition-colors duration-300", children: /* @__PURE__ */ jsxDEV("div", { className: "flex-1 min-h-0 flex w-full overflow-hidden", children: [
+    /* @__PURE__ */ jsxDEV(
+      Sidebar,
+      {
+        user,
+        activeTab: activeTab === "available" ? "requests" : activeTab,
+        onSelectTab: (tabId) => setActiveTab(tabId === "requests" ? "available" : tabId),
+        isMobileOpen: isMobileSidebarOpen,
+        onCloseMobile: () => setIsMobileSidebarOpen(false),
+        onUpdateUser,
+        onLogout,
+        notifications,
+        onMarkNotificationRead
+      },
+      void 0,
+      false,
+      {
+        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+        lineNumber: 59,
+        columnNumber: 9
+      },
+      this
+    ),
+    /* @__PURE__ */ jsxDEV("main", { className: "dashboard-main flex-1 min-w-0 w-full max-w-[1440px] mx-auto h-full overflow-y-auto px-4 sm:px-6 lg:px-8 py-8 font-sans scroll-smooth", children: [
+      /* @__PURE__ */ jsxDEV("div", { className: "mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2", children: /* @__PURE__ */ jsxDEV("div", { children: [
+        /* @__PURE__ */ jsxDEV("h1", { className: "text-xl font-extrabold text-slate-900 dark:text-white font-display uppercase tracking-wide", children: [
+          activeTab === "available" && (lang === "en" ? "Available Logistics Jobs" : "Hiling na Transportasyon"),
+          activeTab === "active" && (lang === "en" ? "My Active Trips" : "Aking Active na Biyahe")
+        ] }, void 0, true, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+          lineNumber: 76,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { className: "text-xs text-slate-500 dark:text-slate-400", children: [
+          activeTab === "available" && (lang === "en" ? "Browse and accept hauling requests from local farmers." : "Mag-browse at tumanggap ng hiling na biyahe mula sa mga magsasaka."),
+          activeTab === "active" && (lang === "en" ? "Manage ongoing deliveries and update trip status." : "Pamahalaan ang mga kasalukuyang biyahe at i-update ang status.")
+        ] }, void 0, true, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+          lineNumber: 80,
+          columnNumber: 13
+        }, this)
+      ] }, void 0, true, {
+        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+        lineNumber: 75,
+        columnNumber: 11
+      }, this) }, void 0, false, {
+        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+        lineNumber: 74,
+        columnNumber: 9
+      }, this),
+      activeTab === "announcements" ? /* @__PURE__ */ jsxDEV(
+        AnnouncementsBoard,
+        {
+          user,
+          notifications,
+          onMarkNotificationRead,
+          onClearAllNotifications,
+          onNavigateToFeature: (tabId) => setActiveTab(tabId === "requests" ? "available" : tabId)
+        },
+        void 0,
+        false,
+        {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+          lineNumber: 89,
+          columnNumber: 11
+        },
+        this
+      ) : activeTab === "available" ? availableDeliveries.length === 0 ? /* @__PURE__ */ jsxDEV("div", { className: "bg-white dark:bg-slate-900 text-center py-16 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm transition-all duration-300", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "w-16 h-16 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl", children: /* @__PURE__ */ jsxDEV("span", { className: "inline-flex items-center gap-1.5 align-middle", children: /* @__PURE__ */ jsxDEV(IconTruck, { size: 24, stroke: 2, "aria-hidden": "true", className: "inline-block shrink-0" }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+          lineNumber: 99,
+          columnNumber: 239
+        }, this) }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+          lineNumber: 99,
+          columnNumber: 175
+        }, this) }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+          lineNumber: 99,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("h3", { className: "text-base font-bold text-slate-900 dark:text-white", children: t("empty_cargo") }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+          lineNumber: 100,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { className: "text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto", children: t("empty_cargo_desc") }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+          lineNumber: 101,
+          columnNumber: 15
+        }, this)
+      ] }, void 0, true, {
+        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+        lineNumber: 98,
+        columnNumber: 11
+      }, this) : /* @__PURE__ */ jsxDEV("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6", children: availableDeliveries.map(
+        (s) => /* @__PURE__ */ jsxDEV(
+          "div",
+          {
+            className: "bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-300",
+            children: [
+              /* @__PURE__ */ jsxDEV("div", { className: "p-6 flex-grow", children: [
+                /* @__PURE__ */ jsxDEV("div", { className: "flex items-start justify-between gap-4 mb-4", children: [
+                  /* @__PURE__ */ jsxDEV("div", { children: [
+                    /* @__PURE__ */ jsxDEV("span", { className: "text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded block", children: "PENDING CARGO" }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 115,
+                      columnNumber: 25
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("h3", { className: "text-lg font-bold text-slate-900 dark:text-white mt-1 font-display", children: s.cropType }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 118,
+                      columnNumber: 25
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                    lineNumber: 114,
+                    columnNumber: 23
+                  }, this),
+                  /* @__PURE__ */ jsxDEV("span", { className: "text-xs px-2.5 py-1 rounded-full font-bold bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-900/50", children: lang === "en" ? "NEEDS TRANSPORT" : "KAILANGAN NG TRANSPORT" }, void 0, false, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                    lineNumber: 120,
+                    columnNumber: 23
+                  }, this)
+                ] }, void 0, true, {
+                  fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                  lineNumber: 113,
+                  columnNumber: 21
+                }, this),
+                /* @__PURE__ */ jsxDEV("p", { className: "text-xs text-slate-500 dark:text-slate-400 font-semibold mb-3", children: [
+                  t("label_farmer"),
+                  ": ",
+                  s.farmerName
+                ] }, void 0, true, {
+                  fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                  lineNumber: 125,
+                  columnNumber: 21
+                }, this),
+                /* @__PURE__ */ jsxDEV("div", { className: "space-y-3 text-sm text-slate-600 dark:text-slate-300", children: [
+                  s.truckType && /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2 text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 p-2 rounded-lg border border-blue-100 dark:border-blue-900/40", children: [
+                    /* @__PURE__ */ jsxDEV(Truck, { className: "w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 130,
+                      columnNumber: 27
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("span", { children: s.truckType }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 131,
+                      columnNumber: 27
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                    lineNumber: 129,
+                    columnNumber: 19
+                  }, this),
+                  /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2", children: [
+                    /* @__PURE__ */ jsxDEV(Truck, { className: "w-4 h-4 text-slate-400 shrink-0" }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 135,
+                      columnNumber: 25
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("span", { children: [
+                      t("cargo_weight"),
+                      " ",
+                      /* @__PURE__ */ jsxDEV("strong", { className: "text-slate-900 dark:text-white", children: [
+                        s.quantity,
+                        " ",
+                        s.unit
+                      ] }, void 0, true, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                        lineNumber: 138,
+                        columnNumber: 27
+                      }, this),
+                      s.quantityAccuracy && /* @__PURE__ */ jsxDEV("span", { className: "ml-1 text-[10px] font-bold text-slate-400", children: [
+                        "(",
+                        lang === "en" ? "actual" : "aktuwal",
+                        ")"
+                      ] }, void 0, true, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                        lineNumber: 140,
+                        columnNumber: 23
+                      }, this),
+                      s.containerQuantity && s.containerType && /* @__PURE__ */ jsxDEV("span", { className: "block text-[10px] font-semibold text-amber-600 dark:text-amber-400", children: [
+                        s.containerQuantity.toLocaleString(),
+                        " ",
+                        s.containerType === "sacks" ? "sacks/kaban" : "plastic bags",
+                        " × ",
+                        s.estimatedKgPerContainer?.toLocaleString(),
+                        " kg"
+                      ] }, void 0, true, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                        lineNumber: 145,
+                        columnNumber: 23
+                      }, this)
+                    ] }, void 0, true, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 136,
+                      columnNumber: 25
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                    lineNumber: 134,
+                    columnNumber: 23
+                  }, this),
+                  s.pickupLocation && /* @__PURE__ */ jsxDEV("div", { className: "flex items-start gap-2", children: [
+                    /* @__PURE__ */ jsxDEV(MapPin, { className: "w-4 h-4 text-emerald-500 shrink-0 mt-0.5" }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 153,
+                      columnNumber: 27
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("span", { children: [
+                      lang === "en" ? "Pick-up Place" : "Sakayan",
+                      ": ",
+                      /* @__PURE__ */ jsxDEV("strong", { className: "text-slate-900 dark:text-white", children: s.pickupLocation }, void 0, false, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                        lineNumber: 154,
+                        columnNumber: 80
+                      }, this)
+                    ] }, void 0, true, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 154,
+                      columnNumber: 27
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                    lineNumber: 152,
+                    columnNumber: 19
+                  }, this),
+                  s.dropLocation && /* @__PURE__ */ jsxDEV("div", { className: "flex items-start gap-2", children: [
+                    /* @__PURE__ */ jsxDEV(MapPin, { className: "w-4 h-4 text-rose-500 shrink-0 mt-0.5" }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 159,
+                      columnNumber: 27
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("span", { children: [
+                      lang === "en" ? "Drop Place" : "Bagsakan",
+                      ": ",
+                      /* @__PURE__ */ jsxDEV("strong", { className: "text-slate-900 dark:text-white", children: s.dropLocation }, void 0, false, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                        lineNumber: 160,
+                        columnNumber: 78
+                      }, this)
+                    ] }, void 0, true, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 160,
+                      columnNumber: 27
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                    lineNumber: 158,
+                    columnNumber: 19
+                  }, this),
+                  !s.pickupLocation && !s.dropLocation && /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2", children: [
+                    /* @__PURE__ */ jsxDEV(MapPin, { className: "w-4 h-4 text-slate-400 shrink-0" }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 165,
+                      columnNumber: 27
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("span", { children: [
+                      t("pickup_at"),
+                      " ",
+                      /* @__PURE__ */ jsxDEV("strong", { className: "text-slate-900 dark:text-white truncate", children: s.location }, void 0, false, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                        lineNumber: 166,
+                        columnNumber: 50
+                      }, this)
+                    ] }, void 0, true, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 166,
+                      columnNumber: 27
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                    lineNumber: 164,
+                    columnNumber: 19
+                  }, this),
+                  /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2", children: [
+                    /* @__PURE__ */ jsxDEV(Calendar, { className: "w-4 h-4 text-slate-400 shrink-0" }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 170,
+                      columnNumber: 25
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("span", { children: [
+                      t("requested_on"),
+                      " ",
+                      s.createdAt
+                    ] }, void 0, true, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 171,
+                      columnNumber: 25
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                    lineNumber: 169,
+                    columnNumber: 23
+                  }, this)
+                ] }, void 0, true, {
+                  fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                  lineNumber: 127,
+                  columnNumber: 21
+                }, this)
+              ] }, void 0, true, {
+                fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                lineNumber: 112,
+                columnNumber: 19
+              }, this),
+              /* @__PURE__ */ jsxDEV("div", { className: "bg-slate-50 dark:bg-slate-900/50 p-4 border-t border-slate-100 dark:border-slate-800 flex gap-3", children: [
+                /* @__PURE__ */ jsxDEV(
+                  "button",
+                  {
+                    id: `reject-delivery-${s.id}`,
+                    onClick: () => askConfirmation(lang === "en" ? "Reject this delivery?" : "Tanggihan ang request na ito?", () => onRejectService(s.id), { tone: "danger", confirmLabel: lang === "en" ? "Reject Delivery" : "Tanggihan" }),
+                    className: "flex-1 py-2.5 border border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-950/20 text-red-600 dark:text-red-400 font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer font-sans",
+                    children: lang === "en" ? "Reject" : "Tanggihan"
+                  },
+                  void 0,
+                  false,
+                  {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                    lineNumber: 177,
+                    columnNumber: 21
+                  },
+                  this
+                ),
+                /* @__PURE__ */ jsxDEV(
+                  "button",
+                  {
+                    id: `accept-delivery-${s.id}`,
+                    onClick: () => askConfirmation(lang === "en" ? "Accept this delivery and take responsibility for it?" : "Tanggapin at akuin ang request na ito?", () => onAcceptService(s.id), { tone: "success", confirmLabel: lang === "en" ? "Accept Delivery" : "Tanggapin" }),
+                    className: "flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-blue-600/10 flex items-center justify-center gap-2 cursor-pointer",
+                    children: [
+                      /* @__PURE__ */ jsxDEV(Play, { className: "w-4 h-4" }, void 0, false, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                        lineNumber: 189,
+                        columnNumber: 23
+                      }, this),
+                      " ",
+                      t("btn_accept_delivery")
+                    ]
+                  },
+                  void 0,
+                  true,
+                  {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                    lineNumber: 184,
+                    columnNumber: 21
+                  },
+                  this
+                )
+              ] }, void 0, true, {
+                fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                lineNumber: 176,
+                columnNumber: 19
+              }, this)
+            ]
+          },
+          s.id,
+          true,
+          {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+            lineNumber: 108,
+            columnNumber: 13
+          },
+          this
+        )
+      ) }, void 0, false, {
+        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+        lineNumber: 106,
+        columnNumber: 11
+      }, this) : activeDeliveries.length === 0 ? /* @__PURE__ */ jsxDEV("div", { className: "bg-white dark:bg-slate-900 text-center py-16 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm transition-all duration-300", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "w-16 h-16 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl", children: /* @__PURE__ */ jsxDEV("span", { className: "inline-flex items-center gap-1.5 align-middle", children: /* @__PURE__ */ jsxDEV(IconCompass, { size: 24, stroke: 2, "aria-hidden": "true", className: "inline-block shrink-0" }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+          lineNumber: 199,
+          columnNumber: 239
+        }, this) }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+          lineNumber: 199,
+          columnNumber: 175
+        }, this) }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+          lineNumber: 199,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("h3", { className: "text-base font-bold text-slate-900 dark:text-white", children: t("empty_trips") }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+          lineNumber: 200,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { className: "text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto", children: t("empty_trips_desc") }, void 0, false, {
+          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+          lineNumber: 201,
+          columnNumber: 15
+        }, this)
+      ] }, void 0, true, {
+        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+        lineNumber: 198,
+        columnNumber: 11
+      }, this) : /* @__PURE__ */ jsxDEV("div", { className: "space-y-6", children: activeDeliveries.map(
+        (s) => /* @__PURE__ */ jsxDEV(
+          "div",
+          {
+            className: "bg-white dark:bg-slate-900 p-6 rounded-2xl border border-blue-100 dark:border-blue-900/50 bg-blue-50/10 dark:bg-blue-950/10 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all duration-300",
+            children: [
+              /* @__PURE__ */ jsxDEV("div", { className: "flex items-start gap-4 flex-grow", children: [
+                /* @__PURE__ */ jsxDEV("div", { className: "w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 flex items-center justify-center text-xl flex-shrink-0", children: /* @__PURE__ */ jsxDEV("span", { className: "inline-flex items-center gap-1.5 align-middle", children: /* @__PURE__ */ jsxDEV(IconTruck, { size: 24, stroke: 2, "aria-hidden": "true", className: "inline-block shrink-0" }, void 0, false, {
+                  fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                  lineNumber: 213,
+                  columnNumber: 243
+                }, this) }, void 0, false, {
+                  fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                  lineNumber: 213,
+                  columnNumber: 179
+                }, this) }, void 0, false, {
+                  fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                  lineNumber: 213,
+                  columnNumber: 21
+                }, this),
+                /* @__PURE__ */ jsxDEV("div", { className: "space-y-1.5 flex-grow", children: [
+                  /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2", children: [
+                    /* @__PURE__ */ jsxDEV("h4", { className: "font-extrabold text-slate-900 dark:text-white text-lg font-display", children: s.cropType }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 216,
+                      columnNumber: 25
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("span", { className: "text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-blue-100 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300 uppercase tracking-wider animate-pulse", children: t("transit_badge") }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 217,
+                      columnNumber: 25
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                    lineNumber: 215,
+                    columnNumber: 23
+                  }, this),
+                  /* @__PURE__ */ jsxDEV("p", { className: "text-xs text-slate-500 dark:text-slate-400", children: [
+                    t("label_farmer"),
+                    ": ",
+                    /* @__PURE__ */ jsxDEV("strong", { className: "text-slate-700 dark:text-slate-200", children: s.farmerName }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 222,
+                      columnNumber: 46
+                    }, this),
+                    " • ",
+                    lang === "en" ? "Weight" : "Timbang",
+                    ": ",
+                    /* @__PURE__ */ jsxDEV("strong", { className: "text-slate-700 dark:text-slate-200", children: [
+                      s.quantity,
+                      " ",
+                      s.unit
+                    ] }, void 0, true, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 222,
+                      columnNumber: 167
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                    lineNumber: 221,
+                    columnNumber: 23
+                  }, this),
+                  /* @__PURE__ */ jsxDEV("div", { className: "flex flex-col sm:flex-row gap-2 sm:gap-6 text-xs text-slate-600 dark:text-slate-300 pt-2", children: [
+                    /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-1.5", children: [
+                      /* @__PURE__ */ jsxDEV(MapPin, { className: "w-4 h-4 text-slate-400" }, void 0, false, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                        lineNumber: 227,
+                        columnNumber: 27
+                      }, this),
+                      /* @__PURE__ */ jsxDEV("span", { children: [
+                        lang === "en" ? "From" : "Mula sa",
+                        ": ",
+                        /* @__PURE__ */ jsxDEV("strong", { className: "text-slate-800 dark:text-white", children: s.location }, void 0, false, {
+                          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                          lineNumber: 228,
+                          columnNumber: 71
+                        }, this)
+                      ] }, void 0, true, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                        lineNumber: 228,
+                        columnNumber: 27
+                      }, this)
+                    ] }, void 0, true, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 226,
+                      columnNumber: 25
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-1.5", children: [
+                      /* @__PURE__ */ jsxDEV(Navigation, { className: "w-4 h-4 text-slate-400" }, void 0, false, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                        lineNumber: 231,
+                        columnNumber: 27
+                      }, this),
+                      /* @__PURE__ */ jsxDEV("span", { children: [
+                        lang === "en" ? "To" : "Patungong",
+                        ": ",
+                        /* @__PURE__ */ jsxDEV("strong", { className: "text-slate-800 dark:text-white", children: "Manila Wholesale Market" }, void 0, false, {
+                          fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                          lineNumber: 232,
+                          columnNumber: 71
+                        }, this)
+                      ] }, void 0, true, {
+                        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                        lineNumber: 232,
+                        columnNumber: 27
+                      }, this)
+                    ] }, void 0, true, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 230,
+                      columnNumber: 25
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                    lineNumber: 225,
+                    columnNumber: 23
+                  }, this),
+                  /* @__PURE__ */ jsxDEV("div", { className: "pt-2", children: /* @__PURE__ */ jsxDEV("div", { className: "flex justify-between items-center text-xs text-slate-500 dark:text-slate-400", children: /* @__PURE__ */ jsxDEV("span", { children: "Distance: ~45 km" }, void 0, false, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                    lineNumber: 239,
+                    columnNumber: 27
+                  }, this) }, void 0, false, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                    lineNumber: 238,
+                    columnNumber: 25
+                  }, this) }, void 0, false, {
+                    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                    lineNumber: 237,
+                    columnNumber: 23
+                  }, this)
+                ] }, void 0, true, {
+                  fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                  lineNumber: 214,
+                  columnNumber: 21
+                }, this)
+              ] }, void 0, true, {
+                fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                lineNumber: 212,
+                columnNumber: 19
+              }, this),
+              /* @__PURE__ */ jsxDEV("div", { className: "flex flex-col items-stretch md:items-end justify-center min-w-0 md:min-w-[160px] w-full md:w-auto", children: /* @__PURE__ */ jsxDEV(
+                "button",
+                {
+                  id: `complete-delivery-${s.id}`,
+                  onClick: () => askConfirmation(lang === "en" ? "Mark this delivery as completed? This will close the job." : "Markahan itong completed? Isasara nito ang trabaho.", () => onCompleteService(s.id), { tone: "success", confirmLabel: lang === "en" ? "Mark Completed" : "Markahan na Tapos" }),
+                  className: "py-3 px-5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-600/10 transition-all flex items-center justify-center gap-2 cursor-pointer animate-pulse",
+                  children: [
+                    /* @__PURE__ */ jsxDEV(CheckCircle2, { className: "w-4 h-4" }, void 0, false, {
+                      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                      lineNumber: 251,
+                      columnNumber: 23
+                    }, this),
+                    " ",
+                    t("btn_deliver_now")
+                  ]
+                },
+                void 0,
+                true,
+                {
+                  fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                  lineNumber: 246,
+                  columnNumber: 21
+                },
+                this
+              ) }, void 0, false, {
+                fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+                lineNumber: 245,
+                columnNumber: 19
+              }, this)
+            ]
+          },
+          s.id,
+          true,
+          {
+            fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+            lineNumber: 208,
+            columnNumber: 13
+          },
+          this
+        )
+      ) }, void 0, false, {
+        fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+        lineNumber: 206,
+        columnNumber: 11
+      }, this)
+    ] }, void 0, true, {
+      fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+      lineNumber: 71,
+      columnNumber: 9
+    }, this)
+  ] }, void 0, true, {
+    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+    lineNumber: 58,
+    columnNumber: 7
+  }, this) }, void 0, false, {
+    fileName: "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx",
+    lineNumber: 55,
+    columnNumber: 5
+  }, this);
+}
+_s(TruckDashboard, "3qjbSw8L9yfYg0tgx4RrJ5ddj6k=", false, function() {
+  return [useApp];
+});
+_c = TruckDashboard;
+var _c;
+$RefreshReg$(_c, "TruckDashboard");
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+function $RefreshReg$(type, id) {
+  return RefreshRuntime.register(type, "C:/Users/byron/Downloads/KAWING ngaa (2)/KAWING(2)/src/components/TruckDashboard.tsx " + id);
+}
+function $RefreshSig$() {
+  return RefreshRuntime.createSignatureFunctionForTransform();
+}
+
+//# sourceMappingURL=data:application/json;base64,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bUJBOUJGO0FBQUE7QUFBQTtBQUFBO0FBQUEscUJBK0JBO0FBQUEsY0FFQSx1QkFBQyxTQUFJLFdBQVUscUdBQ2I7QUFBQSxnQkFBQztBQUFBO0FBQUEsa0JBQ0MsSUFBSSxxQkFBcUJPLEVBQUV5QixFQUFFO0FBQUEsa0JBQzdCLFNBQVMsTUFBTTlDLGdCQUFnQmMsU0FBUyxPQUFPLDhEQUE4RCx1REFBdUQsTUFBTVIsa0JBQWtCZSxFQUFFeUIsRUFBRSxHQUFHLEVBQUVDLE1BQU0sV0FBV0MsY0FBY2xDLFNBQVMsT0FBTyxtQkFBbUIsb0JBQW9CLENBQUM7QUFBQSxrQkFDNVIsV0FBVTtBQUFBLGtCQUVWO0FBQUEsMkNBQUMsZ0JBQWEsV0FBVSxhQUF4QjtBQUFBO0FBQUE7QUFBQTtBQUFBLDJCQUFpQztBQUFBLG9CQUFHO0FBQUEsb0JBQUVELEVBQUUsaUJBQWlCO0FBQUE7QUFBQTtBQUFBLGdCQUwzRDtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUEsY0FNQSxLQVBGO0FBQUE7QUFBQTtBQUFBO0FBQUEscUJBUUE7QUFBQTtBQUFBO0FBQUEsVUE1Q0tRLEVBQUV5QjtBQUFBQSxVQURUO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUEsUUE4Q0E7QUFBQSxNQUNELEtBakRIO0FBQUE7QUFBQTtBQUFBO0FBQUEsYUFrREE7QUFBQSxTQXpMSjtBQUFBO0FBQUE7QUFBQTtBQUFBLFdBNkxGO0FBQUEsT0ExTUE7QUFBQTtBQUFBO0FBQUE7QUFBQSxTQTJNQSxLQTlNRjtBQUFBO0FBQUE7QUFBQTtBQUFBLFNBK01BO0FBRUo7QUFBQ2xDLEdBalB1QlgsZ0JBQWM7QUFBQSxVQVloQkosTUFBTTtBQUFBO0FBQUEsS0FaSkk7QUFBYyxJQUFBZ0Q7QUFBQSxhQUFBQSxJQUFBIiwibmFtZXMiOlsiSWNvbkNvbXBhc3MiLCJJY29uVHJ1Y2siLCJ1c2VTdGF0ZSIsIlRydWNrIiwiTWFwUGluIiwiQ2FsZW5kYXIiLCJDaGVja0NpcmNsZTIiLCJOYXZpZ2F0aW9uIiwiUGxheSIsInVzZUFwcCIsIlNpZGViYXIiLCJBbm5vdW5jZW1lbnRzQm9hcmQiLCJhc2tDb25maXJtYXRpb24iLCJUcnVja0Rhc2hib2FyZCIsInVzZXIiLCJzZXJ2aWNlUmVxdWVzdHMiLCJvbkFjY2VwdFNlcnZpY2UiLCJvblJlamVjdFNlcnZpY2UiLCJvbkNvbXBsZXRlU2VydmljZSIsIm9uVXBkYXRlVXNlciIsIm5vdGlmaWNhdGlvbnMiLCJvbk1hcmtOb3RpZmljYXRpb25SZWFkIiwib25DbGVhckFsbE5vdGlmaWNhdGlvbnMiLCJvbkxvZ291dCIsIl9zIiwidCIsImxhbmciLCJhY3RpdmVUYWIiLCJzZXRBY3RpdmVUYWIiLCJpc01vYmlsZVNpZGViYXJPcGVuIiwic2V0SXNNb2JpbGVTaWRlYmFyT3BlbiIsInRyYW5zcG9ydFJlcXVlc3RzIiwiZmlsdGVyIiwicyIsInR5cGUiLCJhdmFpbGFibGVEZWxpdmVyaWVzIiwic3RhdHVzIiwiYWN0aXZlRGVsaXZlcmllcyIsIm9wZXJhdG9yRW1haWwiLCJlbWFpbCIsImNvbXBsZXRlZFRvZGF5Q291bnQiLCJsZW5ndGgiLCJ0YWJJZCIsIm1hcCIsImNyb3BUeXBlIiwiZmFybWVyTmFtZSIsInRydWNrVHlwZSIsInF1YW50aXR5IiwidW5pdCIsInF1YW50aXR5QWNjdXJhY3kiLCJjb250YWluZXJRdWFudGl0eSIsImNvbnRhaW5lclR5cGUiLCJ0b0xvY2FsZVN0cmluZyIsImVzdGltYXRlZEtnUGVyQ29udGFpbmVyIiwicGlja3VwTG9jYXRpb24iLCJkcm9wTG9jYXRpb24iLCJsb2NhdGlvbiIsImNyZWF0ZWRBdCIsImlkIiwidG9uZSIsImNvbmZpcm1MYWJlbCIsIl9jIl0sImlnbm9yZUxpc3QiOltdLCJzb3VyY2VzIjpbIlRydWNrRGFzaGJvYXJkLnRzeCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBJY29uQ29tcGFzcywgSWNvblRydWNrIH0gZnJvbSAnQHRhYmxlci9pY29ucy1yZWFjdCc7XG5pbXBvcnQgUmVhY3QsIHsgdXNlU3RhdGUgfSBmcm9tICdyZWFjdCc7XG5pbXBvcnQgeyBTZXJ2aWNlUmVxdWVzdCwgVXNlckFjY291bnQsIEFwcE5vdGlmaWNhdGlvbiB9IGZyb20gJy4uL3R5cGVzJztcbmltcG9ydCB7IFRydWNrLCBNYXBQaW4sIENhbGVuZGFyLCBDaGVja0NpcmNsZTIsIE5hdmlnYXRpb24sIFBsYXkgfSBmcm9tICdsdWNpZGUtcmVhY3QnO1xuaW1wb3J0IHsgdXNlQXBwIH0gZnJvbSAnLi4vY29udGV4dC9BcHBDb250ZXh0JztcbmltcG9ydCBTaWRlYmFyIGZyb20gJy4vU2lkZWJhcic7XG5pbXBvcnQgQW5ub3VuY2VtZW50c0JvYXJkIGZyb20gJy4vQW5ub3VuY2VtZW50c0JvYXJkJztcbmltcG9ydCB7IGFza0NvbmZpcm1hdGlvbiB9IGZyb20gJy4uL2xpYi9hcHBEaWFsb2cnO1xuXG5pbnRlcmZhY2UgVHJ1Y2tEYXNoYm9hcmRQcm9wcyB7XG4gIHVzZXI6IFVzZXJBY2NvdW50O1xuICBzZXJ2aWNlUmVxdWVzdHM6IFNlcnZpY2VSZXF1ZXN0W107XG4gIG9uQWNjZXB0U2VydmljZTogKHJlcXVlc3RJZDogc3RyaW5nKSA9PiB2b2lkO1xuICBvblJlamVjdFNlcnZpY2U6IChyZXF1ZXN0SWQ6IHN0cmluZykgPT4gdm9pZDtcbiAgb25Db21wbGV0ZVNlcnZpY2U6IChyZXF1ZXN0SWQ6IHN0cmluZykgPT4gdm9pZDtcbiAgb25VcGRhdGVVc2VyOiAob3JpZ2luYWxOYW1lOiBzdHJpbmcsIHVwZGF0ZWQ6IFVzZXJBY2NvdW50KSA9PiB2b2lkO1xuICBub3RpZmljYXRpb25zOiBBcHBOb3RpZmljYXRpb25bXTtcbiAgb25NYXJrTm90aWZpY2F0aW9uUmVhZDogKGlkOiBzdHJpbmcpID0+IHZvaWQ7XG4gIG9uQ2xlYXJBbGxOb3RpZmljYXRpb25zOiAoZW1haWw6IHN0cmluZykgPT4gdm9pZDtcbiAgb25Mb2dvdXQ6ICgpID0+IHZvaWQ7XG59XG5cbmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIFRydWNrRGFzaGJvYXJkKHtcbiAgdXNlcixcbiAgc2VydmljZVJlcXVlc3RzLFxuICBvbkFjY2VwdFNlcnZpY2UsXG4gIG9uUmVqZWN0U2VydmljZSxcbiAgb25Db21wbGV0ZVNlcnZpY2UsXG4gIG9uVXBkYXRlVXNlcixcbiAgbm90aWZpY2F0aW9ucyxcbiAgb25NYXJrTm90aWZpY2F0aW9uUmVhZCxcbiAgb25DbGVhckFsbE5vdGlmaWNhdGlvbnMsXG4gIG9uTG9nb3V0LFxufTogVHJ1Y2tEYXNoYm9hcmRQcm9wcykge1xuICBjb25zdCB7IHQsIGxhbmcgfSA9IHVzZUFwcCgpO1xuICBjb25zdCBbYWN0aXZlVGFiLCBzZXRBY3RpdmVUYWJdID0gdXNlU3RhdGU8J2Fubm91bmNlbWVudHMnIHwgJ2F2YWlsYWJsZScgfCAnYWN0aXZlJz4oJ2Fubm91bmNlbWVudHMnKTtcbiAgY29uc3QgW2lzTW9iaWxlU2lkZWJhck9wZW4sIHNldElzTW9iaWxlU2lkZWJhck9wZW5dID0gdXNlU3RhdGUoZmFsc2UpO1xuXG4gIC8vIEZpbHRlciB0cmFuc3BvcnQgcmVxdWVzdHNcbiAgY29uc3QgdHJhbnNwb3J0UmVxdWVzdHMgPSBzZXJ2aWNlUmVxdWVzdHMuZmlsdGVyKHMgPT4gcy50eXBlID09PSAndHJhbnNwb3J0Jyk7XG5cbiAgLy8gQXZhaWxhYmxlIGFyZSB0cmFuc3BvcnQgcmVxdWVzdHMgd2l0aCBcInBlbmRpbmdcIiBzdGF0dXNcbiAgY29uc3QgYXZhaWxhYmxlRGVsaXZlcmllcyA9IHRyYW5zcG9ydFJlcXVlc3RzLmZpbHRlcihzID0+IHMuc3RhdHVzID09PSAncGVuZGluZycpO1xuXG4gIC8vIEFjdGl2ZSBhcmUgdHJhbnNwb3J0IHJlcXVlc3RzIGFzc2lnbmVkIHRvIFRISVMgb3BlcmF0b3IgZW1haWwgKHNlcGFyYXRlcyBhY2NvdW50cyBwZXIgdXNlciEpXG4gIGNvbnN0IGFjdGl2ZURlbGl2ZXJpZXMgPSB0cmFuc3BvcnRSZXF1ZXN0cy5maWx0ZXIoXG4gICAgcyA9PiBzLnN0YXR1cyA9PT0gJ21hdGNoZWQnICYmIHMub3BlcmF0b3JFbWFpbCA9PT0gdXNlci5lbWFpbFxuICApO1xuXG4gIGNvbnN0IGNvbXBsZXRlZFRvZGF5Q291bnQgPSB0cmFuc3BvcnRSZXF1ZXN0cy5maWx0ZXIoXG4gICAgcyA9PiBzLnN0YXR1cyA9PT0gJ2NvbXBsZXRlZCcgJiYgcy5vcGVyYXRvckVtYWlsID09PSB1c2VyLmVtYWlsXG4gICkubGVuZ3RoO1xuXG4gIHJldHVybiAoXG4gICAgPGRpdiBjbGFzc05hbWU9XCJoLWR2aCBtYXgtaC1kdmggb3ZlcmZsb3ctaGlkZGVuIGJnLXNsYXRlLTUwLzgwIGRhcms6Ymctc2xhdGUtOTUwLzkyIGJhY2tkcm9wLWJsdXItbGcgZmxleCBmbGV4LWNvbCBmb250LXNhbnMgdHJhbnNpdGlvbi1jb2xvcnMgZHVyYXRpb24tMzAwXCI+XG4gICAgICBcbiAgICAgIHsvKiBNYWluIENvbnRhaW5lciB3aXRoIExlZnQgU2lkZWJhciAqL31cbiAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleC0xIG1pbi1oLTAgZmxleCB3LWZ1bGwgb3ZlcmZsb3ctaGlkZGVuXCI+XG4gICAgICAgIDxTaWRlYmFyXG4gICAgICAgICAgdXNlcj17dXNlcn1cbiAgICAgICAgICBhY3RpdmVUYWI9e2FjdGl2ZVRhYiA9PT0gJ2F2YWlsYWJsZScgPyAncmVxdWVzdHMnIDogYWN0aXZlVGFifVxuICAgICAgICAgIG9uU2VsZWN0VGFiPXsodGFiSWQpID0+IHNldEFjdGl2ZVRhYih0YWJJZCA9PT0gJ3JlcXVlc3RzJyA/ICdhdmFpbGFibGUnIDogdGFiSWQgYXMgYW55KX1cbiAgICAgICAgICBpc01vYmlsZU9wZW49e2lzTW9iaWxlU2lkZWJhck9wZW59XG4gICAgICAgICAgb25DbG9zZU1vYmlsZT17KCkgPT4gc2V0SXNNb2JpbGVTaWRlYmFyT3BlbihmYWxzZSl9XG4gICAgICAgICAgb25VcGRhdGVVc2VyPXtvblVwZGF0ZVVzZXJ9XG4gICAgICAgICAgb25Mb2dvdXQ9e29uTG9nb3V0fVxuICAgICAgICAgIG5vdGlmaWNhdGlvbnM9e25vdGlmaWNhdGlvbnN9XG4gICAgICAgICAgb25NYXJrTm90aWZpY2F0aW9uUmVhZD17b25NYXJrTm90aWZpY2F0aW9uUmVhZH1cbiAgICAgICAgLz5cblxuICAgICAgICA8bWFpbiBjbGFzc05hbWU9XCJkYXNoYm9hcmQtbWFpbiBmbGV4LTEgbWluLXctMCB3LWZ1bGwgbWF4LXctWzE0NDBweF0gbXgtYXV0byBoLWZ1bGwgb3ZlcmZsb3cteS1hdXRvIHB4LTQgc206cHgtNiBsZzpweC04IHB5LTggZm9udC1zYW5zIHNjcm9sbC1zbW9vdGhcIj5cbiAgICAgICAgXG4gICAgICAgIHsvKiBUaXRsZSBIZWFkZXIgZm9yIGFjdGl2ZSBmZWF0dXJlICovfVxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cIm1iLTYgZmxleCBmbGV4LWNvbCBzbTpmbGV4LXJvdyBzbTppdGVtcy1jZW50ZXIgc206anVzdGlmeS1iZXR3ZWVuIGdhcC0yXCI+XG4gICAgICAgICAgPGRpdj5cbiAgICAgICAgICAgIDxoMSBjbGFzc05hbWU9XCJ0ZXh0LXhsIGZvbnQtZXh0cmFib2xkIHRleHQtc2xhdGUtOTAwIGRhcms6dGV4dC13aGl0ZSBmb250LWRpc3BsYXkgdXBwZXJjYXNlIHRyYWNraW5nLXdpZGVcIj5cbiAgICAgICAgICAgICAge2FjdGl2ZVRhYiA9PT0gJ2F2YWlsYWJsZScgJiYgKGxhbmcgPT09ICdlbicgPyAnQXZhaWxhYmxlIExvZ2lzdGljcyBKb2JzJyA6ICdIaWxpbmcgbmEgVHJhbnNwb3J0YXN5b24nKX1cbiAgICAgICAgICAgICAge2FjdGl2ZVRhYiA9PT0gJ2FjdGl2ZScgJiYgKGxhbmcgPT09ICdlbicgPyAnTXkgQWN0aXZlIFRyaXBzJyA6ICdBa2luZyBBY3RpdmUgbmEgQml5YWhlJyl9XG4gICAgICAgICAgICA8L2gxPlxuICAgICAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC14cyB0ZXh0LXNsYXRlLTUwMCBkYXJrOnRleHQtc2xhdGUtNDAwXCI+XG4gICAgICAgICAgICAgIHthY3RpdmVUYWIgPT09ICdhdmFpbGFibGUnICYmIChsYW5nID09PSAnZW4nID8gJ0Jyb3dzZSBhbmQgYWNjZXB0IGhhdWxpbmcgcmVxdWVzdHMgZnJvbSBsb2NhbCBmYXJtZXJzLicgOiAnTWFnLWJyb3dzZSBhdCB0dW1hbmdnYXAgbmcgaGlsaW5nIG5hIGJpeWFoZSBtdWxhIHNhIG1nYSBtYWdzYXNha2EuJyl9XG4gICAgICAgICAgICAgIHthY3RpdmVUYWIgPT09ICdhY3RpdmUnICYmIChsYW5nID09PSAnZW4nID8gJ01hbmFnZSBvbmdvaW5nIGRlbGl2ZXJpZXMgYW5kIHVwZGF0ZSB0cmlwIHN0YXR1cy4nIDogJ1BhbWFoYWxhYW4gYW5nIG1nYSBrYXNhbHVrdXlhbmcgYml5YWhlIGF0IGktdXBkYXRlIGFuZyBzdGF0dXMuJyl9XG4gICAgICAgICAgICA8L3A+XG4gICAgICAgICAgPC9kaXY+XG4gICAgICAgIDwvZGl2PlxuXG4gICAgICAgIHsvKiBUYWIgcGFuZWxzICovfVxuICAgICAgICB7YWN0aXZlVGFiID09PSAnYW5ub3VuY2VtZW50cycgPyAoXG4gICAgICAgICAgPEFubm91bmNlbWVudHNCb2FyZFxuICAgICAgICAgICAgdXNlcj17dXNlcn1cbiAgICAgICAgICAgIG5vdGlmaWNhdGlvbnM9e25vdGlmaWNhdGlvbnN9XG4gICAgICAgICAgICBvbk1hcmtOb3RpZmljYXRpb25SZWFkPXtvbk1hcmtOb3RpZmljYXRpb25SZWFkfVxuICAgICAgICAgICAgb25DbGVhckFsbE5vdGlmaWNhdGlvbnM9e29uQ2xlYXJBbGxOb3RpZmljYXRpb25zfVxuICAgICAgICAgICAgb25OYXZpZ2F0ZVRvRmVhdHVyZT17KHRhYklkKSA9PiBzZXRBY3RpdmVUYWIodGFiSWQgPT09ICdyZXF1ZXN0cycgPyAnYXZhaWxhYmxlJyA6IHRhYklkIGFzIGFueSl9XG4gICAgICAgICAgLz5cbiAgICAgICAgKSA6IGFjdGl2ZVRhYiA9PT0gJ2F2YWlsYWJsZScgPyAoXG4gICAgICAgICAgYXZhaWxhYmxlRGVsaXZlcmllcy5sZW5ndGggPT09IDAgPyAoXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImJnLXdoaXRlIGRhcms6Ymctc2xhdGUtOTAwIHRleHQtY2VudGVyIHB5LTE2IHB4LTQgcm91bmRlZC0yeGwgYm9yZGVyIGJvcmRlci1zbGF0ZS0xMDAgZGFyazpib3JkZXItc2xhdGUtODAwIHNoYWRvdy1zbSB0cmFuc2l0aW9uLWFsbCBkdXJhdGlvbi0zMDBcIj5cbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ3LTE2IGgtMTYgYmctc2xhdGUtNTAgZGFyazpiZy1zbGF0ZS04MDAgdGV4dC1zbGF0ZS00MDAgZGFyazp0ZXh0LXNsYXRlLTYwMCByb3VuZGVkLWZ1bGwgZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgbXgtYXV0byBtYi00IHRleHQtMnhsXCI+PHNwYW4gY2xhc3NOYW1lPVwiaW5saW5lLWZsZXggaXRlbXMtY2VudGVyIGdhcC0xLjUgYWxpZ24tbWlkZGxlXCI+PEljb25UcnVjayBzaXplPXsyNH0gc3Ryb2tlPXsyfSBhcmlhLWhpZGRlbj1cInRydWVcIiBjbGFzc05hbWU9XCJpbmxpbmUtYmxvY2sgc2hyaW5rLTBcIiAvPjwvc3Bhbj48L2Rpdj5cbiAgICAgICAgICAgICAgPGgzIGNsYXNzTmFtZT1cInRleHQtYmFzZSBmb250LWJvbGQgdGV4dC1zbGF0ZS05MDAgZGFyazp0ZXh0LXdoaXRlXCI+e3QoJ2VtcHR5X2NhcmdvJyl9PC9oMz5cbiAgICAgICAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC1zbSB0ZXh0LXNsYXRlLTUwMCBkYXJrOnRleHQtc2xhdGUtNDAwIG10LTEgbWF4LXctc20gbXgtYXV0b1wiPlxuICAgICAgICAgICAgICAgIHt0KCdlbXB0eV9jYXJnb19kZXNjJyl9XG4gICAgICAgICAgICAgIDwvcD5cbiAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICkgOiAoXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImdyaWQgZ3JpZC1jb2xzLTEgbWQ6Z3JpZC1jb2xzLTIgZ2FwLTQgbWQ6Z2FwLTZcIj5cbiAgICAgICAgICAgICAge2F2YWlsYWJsZURlbGl2ZXJpZXMubWFwKChzKSA9PiAoXG4gICAgICAgICAgICAgICAgPGRpdlxuICAgICAgICAgICAgICAgICAga2V5PXtzLmlkfVxuICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwiYmctd2hpdGUgZGFyazpiZy1zbGF0ZS05MDAgcm91bmRlZC0yeGwgYm9yZGVyIGJvcmRlci1zbGF0ZS0xMDAgZGFyazpib3JkZXItc2xhdGUtODAwIHNoYWRvdy1zbSBvdmVyZmxvdy1oaWRkZW4gZmxleCBmbGV4LWNvbCBob3Zlcjpib3JkZXItc2xhdGUtMjAwIGRhcms6aG92ZXI6Ym9yZGVyLXNsYXRlLTcwMCB0cmFuc2l0aW9uLWFsbCBkdXJhdGlvbi0zMDBcIlxuICAgICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicC02IGZsZXgtZ3Jvd1wiPlxuICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtc3RhcnQganVzdGlmeS1iZXR3ZWVuIGdhcC00IG1iLTRcIj5cbiAgICAgICAgICAgICAgICAgICAgICA8ZGl2PlxuICAgICAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC14cyBmb250LWJvbGQgdGV4dC1ibHVlLTYwMCBkYXJrOnRleHQtYmx1ZS00MDAgdXBwZXJjYXNlIHRyYWNraW5nLXdpZGVyIGJnLWJsdWUtNTAgZGFyazpiZy1ibHVlLTk1MC80MCBweC0yIHB5LTAuNSByb3VuZGVkIGJsb2NrXCI+XG4gICAgICAgICAgICAgICAgICAgICAgICAgIFBFTkRJTkcgQ0FSR09cbiAgICAgICAgICAgICAgICAgICAgICAgIDwvc3Bhbj5cbiAgICAgICAgICAgICAgICAgICAgICAgIDxoMyBjbGFzc05hbWU9XCJ0ZXh0LWxnIGZvbnQtYm9sZCB0ZXh0LXNsYXRlLTkwMCBkYXJrOnRleHQtd2hpdGUgbXQtMSBmb250LWRpc3BsYXlcIj57cy5jcm9wVHlwZX08L2gzPlxuICAgICAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInRleHQteHMgcHgtMi41IHB5LTEgcm91bmRlZC1mdWxsIGZvbnQtYm9sZCBiZy1hbWJlci01MCBkYXJrOmJnLWFtYmVyLTk1MC8yMCB0ZXh0LWFtYmVyLTcwMCBkYXJrOnRleHQtYW1iZXItNDAwIGJvcmRlciBib3JkZXItYW1iZXItMTAwIGRhcms6Ym9yZGVyLWFtYmVyLTkwMC81MFwiPlxuICAgICAgICAgICAgICAgICAgICAgICAge2xhbmcgPT09ICdlbicgPyAnTkVFRFMgVFJBTlNQT1JUJyA6ICdLQUlMQU5HQU4gTkcgVFJBTlNQT1JUJ31cbiAgICAgICAgICAgICAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgICAgICAgICAgIDwvZGl2PlxuXG4gICAgICAgICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cInRleHQteHMgdGV4dC1zbGF0ZS01MDAgZGFyazp0ZXh0LXNsYXRlLTQwMCBmb250LXNlbWlib2xkIG1iLTNcIj57dCgnbGFiZWxfZmFybWVyJyl9OiB7cy5mYXJtZXJOYW1lfTwvcD5cblxuICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInNwYWNlLXktMyB0ZXh0LXNtIHRleHQtc2xhdGUtNjAwIGRhcms6dGV4dC1zbGF0ZS0zMDBcIj5cbiAgICAgICAgICAgICAgICAgICAgICB7cy50cnVja1R5cGUgJiYgKFxuICAgICAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMiB0ZXh0LXhzIGZvbnQtYm9sZCB0ZXh0LWJsdWUtNzAwIGRhcms6dGV4dC1ibHVlLTMwMCBiZy1ibHVlLTUwIGRhcms6YmctYmx1ZS05NTAvNDAgcC0yIHJvdW5kZWQtbGcgYm9yZGVyIGJvcmRlci1ibHVlLTEwMCBkYXJrOmJvcmRlci1ibHVlLTkwMC80MFwiPlxuICAgICAgICAgICAgICAgICAgICAgICAgICA8VHJ1Y2sgY2xhc3NOYW1lPVwidy00IGgtNCB0ZXh0LWJsdWUtNjAwIGRhcms6dGV4dC1ibHVlLTQwMCBzaHJpbmstMFwiIC8+XG4gICAgICAgICAgICAgICAgICAgICAgICAgIDxzcGFuPntzLnRydWNrVHlwZX08L3NwYW4+XG4gICAgICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgICApfVxuICAgICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTJcIj5cbiAgICAgICAgICAgICAgICAgICAgICAgIDxUcnVjayBjbGFzc05hbWU9XCJ3LTQgaC00IHRleHQtc2xhdGUtNDAwIHNocmluay0wXCIgLz5cbiAgICAgICAgICAgICAgICAgICAgICAgIDxzcGFuPlxuICAgICAgICAgICAgICAgICAgICAgICAgICB7dCgnY2FyZ29fd2VpZ2h0Jyl9eycgJ31cbiAgICAgICAgICAgICAgICAgICAgICAgICAgPHN0cm9uZyBjbGFzc05hbWU9XCJ0ZXh0LXNsYXRlLTkwMCBkYXJrOnRleHQtd2hpdGVcIj57cy5xdWFudGl0eX0ge3MudW5pdH08L3N0cm9uZz5cbiAgICAgICAgICAgICAgICAgICAgICAgICAge3MucXVhbnRpdHlBY2N1cmFjeSAmJiAoXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwibWwtMSB0ZXh0LVsxMHB4XSBmb250LWJvbGQgdGV4dC1zbGF0ZS00MDBcIj5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICh7bGFuZyA9PT0gJ2VuJyA/ICdhY3R1YWwnIDogJ2FrdHV3YWwnfSlcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgICAgICAgICAgICAgICAgICl9XG4gICAgICAgICAgICAgICAgICAgICAgICAgIHtzLmNvbnRhaW5lclF1YW50aXR5ICYmIHMuY29udGFpbmVyVHlwZSAmJiAoXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwiYmxvY2sgdGV4dC1bMTBweF0gZm9udC1zZW1pYm9sZCB0ZXh0LWFtYmVyLTYwMCBkYXJrOnRleHQtYW1iZXItNDAwXCI+XG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICB7cy5jb250YWluZXJRdWFudGl0eS50b0xvY2FsZVN0cmluZygpfSB7cy5jb250YWluZXJUeXBlID09PSAnc2Fja3MnID8gJ3NhY2tzL2thYmFuJyA6ICdwbGFzdGljIGJhZ3MnfSDDlyB7cy5lc3RpbWF0ZWRLZ1BlckNvbnRhaW5lcj8udG9Mb2NhbGVTdHJpbmcoKX0ga2dcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgICAgICAgICAgICAgICAgICl9XG4gICAgICAgICAgICAgICAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgICAgICAge3MucGlja3VwTG9jYXRpb24gJiYgKFxuICAgICAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLXN0YXJ0IGdhcC0yXCI+XG4gICAgICAgICAgICAgICAgICAgICAgICAgIDxNYXBQaW4gY2xhc3NOYW1lPVwidy00IGgtNCB0ZXh0LWVtZXJhbGQtNTAwIHNocmluay0wIG10LTAuNVwiIC8+XG4gICAgICAgICAgICAgICAgICAgICAgICAgIDxzcGFuPntsYW5nID09PSAnZW4nID8gJ1BpY2stdXAgUGxhY2UnIDogJ1Nha2F5YW4nfTogPHN0cm9uZyBjbGFzc05hbWU9XCJ0ZXh0LXNsYXRlLTkwMCBkYXJrOnRleHQtd2hpdGVcIj57cy5waWNrdXBMb2NhdGlvbn08L3N0cm9uZz48L3NwYW4+XG4gICAgICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgICApfVxuICAgICAgICAgICAgICAgICAgICAgIHtzLmRyb3BMb2NhdGlvbiAmJiAoXG4gICAgICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtc3RhcnQgZ2FwLTJcIj5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgPE1hcFBpbiBjbGFzc05hbWU9XCJ3LTQgaC00IHRleHQtcm9zZS01MDAgc2hyaW5rLTAgbXQtMC41XCIgLz5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgPHNwYW4+e2xhbmcgPT09ICdlbicgPyAnRHJvcCBQbGFjZScgOiAnQmFnc2FrYW4nfTogPHN0cm9uZyBjbGFzc05hbWU9XCJ0ZXh0LXNsYXRlLTkwMCBkYXJrOnRleHQtd2hpdGVcIj57cy5kcm9wTG9jYXRpb259PC9zdHJvbmc+PC9zcGFuPlxuICAgICAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgICAgICAgKX1cbiAgICAgICAgICAgICAgICAgICAgICB7IXMucGlja3VwTG9jYXRpb24gJiYgIXMuZHJvcExvY2F0aW9uICYmIChcbiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTJcIj5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgPE1hcFBpbiBjbGFzc05hbWU9XCJ3LTQgaC00IHRleHQtc2xhdGUtNDAwIHNocmluay0wXCIgLz5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgPHNwYW4+e3QoJ3BpY2t1cF9hdCcpfSA8c3Ryb25nIGNsYXNzTmFtZT1cInRleHQtc2xhdGUtOTAwIGRhcms6dGV4dC13aGl0ZSB0cnVuY2F0ZVwiPntzLmxvY2F0aW9ufTwvc3Ryb25nPjwvc3Bhbj5cbiAgICAgICAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgICAgICAgICl9XG4gICAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMlwiPlxuICAgICAgICAgICAgICAgICAgICAgICAgPENhbGVuZGFyIGNsYXNzTmFtZT1cInctNCBoLTQgdGV4dC1zbGF0ZS00MDAgc2hyaW5rLTBcIiAvPlxuICAgICAgICAgICAgICAgICAgICAgICAgPHNwYW4+e3QoJ3JlcXVlc3RlZF9vbicpfSB7cy5jcmVhdGVkQXR9PC9zcGFuPlxuICAgICAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgIDwvZGl2PlxuXG4gICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImJnLXNsYXRlLTUwIGRhcms6Ymctc2xhdGUtOTAwLzUwIHAtNCBib3JkZXItdCBib3JkZXItc2xhdGUtMTAwIGRhcms6Ym9yZGVyLXNsYXRlLTgwMCBmbGV4IGdhcC0zXCI+XG4gICAgICAgICAgICAgICAgICAgIDxidXR0b25cbiAgICAgICAgICAgICAgICAgICAgICBpZD17YHJlamVjdC1kZWxpdmVyeS0ke3MuaWR9YH1cbiAgICAgICAgICAgICAgICAgICAgICBvbkNsaWNrPXsoKSA9PiBhc2tDb25maXJtYXRpb24obGFuZyA9PT0gJ2VuJyA/ICdSZWplY3QgdGhpcyBkZWxpdmVyeT8nIDogJ1RhbmdnaWhhbiBhbmcgcmVxdWVzdCBuYSBpdG8/JywgKCkgPT4gb25SZWplY3RTZXJ2aWNlKHMuaWQpLCB7IHRvbmU6ICdkYW5nZXInLCBjb25maXJtTGFiZWw6IGxhbmcgPT09ICdlbicgPyAnUmVqZWN0IERlbGl2ZXJ5JyA6ICdUYW5nZ2loYW4nIH0pfVxuICAgICAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cImZsZXgtMSBweS0yLjUgYm9yZGVyIGJvcmRlci1yZWQtMjAwIGRhcms6Ym9yZGVyLXJlZC05MDAvNTAgaG92ZXI6YmctcmVkLTUwIGRhcms6aG92ZXI6YmctcmVkLTk1MC8yMCB0ZXh0LXJlZC02MDAgZGFyazp0ZXh0LXJlZC00MDAgZm9udC1ib2xkIHRleHQtc20gcm91bmRlZC14bCB0cmFuc2l0aW9uLWFsbCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBnYXAtMiBjdXJzb3ItcG9pbnRlciBmb250LXNhbnNcIlxuICAgICAgICAgICAgICAgICAgICA+XG4gICAgICAgICAgICAgICAgICAgICAge2xhbmcgPT09ICdlbicgPyAnUmVqZWN0JyA6ICdUYW5nZ2loYW4nfVxuICAgICAgICAgICAgICAgICAgICA8L2J1dHRvbj5cbiAgICAgICAgICAgICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgICAgICAgICAgIGlkPXtgYWNjZXB0LWRlbGl2ZXJ5LSR7cy5pZH1gfVxuICAgICAgICAgICAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IGFza0NvbmZpcm1hdGlvbihsYW5nID09PSAnZW4nID8gJ0FjY2VwdCB0aGlzIGRlbGl2ZXJ5IGFuZCB0YWtlIHJlc3BvbnNpYmlsaXR5IGZvciBpdD8nIDogJ1RhbmdnYXBpbiBhdCBha3VpbiBhbmcgcmVxdWVzdCBuYSBpdG8/JywgKCkgPT4gb25BY2NlcHRTZXJ2aWNlKHMuaWQpLCB7IHRvbmU6ICdzdWNjZXNzJywgY29uZmlybUxhYmVsOiBsYW5nID09PSAnZW4nID8gJ0FjY2VwdCBEZWxpdmVyeScgOiAnVGFuZ2dhcGluJyB9KX1cbiAgICAgICAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJmbGV4LTEgcHktMi41IGJnLWJsdWUtNjAwIGhvdmVyOmJnLWJsdWUtNTAwIHRleHQtd2hpdGUgZm9udC1ib2xkIHRleHQtc20gcm91bmRlZC14bCB0cmFuc2l0aW9uLWFsbCBzaGFkb3ctbWQgc2hhZG93LWJsdWUtNjAwLzEwIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIGdhcC0yIGN1cnNvci1wb2ludGVyXCJcbiAgICAgICAgICAgICAgICAgICAgPlxuICAgICAgICAgICAgICAgICAgICAgIDxQbGF5IGNsYXNzTmFtZT1cInctNCBoLTRcIiAvPiB7dCgnYnRuX2FjY2VwdF9kZWxpdmVyeScpfVxuICAgICAgICAgICAgICAgICAgICA8L2J1dHRvbj5cbiAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICApKX1cbiAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgIClcbiAgICAgICAgKSA6IChcbiAgICAgICAgICBhY3RpdmVEZWxpdmVyaWVzLmxlbmd0aCA9PT0gMCA/IChcbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiYmctd2hpdGUgZGFyazpiZy1zbGF0ZS05MDAgdGV4dC1jZW50ZXIgcHktMTYgcHgtNCByb3VuZGVkLTJ4bCBib3JkZXIgYm9yZGVyLXNsYXRlLTEwMCBkYXJrOmJvcmRlci1zbGF0ZS04MDAgc2hhZG93LXNtIHRyYW5zaXRpb24tYWxsIGR1cmF0aW9uLTMwMFwiPlxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInctMTYgaC0xNiBiZy1zbGF0ZS01MCBkYXJrOmJnLXNsYXRlLTgwMCB0ZXh0LXNsYXRlLTQwMCBkYXJrOnRleHQtc2xhdGUtNjAwIHJvdW5kZWQtZnVsbCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBteC1hdXRvIG1iLTQgdGV4dC0yeGxcIj48c3BhbiBjbGFzc05hbWU9XCJpbmxpbmUtZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTEuNSBhbGlnbi1taWRkbGVcIj48SWNvbkNvbXBhc3Mgc2l6ZT17MjR9IHN0cm9rZT17Mn0gYXJpYS1oaWRkZW49XCJ0cnVlXCIgY2xhc3NOYW1lPVwiaW5saW5lLWJsb2NrIHNocmluay0wXCIgLz48L3NwYW4+PC9kaXY+XG4gICAgICAgICAgICAgIDxoMyBjbGFzc05hbWU9XCJ0ZXh0LWJhc2UgZm9udC1ib2xkIHRleHQtc2xhdGUtOTAwIGRhcms6dGV4dC13aGl0ZVwiPnt0KCdlbXB0eV90cmlwcycpfTwvaDM+XG4gICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cInRleHQtc20gdGV4dC1zbGF0ZS01MDAgZGFyazp0ZXh0LXNsYXRlLTQwMCBtdC0xIG1heC13LXNtIG14LWF1dG9cIj5cbiAgICAgICAgICAgICAgICB7dCgnZW1wdHlfdHJpcHNfZGVzYycpfVxuICAgICAgICAgICAgICA8L3A+XG4gICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICApIDogKFxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJzcGFjZS15LTZcIj5cbiAgICAgICAgICAgICAge2FjdGl2ZURlbGl2ZXJpZXMubWFwKChzKSA9PiAoXG4gICAgICAgICAgICAgICAgPGRpdlxuICAgICAgICAgICAgICAgICAga2V5PXtzLmlkfVxuICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwiYmctd2hpdGUgZGFyazpiZy1zbGF0ZS05MDAgcC02IHJvdW5kZWQtMnhsIGJvcmRlciBib3JkZXItYmx1ZS0xMDAgZGFyazpib3JkZXItYmx1ZS05MDAvNTAgYmctYmx1ZS01MC8xMCBkYXJrOmJnLWJsdWUtOTUwLzEwIHNoYWRvdy1zbSBmbGV4IGZsZXgtY29sIG1kOmZsZXgtcm93IG1kOml0ZW1zLWNlbnRlciBqdXN0aWZ5LWJldHdlZW4gZ2FwLTYgdHJhbnNpdGlvbi1hbGwgZHVyYXRpb24tMzAwXCJcbiAgICAgICAgICAgICAgICA+XG4gICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtc3RhcnQgZ2FwLTQgZmxleC1ncm93XCI+XG4gICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwidy0xMiBoLTEyIHJvdW5kZWQteGwgYmctYmx1ZS0xMDAgZGFyazpiZy1ibHVlLTk1MC80MCB0ZXh0LWJsdWUtNzAwIGRhcms6dGV4dC1ibHVlLTQwMCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciB0ZXh0LXhsIGZsZXgtc2hyaW5rLTBcIj48c3BhbiBjbGFzc05hbWU9XCJpbmxpbmUtZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTEuNSBhbGlnbi1taWRkbGVcIj48SWNvblRydWNrIHNpemU9ezI0fSBzdHJva2U9ezJ9IGFyaWEtaGlkZGVuPVwidHJ1ZVwiIGNsYXNzTmFtZT1cImlubGluZS1ibG9jayBzaHJpbmstMFwiIC8+PC9zcGFuPjwvZGl2PlxuICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInNwYWNlLXktMS41IGZsZXgtZ3Jvd1wiPlxuICAgICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTJcIj5cbiAgICAgICAgICAgICAgICAgICAgICAgIDxoNCBjbGFzc05hbWU9XCJmb250LWV4dHJhYm9sZCB0ZXh0LXNsYXRlLTkwMCBkYXJrOnRleHQtd2hpdGUgdGV4dC1sZyBmb250LWRpc3BsYXlcIj57cy5jcm9wVHlwZX08L2g0PlxuICAgICAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC1bMTBweF0gcHgtMi41IHB5LTAuNSByb3VuZGVkLWZ1bGwgZm9udC1ib2xkIGJnLWJsdWUtMTAwIGRhcms6YmctYmx1ZS05NTAvNTAgdGV4dC1ibHVlLTgwMCBkYXJrOnRleHQtYmx1ZS0zMDAgdXBwZXJjYXNlIHRyYWNraW5nLXdpZGVyIGFuaW1hdGUtcHVsc2VcIj5cbiAgICAgICAgICAgICAgICAgICAgICAgICAge3QoJ3RyYW5zaXRfYmFkZ2UnKX1cbiAgICAgICAgICAgICAgICAgICAgICAgIDwvc3Bhbj5cbiAgICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgICA8cCBjbGFzc05hbWU9XCJ0ZXh0LXhzIHRleHQtc2xhdGUtNTAwIGRhcms6dGV4dC1zbGF0ZS00MDBcIj5cbiAgICAgICAgICAgICAgICAgICAgICAgIHt0KCdsYWJlbF9mYXJtZXInKX06IDxzdHJvbmcgY2xhc3NOYW1lPVwidGV4dC1zbGF0ZS03MDAgZGFyazp0ZXh0LXNsYXRlLTIwMFwiPntzLmZhcm1lck5hbWV9PC9zdHJvbmc+IOKAoiB7bGFuZyA9PT0gJ2VuJyA/ICdXZWlnaHQnIDogJ1RpbWJhbmcnfTogPHN0cm9uZyBjbGFzc05hbWU9XCJ0ZXh0LXNsYXRlLTcwMCBkYXJrOnRleHQtc2xhdGUtMjAwXCI+e3MucXVhbnRpdHl9IHtzLnVuaXR9PC9zdHJvbmc+XG4gICAgICAgICAgICAgICAgICAgICAgPC9wPlxuXG4gICAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGZsZXgtY29sIHNtOmZsZXgtcm93IGdhcC0yIHNtOmdhcC02IHRleHQteHMgdGV4dC1zbGF0ZS02MDAgZGFyazp0ZXh0LXNsYXRlLTMwMCBwdC0yXCI+XG4gICAgICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGdhcC0xLjVcIj5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgPE1hcFBpbiBjbGFzc05hbWU9XCJ3LTQgaC00IHRleHQtc2xhdGUtNDAwXCIgLz5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgPHNwYW4+e2xhbmcgPT09ICdlbicgPyAnRnJvbScgOiAnTXVsYSBzYSd9OiA8c3Ryb25nIGNsYXNzTmFtZT1cInRleHQtc2xhdGUtODAwIGRhcms6dGV4dC13aGl0ZVwiPntzLmxvY2F0aW9ufTwvc3Ryb25nPjwvc3Bhbj5cbiAgICAgICAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMS41XCI+XG4gICAgICAgICAgICAgICAgICAgICAgICAgIDxOYXZpZ2F0aW9uIGNsYXNzTmFtZT1cInctNCBoLTQgdGV4dC1zbGF0ZS00MDBcIiAvPlxuICAgICAgICAgICAgICAgICAgICAgICAgICA8c3Bhbj57bGFuZyA9PT0gJ2VuJyA/ICdUbycgOiAnUGF0dW5nb25nJ306IDxzdHJvbmcgY2xhc3NOYW1lPVwidGV4dC1zbGF0ZS04MDAgZGFyazp0ZXh0LXdoaXRlXCI+TWFuaWxhIFdob2xlc2FsZSBNYXJrZXQ8L3N0cm9uZz48L3NwYW4+XG4gICAgICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cblxuICAgICAgICAgICAgICAgICAgICAgIHsvKiBEaXN0YW5jZSBkaXNwbGF5ICovfVxuICAgICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicHQtMlwiPlxuICAgICAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGp1c3RpZnktYmV0d2VlbiBpdGVtcy1jZW50ZXIgdGV4dC14cyB0ZXh0LXNsYXRlLTUwMCBkYXJrOnRleHQtc2xhdGUtNDAwXCI+XG4gICAgICAgICAgICAgICAgICAgICAgICAgIDxzcGFuPkRpc3RhbmNlOiB+NDUga208L3NwYW4+XG4gICAgICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgICA8L2Rpdj5cblxuICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGZsZXgtY29sIGl0ZW1zLXN0cmV0Y2ggbWQ6aXRlbXMtZW5kIGp1c3RpZnktY2VudGVyIG1pbi13LTAgbWQ6bWluLXctWzE2MHB4XSB3LWZ1bGwgbWQ6dy1hdXRvXCI+XG4gICAgICAgICAgICAgICAgICAgIDxidXR0b25cbiAgICAgICAgICAgICAgICAgICAgICBpZD17YGNvbXBsZXRlLWRlbGl2ZXJ5LSR7cy5pZH1gfVxuICAgICAgICAgICAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IGFza0NvbmZpcm1hdGlvbihsYW5nID09PSAnZW4nID8gJ01hcmsgdGhpcyBkZWxpdmVyeSBhcyBjb21wbGV0ZWQ/IFRoaXMgd2lsbCBjbG9zZSB0aGUgam9iLicgOiAnTWFya2FoYW4gaXRvbmcgY29tcGxldGVkPyBJc2FzYXJhIG5pdG8gYW5nIHRyYWJhaG8uJywgKCkgPT4gb25Db21wbGV0ZVNlcnZpY2Uocy5pZCksIHsgdG9uZTogJ3N1Y2Nlc3MnLCBjb25maXJtTGFiZWw6IGxhbmcgPT09ICdlbicgPyAnTWFyayBDb21wbGV0ZWQnIDogJ01hcmthaGFuIG5hIFRhcG9zJyB9KX1cbiAgICAgICAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJweS0zIHB4LTUgYmctZW1lcmFsZC02MDAgaG92ZXI6YmctZW1lcmFsZC01MDAgdGV4dC13aGl0ZSBmb250LWJvbGQgdGV4dC1zbSByb3VuZGVkLXhsIHNoYWRvdy1sZyBzaGFkb3ctZW1lcmFsZC02MDAvMTAgdHJhbnNpdGlvbi1hbGwgZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgZ2FwLTIgY3Vyc29yLXBvaW50ZXIgYW5pbWF0ZS1wdWxzZVwiXG4gICAgICAgICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICAgICAgICA8Q2hlY2tDaXJjbGUyIGNsYXNzTmFtZT1cInctNCBoLTRcIiAvPiB7dCgnYnRuX2RlbGl2ZXJfbm93Jyl9XG4gICAgICAgICAgICAgICAgICAgIDwvYnV0dG9uPlxuICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICkpfVxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgKVxuICAgICAgICApfVxuXG4gICAgICA8L21haW4+XG4gICAgICA8L2Rpdj5cbiAgICA8L2Rpdj5cbiAgKTtcbn1cbiJdLCJmaWxlIjoiQzovVXNlcnMvYnlyb24vRG93bmxvYWRzL0tBV0lORyBuZ2FhICgyKS9LQVdJTkcoMikvc3JjL2NvbXBvbmVudHMvVHJ1Y2tEYXNoYm9hcmQudHN4In0=
