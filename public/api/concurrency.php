@@ -107,6 +107,55 @@ function consumeLoginAttempt(PDO $pdo, array $buckets, int $now): int {
     return 0;
 }
 
+function cleanupExpiredOperationalRecords(PDO $pdo): void {
+    $lockName = '';
+    $lockAcquired = false;
+    try {
+        $database = (string) $pdo->query('SELECT DATABASE()')->fetchColumn();
+        $lockName = 'kw:retention:' . substr(hash('sha256', $database), 0, 40);
+        $lock = $pdo->prepare('SELECT GET_LOCK(?, 0)');
+        $lock->execute([$lockName]);
+        $lockAcquired = (int) $lock->fetchColumn() === 1;
+        if (!$lockAcquired) return;
+
+        $today = (string) $pdo->query('SELECT CURRENT_DATE()')->fetchColumn();
+        $check = $pdo->prepare("SELECT setting_value FROM system_settings WHERE setting_key='__retention_cleanup_day'");
+        $check->execute();
+        if (json_decode((string) $check->fetchColumn(), true) === $today) return;
+
+        $pdo->beginTransaction();
+        $pdo->exec("DELETE FROM system_settings
+            WHERE (LEFT(setting_key, 8) = '__write_' AND updated_at < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 7 DAY))
+               OR (LEFT(setting_key, 8) = '__login_' AND updated_at < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 DAY))");
+        $pdo->exec("DELETE FROM notifications
+            WHERE (is_read = 1 AND created_at < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 90 DAY))
+               OR created_at < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 180 DAY)");
+
+        $hasEmailTable = $pdo->query("SELECT 1 FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name='email_deliveries'")->fetchColumn();
+        if ($hasEmailTable) {
+            $pdo->exec("DELETE FROM email_deliveries
+                WHERE created_at < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 90 DAY)");
+        }
+
+        $save = $pdo->prepare("INSERT INTO system_settings (setting_key, setting_value) VALUES ('__retention_cleanup_day', ?)
+            ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)");
+        $save->execute([json_encode($today, JSON_THROW_ON_ERROR)]);
+        $pdo->commit();
+    } catch (Throwable $error) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        error_log('[KAWING RETENTION] Daily cleanup failed.');
+    } finally {
+        if ($lockAcquired) {
+            try {
+                $release = $pdo->prepare('SELECT RELEASE_LOCK(?)');
+                $release->execute([$lockName]);
+            } catch (Throwable $error) {
+                error_log('[KAWING RETENTION] Could not release the cleanup lock.');
+            }
+        }
+    }
+}
+
 function changeLockResources(PDO $pdo, array $changes): array {
     $resources = [];
     $tables = ['users' => 'users', 'harvests' => 'harvests', 'offers' => 'offers', 'services' => 'service_requests', 'productionLoans' => 'production_loans', 'offeredServices' => 'offered_services', 'notifications' => 'notifications'];

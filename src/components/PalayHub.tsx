@@ -53,7 +53,7 @@ export default function PalayHub({ onAddDryingRequest, farmerLocation = '' }: Pa
           <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-amber-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-600/10 text-xl font-bold text-white"><span className="inline-flex items-center gap-1.5 align-middle"><IconWheat size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></div>
           <div>
             <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5 font-display">
-              {lang === 'en' ? 'Sentrong Palay' : 'Sentrong Palay'} <span className="text-xs bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-extrabold px-2 py-0.5 rounded-full">Kawing Hub</span>
+              {lang === 'en' ? 'Palay Hub' : 'Sentrong Palay'} <span className="text-xs bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-extrabold px-2 py-0.5 rounded-full">KAWING</span>
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
               {lang === 'en' ? 'Premium post-harvest toolset & guidance for paddy rice production' : 'Kagamitan at gabay sa tamang pag-proseso ng inaning palay'}

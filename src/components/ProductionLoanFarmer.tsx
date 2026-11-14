@@ -302,12 +302,12 @@ export default function ProductionLoanFarmer({
               className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-medium cursor-pointer"
             >
               <option value="all">{lang === 'en' ? 'All Statuses' : 'Lahat ng Status'}</option>
-              <option value="pending">Pending</option>
-              <option value="approved">Approved</option>
-              <option value="active">Active</option>
-              <option value="completed">Completed</option>
-              <option value="declined">Declined</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="pending">{lang === 'en' ? 'Pending' : 'Naghihintay'}</option>
+              <option value="approved">{lang === 'en' ? 'Approved' : 'Naaprubahan'}</option>
+              <option value="active">{lang === 'en' ? 'Active' : 'Aktibo'}</option>
+              <option value="completed">{lang === 'en' ? 'Completed' : 'Nakumpleto'}</option>
+              <option value="declined">{lang === 'en' ? 'Declined' : 'Tinanggihan'}</option>
+              <option value="cancelled">{lang === 'en' ? 'Cancelled' : 'Kinansela'}</option>
             </select>
           </div>
         )}
@@ -390,7 +390,7 @@ export default function ProductionLoanFarmer({
           </div>
           <div className="mt-5 grid grid-cols-2 gap-4 rounded-2xl bg-slate-50 p-4 text-sm dark:bg-slate-800">
             <div><p className="text-xs text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Loan Amount' : 'Halaga ng Pautang'}</p><p className="mt-1 font-bold">&#8369;{detailsBuyer.loanConfig!.minAmount.toLocaleString()} - &#8369;{detailsBuyer.loanConfig!.maxAmount.toLocaleString()}</p></div>
-            <div><p className="text-xs text-slate-500 dark:text-slate-400">Interest Rate</p><p className="mt-1 font-bold">{detailsBuyer.loanConfig!.interestRate ?? 5}%</p></div>
+            <div><p className="text-xs text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Interest Rate' : 'Tubo'}</p><p className="mt-1 font-bold">{detailsBuyer.loanConfig!.interestRate ?? 5}%</p></div>
             <div className="col-span-2"><p className="text-xs text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Repayment Terms' : 'Panahon ng Pagbabayad'}</p><p className="mt-1 font-semibold">{detailsBuyer.loanConfig!.repaymentPeriod}</p></div>
           </div>
                       <div className="mt-3 grid gap-4 border-t border-slate-100 pt-4 text-slate-600 dark:border-slate-800 dark:text-slate-300 sm:grid-cols-2">

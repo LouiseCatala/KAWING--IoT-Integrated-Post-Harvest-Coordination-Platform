@@ -48,6 +48,9 @@ export interface UserAccount {
   address?: string;
   businessName?: string;
   rsbsaNumber?: string;
+  registrationSource?: 'kiosk';
+  registrationDocumentStatus?: 'pending_physical_verification';
+  rsbsaDocumentStatus?: 'pending_physical_verification';
   contactPersonName?: string;
   legalCompanyName?: string;
   serviceCoverageArea?: string;

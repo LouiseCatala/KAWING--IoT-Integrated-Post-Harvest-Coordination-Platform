@@ -23,6 +23,7 @@
 3. In the Google Account security settings, create an **App Password** for KAWING.
 4. Open `/home/CPANEL_USERNAME/kawing-config.php` and configure:
    - `admin_api_key`: a long random secret used only for protected maintenance tests.
+   - `kiosk_device_id`: optional ID for the locked local kiosk. Keep it private and leave it empty on public hosting unless kiosk access is deliberately configured there.
    - `smtp_enabled`: `true`.
    - `smtp_username` and `smtp_from_email`: the dedicated Gmail address.
    - `smtp_password`: the 16-character Google App Password, without spaces. Never enter the normal Gmail password.
@@ -40,17 +41,11 @@ Users receive email only after choosing **Allow Email Updates** in KAWING. Each 
 
 ## ESP32 / PalaySense
 
-Send JSON to `https://YOUR_DOMAIN/api/moisture-readings` (or the legacy `/api/moisture_iot.php`) with the `x-api-key` configured in `~/kawing-config.php`.
+Keep the ESP32 configured with the app's `IOT_API_KEY` and `deviceId` (`ESP32-GRAIN-01`). It posts `deviceId`, `rawValue`, and `moisturePercentage` to `/api/moisture-readings`. It does not need a farmer email or any database credentials.
 
-```json
-{
-  "deviceId": "ESP32-GRAIN-01",
-  "farmerEmail": "farmer@example.com",
-  "rawValue": 2310,
-  "moisturePercentage": 18.4
-}
-```
+When an approved farmer opens Post Harvest or Offer Harvest, the signed-in form pairs the device to that farmer temporarily. The API relays only the latest reading in a private server temporary file. Closing the form clears the pairing and reading; abandoned pairings expire. Only submitting the harvest stores its moisture percentage in the harvest record. No sensor history is written to MySQL.
 
+The sketch currently targets a local IP address. For deployment, change `KAWING_API_URL` to `https://YOUR_DOMAIN/api/moisture-readings`, and replace the sketch's Wi-Fi password and API key with rotated credentials before uploading.
 ## Notes
 
 - Docker, Node.js, and Composer are not needed on cPanel after the locally built `dist/` folder is uploaded.

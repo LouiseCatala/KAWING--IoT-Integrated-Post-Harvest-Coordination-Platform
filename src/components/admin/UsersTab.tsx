@@ -1,7 +1,6 @@
-import { IconPackage, IconTools, IconTruck, IconWheat, IconWind } from '@tabler/icons-react';
 import React, { useState } from 'react';
-import { Search, ShieldAlert, Eye, Trash2, CheckCircle } from 'lucide-react';
-import { LogisticsServiceType, UserAccount } from '../../types';
+import { Search, ShieldAlert, Eye, Trash2 } from 'lucide-react';
+import { UserAccount } from '../../types';
 
 interface UsersTabProps {
   lang: 'en' | 'tl';
@@ -9,7 +8,6 @@ interface UsersTabProps {
   suspendedUsers: string[];
   onToggleSuspend: (name: string) => void;
   onViewProfile: (user: UserAccount) => void;
-  onUpdateUser: (originalName: string, updatedUser: UserAccount) => void;
   onDeleteUser: (name: string) => void;
   onDeleteUsers: (names: string[]) => void;
 }
@@ -20,7 +18,6 @@ export default function UsersTab({
   suspendedUsers,
   onToggleSuspend,
   onViewProfile,
-  onUpdateUser,
   onDeleteUser,
   onDeleteUsers
 }: UsersTabProps) {
@@ -33,7 +30,7 @@ export default function UsersTab({
   // Delete User Confirmation state
   const [deletingUser, setDeletingUser] = useState<UserAccount | null>(null);
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
-  const [confirmation, setConfirmation] = useState<{ title: string; message: string; action: () => void } | null>(null);
+  const [confirmation, setConfirmation] = useState<{ title: string; message: string; action: () => void; confirmLabel?: string; intent?: 'primary' | 'danger' } | null>(null);
 
   // 1. Generate formatted user items (adding ID, checking suspend status)
   const processedUsers = usersList
@@ -51,49 +48,13 @@ export default function UsersTab({
       };
     });
 
-  const serviceMeta: Record<LogisticsServiceType, { label: string; icon: React.ReactNode }> = {
-    transport: { label: lang === 'en' ? 'Trucking & Hauling' : 'Trucking at Hauling', icon: <span className="inline-flex items-center gap-1.5 align-middle"><IconTruck size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span> },
-    storage: { label: lang === 'en' ? 'Storage Facility' : 'Imbakan', icon: <span className="inline-flex items-center gap-1.5 align-middle"><IconPackage size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span> },
-    drying: { label: lang === 'en' ? 'Drying Facility' : 'Patuyuan', icon: <span className="inline-flex items-center gap-1.5 align-middle"><IconWind size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span> },
-    milling: { label: lang === 'en' ? 'Rice Milling' : 'Gilingan', icon: <span className="inline-flex items-center gap-1.5 align-middle"><IconWheat size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span> },
-  };
-
   const legacyBusinessRoles = ['buyer', 'logistics', 'truck', 'storage', 'dryer', 'miller'];
   const isAgriculturalBusiness = (user: UserAccount) =>
     user.role === 'agricultural_business' || legacyBusinessRoles.includes(user.role);
   const accountTypeLabel = (user: UserAccount) =>
     user.role === 'farmer'
       ? (lang === 'en' ? 'Farmer' : 'Magsasaka')
-      : (lang === 'en' ? 'Agricultural Business User' : 'Agricultural Business User');
-
-  const pendingLogisticsServices = processedUsers.flatMap(user => {
-    if (!isAgriculturalBusiness(user)) return [];
-    const services = user.role === 'agricultural_business' ? user.businessCapabilities : user.logisticsServices;
-    return (Object.entries(services || {}) as Array<[string, NonNullable<UserAccount['logisticsServices']>[LogisticsServiceType]]>)
-      .filter(([serviceType]) => ['transport', 'storage', 'drying', 'milling'].includes(serviceType))
-      .filter((entry): entry is [LogisticsServiceType, NonNullable<typeof entry[1]>] => Boolean(entry[1]?.enabled && entry[1].approvalStatus === 'pending'))
-      .map(([serviceType, service]) => ({ user, serviceType, service }));
-  });
-
-  const approveLogisticsService = (user: UserAccount, serviceType: LogisticsServiceType) => {
-    const currentService = user.role === 'agricultural_business'
-      ? user.businessCapabilities?.[serviceType]
-      : user.logisticsServices?.[serviceType];
-    if (!currentService) return;
-    onUpdateUser(user.name, user.role === 'agricultural_business' ? {
-      ...user,
-      businessCapabilities: {
-        ...user.businessCapabilities,
-        [serviceType]: { ...currentService, approvalStatus: 'approved', isAvailable: true },
-      },
-    } : {
-      ...user,
-      logisticsServices: {
-        ...user.logisticsServices,
-        [serviceType]: { ...currentService, approvalStatus: 'approved', isAvailable: true },
-      },
-    });
-  };
+      : (lang === 'en' ? 'Agricultural Business User' : 'Negosyong Pang-agrikultura');
 
   // 2. Filter users based on search string and selected role
   const filteredUsers = processedUsers.filter(u => {
@@ -176,7 +137,7 @@ export default function UsersTab({
         {([
           { key: 'all', labelEN: 'All Roles', labelTL: 'Lahat' },
           { key: 'farmer', labelEN: 'Farmers', labelTL: 'Magsasaka' },
-          { key: 'agricultural_business', labelEN: 'Agricultural Business Users', labelTL: 'Agricultural Business Users' },
+            { key: 'agricultural_business', labelEN: 'Agricultural Business Users', labelTL: 'Mga Negosyong Pang-agrikultura' },
         ] as const).map((tab) => (
           <button
             key={tab.key}
@@ -287,7 +248,7 @@ export default function UsersTab({
 
                     {/* Contact Number */}
                     <td className="p-4 text-slate-600 dark:text-slate-300">
-                      {u.contactNumber || 'N/A'}
+                      {u.contactNumber || (lang === 'en' ? 'N/A' : 'Wala')}
                     </td>
 
                     {/* Verification Status */}
@@ -295,17 +256,17 @@ export default function UsersTab({
                       {u.isSuspended ? (
                         <span className="inline-flex items-center gap-1 text-[10px] text-red-600 font-bold">
                           <span className="w-1.5 h-1.5 rounded-full bg-red-600 inline-block animate-pulse" />
-                          Suspended
+                          {lang === 'en' ? 'Suspended' : 'Sinuspinde'}
                         </span>
                       ) : !u.isApproved ? (
                         <span className="inline-flex items-center gap-1 text-[10px] text-amber-500 font-bold">
                           <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
-                          Pending Review
+                          {lang === 'en' ? 'Pending Review' : 'Naghihintay ng Pagsusuri'}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-bold">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 inline-block" />
-                          Verified
+                          {lang === 'en' ? 'Verified' : 'Beripikado'}
                         </span>
                       )}
                     </td>
@@ -373,7 +334,7 @@ export default function UsersTab({
         {/* Pagination bar */}
         <div className="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs">
           <span className="text-slate-400">
-            Showing {filteredUsers.length > 0 ? startIndex + 1 : 0} to {Math.min(startIndex + itemsPerPage, filteredUsers.length)} of {filteredUsers.length} users
+            {lang === 'en' ? 'Showing' : 'Ipinapakita'} {filteredUsers.length > 0 ? startIndex + 1 : 0} {lang === 'en' ? 'to' : 'hanggang'} {Math.min(startIndex + itemsPerPage, filteredUsers.length)} {lang === 'en' ? 'of' : 'sa'} {filteredUsers.length} {lang === 'en' ? 'users' : 'gumagamit'}
           </span>
           <div className="flex gap-1">
             <button
@@ -381,7 +342,7 @@ export default function UsersTab({
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               className="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg disabled:opacity-50 text-slate-700 dark:text-slate-300 font-bold transition-all"
             >
-              Previous
+              {lang === 'en' ? 'Previous' : 'Nakaraan'}
             </button>
             <span className="px-3 py-1 font-bold text-slate-700 dark:text-slate-300">
               {currentPage} / {totalPages}
@@ -391,71 +352,11 @@ export default function UsersTab({
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               className="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg disabled:opacity-50 text-slate-700 dark:text-slate-300 font-bold transition-all"
             >
-              Next
+              {lang === 'en' ? 'Next' : 'Susunod'}
             </button>
           </div>
         </div>
       </div>
-
-      {/* Logistics services are reviewed separately from user accounts. */}
-      <section className="overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-sm dark:border-amber-900/50 dark:bg-slate-900">
-        <div className="flex flex-col gap-2 border-b border-amber-100 bg-amber-50/70 px-5 py-4 dark:border-amber-900/40 dark:bg-amber-950/20 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="flex items-center gap-2 text-sm font-extrabold text-slate-900 dark:text-white">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-100 text-base dark:bg-amber-900/50"><span className="inline-flex items-center gap-1.5 align-middle"><IconTools size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></span>
-              {lang === 'en' ? 'Pending Logistics Service Approvals' : 'Mga Serbisyong Logistics na Hinihintay ang Approval'}
-            </h2>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              {lang === 'en' ? 'Review and approve each service separately from the provider account.' : 'Suriin at aprubahan nang hiwalay ang bawat serbisyo mula sa provider account.'}
-            </p>
-          </div>
-          <span className="w-fit rounded-full border border-amber-300 bg-white px-3 py-1 text-xs font-black text-amber-700 dark:border-amber-800 dark:bg-slate-900 dark:text-amber-300">
-            {pendingLogisticsServices.length} pending
-          </span>
-        </div>
-
-        {pendingLogisticsServices.length === 0 ? (
-          <div className="px-5 py-10 text-center">
-            <CheckCircle className="mx-auto h-9 w-9 text-emerald-500" />
-            <p className="mt-3 text-sm font-bold text-slate-700 dark:text-slate-200">
-              {lang === 'en' ? 'No pending logistics service requests' : 'Walang pending na logistics service request'}
-            </p>
-            <p className="mt-1 text-xs text-slate-400">{lang === 'en' ? 'New service requests will appear here.' : 'Dito lalabas ang mga bagong service request.'}</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
-            {pendingLogisticsServices.map(({ user, serviceType, service }) => {
-              const capacity = service.carryingCapacity || service.storageCapacity || service.batchCapacity || service.millingCapacity || service.capacity || 'Not specified';
-              const location = service.facilityLocation || service.locationCoverage || user.serviceCoverageArea || user.operatingAddress || user.address || 'Not specified';
-              return (
-                <div key={`${user.name}-${serviceType}`} className="grid gap-4 px-5 py-4 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto] sm:items-center">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl" aria-hidden="true">{serviceMeta[serviceType].icon}</span>
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-extrabold text-slate-900 dark:text-white">{serviceMeta[serviceType].label}</p>
-                        <p className="truncate text-xs text-slate-500 dark:text-slate-400">{user.legalCompanyName || user.businessName || user.name}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 text-xs sm:block sm:space-y-1">
-                    <p><span className="font-bold text-slate-400">{lang === 'en' ? 'Capacity:' : 'Kapasidad:'}</span> <span className="font-semibold text-slate-700 dark:text-slate-200">{capacity}</span></p>
-                    <p className="truncate"><span className="font-bold text-slate-400">{lang === 'en' ? 'Coverage:' : 'Sakop:'}</span> <span className="font-semibold text-slate-700 dark:text-slate-200">{location}</span></p>
-                  </div>
-                  <div className="flex gap-2 sm:justify-end">
-                    <button type="button" onClick={() => onViewProfile(user)} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
-                      {lang === 'en' ? 'View Provider' : 'Tingnan'}
-                    </button>
-                    <button type="button" onClick={() => approveLogisticsService(user, serviceType)} className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-extrabold text-white hover:bg-emerald-500">
-                      <CheckCircle className="h-3.5 w-3.5" /> {lang === 'en' ? 'Approve Service' : 'Aprubahan'}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
 
       {/* DELETE CONFIRMATION MODAL */}
       {deletingUser && (
@@ -498,7 +399,7 @@ export default function UsersTab({
           </div>
         </div>
       )}
-      {confirmation && <div className="fixed inset-0 z-[56] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true"><div className="w-full max-w-sm rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 text-center shadow-2xl"><ShieldAlert className="mx-auto h-8 w-8 text-amber-400" /><h3 className="mt-3 text-lg font-extrabold text-slate-900 dark:text-white">{confirmation.title}</h3><p className="mt-2 text-sm text-slate-700 dark:text-slate-300">{confirmation.message}</p><div className="mt-6 flex gap-3"><button type="button" onClick={() => setConfirmation(null)} className="flex-1 rounded-xl border border-slate-300 dark:border-slate-600 px-4 py-2.5 text-sm font-bold text-slate-800 dark:text-slate-200">{lang === 'en' ? 'Cancel' : 'Kanselahin'}</button><button type="button" onClick={() => { confirmation.action(); setConfirmation(null); }} className="flex-1 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-red-500">{lang === 'en' ? 'Confirm' : 'Kumpirmahin'}</button></div></div></div>}
+      {confirmation && <div className="fixed inset-0 z-[56] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true"><div className="w-full max-w-sm rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 text-center shadow-2xl"><ShieldAlert className="mx-auto h-8 w-8 text-amber-400" /><h3 className="mt-3 text-lg font-extrabold text-slate-900 dark:text-white">{confirmation.title}</h3><p className="mt-2 text-sm text-slate-700 dark:text-slate-300">{confirmation.message}</p><div className="mt-6 flex gap-3"><button type="button" onClick={() => setConfirmation(null)} className="flex-1 rounded-xl border border-slate-300 dark:border-slate-600 px-4 py-2.5 text-sm font-bold text-slate-800 dark:text-slate-200">{lang === 'en' ? 'Cancel' : 'Kanselahin'}</button><button type="button" onClick={() => { confirmation.action(); setConfirmation(null); }} className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white ${confirmation.intent === 'primary' ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-600 hover:bg-red-500'}`}>{confirmation.confirmLabel || (lang === 'en' ? 'Confirm' : 'Kumpirmahin')}</button></div></div></div>}
     </div>
   );
 }

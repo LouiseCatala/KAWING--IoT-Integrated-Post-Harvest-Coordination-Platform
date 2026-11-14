@@ -20,6 +20,10 @@ rejects(fn() => liveMergeRecord([...$row, 'quantity' => 20], $row, $local), Live
 rejects(fn() => liveMergeRecord(null, $row, $local), LiveConflict::class);
 rejects(fn() => liveMergeRecord($remote, $row, null), LiveConflict::class);
 check(liveMergeRecord($row, null, $row) === $row, 'Create retry must be idempotent');
+$adminUser = ['email' => 'farmer@example.test', 'role' => 'farmer', 'name' => 'Updated Farmer'];
+check(liveMergeAdminUserDeletion($adminUser, $farmer, null, $admin) === null, 'Admin deletion should target the latest non-admin user record');
+rejects(fn() => liveMergeAdminUserDeletion($admin, ['email' => $admin['email'], 'role' => 'admin'], null, $admin), LiveForbidden::class);
+rejects(fn() => liveMergeAdminUserDeletion($adminUser, $farmer, null, $farmer), LiveForbidden::class);
 authorizeLiveChange('harvests', $row, $local, $farmer);
 rejects(fn() => authorizeLiveChange('harvests', $row, $local, $buyer), LiveForbidden::class);
 rejects(fn() => authorizeLiveChange('harvests', $row, [...$local, 'farmerEmail' => $buyer['email']], $farmer), LiveForbidden::class);

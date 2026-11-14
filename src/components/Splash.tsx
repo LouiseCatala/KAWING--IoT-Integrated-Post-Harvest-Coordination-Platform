@@ -3,20 +3,15 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import './landing/landing.css';
 import ThemeToggle from './ThemeToggle';
+import { useApp } from '../context/AppContext';
 import baseIslandImage from '../assets/images/land-without.png';
 import kawingLogo from '../assets/images/kawing_logo_new_1784129186773.jpg';
 import revealIslandImage from '../assets/images/ratatatatata.nbg.png';
 
 interface SplashProps { onComplete: () => void; }
 
-const facts = [
-  { icon: <span className="inline-flex items-center gap-1.5 align-middle"><IconHeartHandshake size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>, category: 'Better Market Access', title: 'Bring Your Harvest Directly to Buyers', description: 'Post palay and compare offers from verified buyers.', result: 'Clearer choices and stronger market connections' },
-  { icon: <span className="inline-flex items-center gap-1.5 align-middle"><IconDroplet size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>, category: 'PalaySense Guidance', title: 'Know Your Palay Before You Negotiate', description: 'Use fresh moisture readings to plan drying and set your price.', result: 'Better-informed moisture decisions' },
-  { icon: <span className="inline-flex items-center gap-1.5 align-middle"><IconTruck size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>, category: 'Connected Farm Services', title: 'Arrange Post-Harvest Support in One Place', description: 'Find approved hauling, drying, storage, and milling providers in one place.', result: 'One platform for essential agricultural services' },
-  { icon: '₱', category: 'Production Support', title: 'Prepare for the Next Production Cycle', description: 'Review available production support with visible terms and requirements before making a commitment.', result: 'Transparent support for farm production' },
-];
-
 export default function Splash({ onComplete }: SplashProps) {
+  const { lang } = useApp();
   const heroRef = useRef<HTMLElement>(null);
   const revealRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<number | null>(null);
@@ -24,6 +19,15 @@ export default function Splash({ onComplete }: SplashProps) {
   const [activeFact, setActiveFact] = useState(0);
   const [autoplay, setAutoplay] = useState(true);
   const [isExiting, setIsExiting] = useState(false);
+  const facts = [
+    { icon: <IconHeartHandshake size={24} stroke={2} aria-hidden="true" />, category: lang === 'en' ? 'Better Market Access' : 'Mas Malawak na Pamilihan', title: lang === 'en' ? 'Bring Your Harvest Directly to Buyers' : 'Direktang I-alok ang Iyong Ani sa mga Mamimili', description: lang === 'en' ? 'Post palay and compare offers from verified buyers.' : 'I-post ang palay at ihambing ang mga alok mula sa beripikadong mamimili.', result: lang === 'en' ? 'Clearer choices and stronger market connections' : 'Mas malinaw na pagpipilian at ugnayan sa pamilihan' },
+    { icon: <IconDroplet size={24} stroke={2} aria-hidden="true" />, category: 'PalaySense', title: lang === 'en' ? 'Know Your Palay Before You Negotiate' : 'Alamin ang Kalagayan ng Palay Bago Makipag-usap', description: lang === 'en' ? 'Use fresh moisture readings to plan drying and set your price.' : 'Gamitin ang bagong sukat ng moisture para magplano ng pagpapatuyo at presyo.', result: lang === 'en' ? 'Make better-informed decisions about moisture' : 'Mas may batayang pagpapasya tungkol sa moisture' },
+    { icon: <IconTruck size={24} stroke={2} aria-hidden="true" />, category: lang === 'en' ? 'Farm Services' : 'Serbisyo sa Sakahan', title: lang === 'en' ? 'Arrange Post-Harvest Support in One Place' : 'Maghanap ng Serbisyo Pagkatapos ng Anihan', description: lang === 'en' ? 'Find approved hauling, drying, storage, and milling providers.' : 'Maghanap ng beripikadong tagahatid, patuyuan, imbakan, at gilingan.', result: lang === 'en' ? 'Find essential farm services in one place' : 'Hanapin sa iisang lugar ang mahahalagang serbisyo sa sakahan' },
+    { icon: '₱', category: lang === 'en' ? 'Production Support' : 'Suporta sa Produksyon', title: lang === 'en' ? 'Prepare for the Next Production Cycle' : 'Maghanda para sa Susunod na Panahon ng Pagtatanim', description: lang === 'en' ? 'Review available production support, terms, and requirements before deciding.' : 'Suriin ang suporta, mga tuntunin, at kailangan bago magpasya.', result: lang === 'en' ? 'Clear terms for farm production support' : 'Malinaw na mga tuntunin para sa suporta sa sakahan' },
+  ];
+  const copy = lang === 'en'
+    ? { enter: 'CLICK ANYWHERE TO ENTER KAWING', discover: 'Discover KAWING', how: 'How KAWING helps', heading: 'From harvest to market, connected at every step.', subheading: 'Farm tools, opportunities, and trusted services in one place.', benefits: 'KAWING benefits', pause: 'Pause', play: 'Play', previous: 'Previous benefit', next: 'Next benefit', connecting: 'Connecting Pampanga’s farmers to trusted buyers, reliable services, and better opportunities.', address: 'Address', office: 'Office Hours', weekdays: 'Monday–Friday: 8:00 AM–5:00 PM', weekends: 'Saturday–Sunday: Closed', rights: '© 2026 KAWING Agricultural Platform. All rights reserved.', disclaimer: 'KAWING only connects farmers, buyers, and delivery or service providers. All deals are made between the users.' }
+    : { enter: 'I-CLICK KAHIT SAAN PARA PUMASOK SA KAWING', discover: 'Kilalanin ang KAWING', how: 'Paano nakatutulong ang KAWING', heading: 'Magkakaugnay ang bawat hakbang mula anihan hanggang pamilihan.', subheading: 'Mga kagamitan, oportunidad, at mapagkakatiwalaang serbisyo para sa sakahan.', benefits: 'Mga benepisyo ng KAWING', pause: 'I-pause', play: 'I-play', previous: 'Nakaraang benepisyo', next: 'Susunod na benepisyo', connecting: 'Iniuugnay ang mga magsasaka ng Pampanga sa mapagkakatiwalaang mamimili, serbisyo, at mas maraming oportunidad.', address: 'Address', office: 'Oras ng Opisina', weekdays: 'Lunes–Biyernes: 8:00 AM–5:00 PM', weekends: 'Sabado–Linggo: Sarado', rights: '© 2026 KAWING Agricultural Platform. Lahat ng karapatan ay nakalaan.', disclaimer: 'Iniuugnay lamang ng KAWING ang mga magsasaka, mamimili, at tagapaghatid o tagapagbigay ng serbisyo. Ang mga kasunduan ay direkta sa pagitan ng mga gumagamit.' };
 
   useEffect(() => {
     if (!autoplay) return;
@@ -70,15 +74,15 @@ export default function Splash({ onComplete }: SplashProps) {
         <div ref={revealRef} className="landing-image landing-image-reveal" style={{ backgroundImage: `url(${revealIslandImage})` }} aria-hidden="true" />
         <div className="landing-hero-vignette" aria-hidden="true" />
         <div className="landing-hero-actions">
-          <button type="button" className="landing-enter"><span /> CLICK ANYWHERE TO ENTER KAWING</button>
-          <a href="#kawing-benefits" className="landing-scroll-link" onClick={(event) => event.stopPropagation()}>Discover KAWING <ChevronDown /></a>
+          <button type="button" className="landing-enter"><span /> {copy.enter}</button>
+          <a href="#kawing-benefits" className="landing-scroll-link" onClick={(event) => event.stopPropagation()}>{copy.discover} <ChevronDown /></a>
         </div>
       </section>
 
       <main id="kawing-benefits" className="landing-info">
         <div className="landing-info-inner">
-          <header className="landing-info-header"><span>How KAWING helps</span><h2>From harvest to market, connected at every step.</h2><p>Farm tools, opportunities, and trusted services in one place.</p></header>
-          <div className="landing-tabs" role="tablist" aria-label="KAWING benefits">
+          <header className="landing-info-header"><span>{copy.how}</span><h2>{copy.heading}</h2><p>{copy.subheading}</p></header>
+          <div className="landing-tabs" role="tablist" aria-label={copy.benefits}>
             {facts.map((item, index) => <button key={item.category} type="button" role="tab" aria-selected={activeFact === index} className={activeFact === index ? 'is-active' : ''} onClick={() => setActiveFact(index)}><span>{item.icon}</span>{item.category}</button>)}
           </div>
           <article className="landing-benefit-card" key={fact.category}>
@@ -89,20 +93,20 @@ export default function Splash({ onComplete }: SplashProps) {
             <p>{fact.description}</p><strong className="landing-card-result"><span className="inline-flex items-center gap-1.5 align-middle mr-1.5"><IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span>{fact.result}</strong>
           </article>
           <div className="landing-card-controls">
-            <button type="button" onClick={() => setAutoplay((value) => !value)}>{autoplay ? <Pause /> : <Play />}{autoplay ? 'Pause' : 'Play'}</button>
-            <div><button type="button" aria-label="Previous benefit" onClick={() => setActiveFact((activeFact - 1 + facts.length) % facts.length)}><ChevronLeft /></button><button type="button" aria-label="Next benefit" onClick={() => setActiveFact((activeFact + 1) % facts.length)}><ChevronRight /></button></div>
+            <button type="button" onClick={() => setAutoplay((value) => !value)}>{autoplay ? <Pause /> : <Play />}{autoplay ? copy.pause : copy.play}</button>
+            <div><button type="button" aria-label={copy.previous} onClick={() => setActiveFact((activeFact - 1 + facts.length) % facts.length)}><ChevronLeft /></button><button type="button" aria-label={copy.next} onClick={() => setActiveFact((activeFact + 1) % facts.length)}><ChevronRight /></button></div>
           </div>
         </div>
       </main>
 
       <footer className="landing-footer">
         <div className="landing-footer-grid">
-          <div className="landing-footer-brand"><img src={kawingLogo} alt="KAWING" /><p>Connecting Pampanga’s farmers to trusted buyers, reliable services, and better opportunities.</p></div>
-          <div><h3>Address</h3><p>6M67+94C, Magalang, Pampanga</p></div>
-          <div><h3>Office Hours</h3><p>Monday–Friday: 8:00 AM–5:00 PM</p><p>Saturday–Sunday: Closed</p></div>
+          <div className="landing-footer-brand"><img src={kawingLogo} alt="KAWING" /><p>{copy.connecting}</p></div>
+          <div><h3>{copy.address}</h3><p>6M67+94C, Magalang, Pampanga</p></div>
+          <div><h3>{copy.office}</h3><p>{copy.weekdays}</p><p>{copy.weekends}</p></div>
         </div>
-        <div className="landing-copyright">© 2026 KAWING Agricultural Platform. All rights reserved.</div>
-        <p className="landing-disclaimer">KAWING only connects farmers, buyers, and delivery or service providers. All deals are made between the users.</p>
+        <div className="landing-copyright">{copy.rights}</div>
+        <p className="landing-disclaimer">{copy.disclaimer}</p>
       </footer>
     </div>
   );

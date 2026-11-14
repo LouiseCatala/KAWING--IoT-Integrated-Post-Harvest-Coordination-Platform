@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { IconAlertTriangle, IconCheck, IconInfoCircle, IconTrash, IconX } from '@tabler/icons-react';
 import { DIALOG_EVENT, type AppDialogRequest } from '../lib/appDialog';
+import { useApp } from '../context/AppContext';
 
 const toneStyles = {
   info: { icon: IconInfoCircle, iconBox: 'bg-sky-100 text-sky-700 dark:bg-sky-950/70 dark:text-sky-300', button: 'bg-sky-600 hover:bg-sky-500 focus-visible:ring-sky-400' },
@@ -10,6 +11,7 @@ const toneStyles = {
 } as const;
 
 export default function AppDialogHost() {
+  const { lang } = useApp();
   const [dialog, setDialog] = useState<AppDialogRequest | null>(null);
   const confirmRef = useRef<HTMLButtonElement>(null);
 
@@ -44,7 +46,7 @@ export default function AppDialogHost() {
   const tone = dialog.tone ?? 'warning';
   const style = toneStyles[tone];
   const Icon = style.icon;
-  const title = dialog.title ?? (dialog.showCancel ? 'Please confirm' : 'Notice');
+  const title = dialog.title ?? (dialog.showCancel ? (lang === 'en' ? 'Please confirm' : 'Kumpirmahin') : (lang === 'en' ? 'Notice' : 'Abiso'));
 
   return (
     <div className="fixed inset-0 z-2000 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm" onMouseDown={(event) => { if (event.target === event.currentTarget && !dialog.showCancel) close(false); }}>
@@ -58,7 +60,7 @@ export default function AppDialogHost() {
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-3">
                 <h2 id="app-dialog-title" className="pt-1 text-xl font-black tracking-tight">{title}</h2>
-                <button type="button" onClick={() => close(false)} aria-label="Close dialog" className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-white">
+                <button type="button" onClick={() => close(false)} aria-label={lang === 'en' ? 'Close dialog' : 'Isara ang dialog'} className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-white">
                   <IconX size={20} stroke={2} />
                 </button>
               </div>
@@ -68,11 +70,11 @@ export default function AppDialogHost() {
           <div className={`mt-7 grid gap-3 ${dialog.showCancel ? 'grid-cols-2' : 'grid-cols-1'}`}>
             {dialog.showCancel && (
               <button type="button" onClick={() => close(false)} className="rounded-xl border border-slate-300 px-4 py-3 text-sm font-extrabold text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
-                {dialog.cancelLabel ?? 'Cancel'}
+                {dialog.cancelLabel ?? (lang === 'en' ? 'Cancel' : 'Kanselahin')}
               </button>
             )}
             <button ref={confirmRef} type="button" onClick={() => close(true)} className={`rounded-xl px-4 py-3 text-sm font-extrabold text-white shadow-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:ring-offset-slate-900 ${style.button}`}>
-              {dialog.confirmLabel ?? (dialog.showCancel ? 'Confirm' : 'OK')}
+              {dialog.confirmLabel ?? (dialog.showCancel ? (lang === 'en' ? 'Confirm' : 'Kumpirmahin') : (lang === 'en' ? 'OK' : 'Sige'))}
             </button>
           </div>
         </div>

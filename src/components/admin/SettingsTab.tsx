@@ -1,7 +1,7 @@
-import { IconClearAll } from '@tabler/icons-react';
 import React, { useEffect, useState } from 'react';
 import { Settings, Save, Shield, CheckCircle, Sliders, Bell, Thermometer, Sparkles, Landmark } from 'lucide-react';
 import type { UserAccount } from '../../types';
+import AdminConfirmationModal from './AdminConfirmationModal';
 
 interface SettingsTabProps {
   user: UserAccount;
@@ -37,7 +37,7 @@ export default function SettingsTab({ user, lang, marketReferencePrice, onUpdate
 
   const [success, setSuccess] = useState<string | null>(null);
   const [daReferencePrice, setDaReferencePrice] = useState(marketReferencePrice);
-  const [clearDemoConfirm, setClearDemoConfirm] = useState(false);
+  const [confirmation, setConfirmation] = useState<{ title: string; message: string; confirmLabel: string; action: () => void | Promise<void> } | null>(null);
 
   const triggerSuccess = (msg: string) => {
     setSuccess(msg);
@@ -63,17 +63,10 @@ export default function SettingsTab({ user, lang, marketReferencePrice, onUpdate
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    triggerSuccess('Administrative profile updated successfully.');
+    setConfirmation({ title: lang === 'en' ? 'Save administrator profile?' : 'I-save ang profile ng admin?', message: lang === 'en' ? 'Save the profile details currently entered on this page?' : 'I-save ang mga detalye ng profile na inilagay mo?', confirmLabel: lang === 'en' ? 'Save Profile' : 'I-save ang Profile', action: () => triggerSuccess(lang === 'en' ? 'Administrative profile updated successfully.' : 'Matagumpay na na-update ang profile ng admin.') });
   };
 
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isChangingPassword || !currentPassword || !newPassword) return;
-    setPasswordError(null);
-    if (newPassword !== confirmPassword) {
-      setPasswordError('New passwords do not match.');
-      return;
-    }
+  const savePassword = async () => {
     setIsChangingPassword(true);
     try {
       const response = await fetch('/api/auth/change-password', {
@@ -95,11 +88,30 @@ export default function SettingsTab({ user, lang, marketReferencePrice, onUpdate
     }
   };
 
+  const handleChangePassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isChangingPassword || !currentPassword || !newPassword) return;
+    setPasswordError(null);
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New passwords do not match.');
+      return;
+    }
+    setConfirmation({ title: lang === 'en' ? 'Update administrator password?' : 'Palitan ang password ng admin?', message: lang === 'en' ? 'The current password will be replaced with the new password entered.' : 'Mapapalitan ang kasalukuyang password ng bagong password na inilagay mo.', confirmLabel: lang === 'en' ? 'Update Password' : 'Palitan ang Password', action: savePassword });
+  };
+
   const handleSaveDAReferencePrice = (e: React.FormEvent) => {
     e.preventDefault();
     if (!Number.isFinite(daReferencePrice) || daReferencePrice <= 0) return;
-    onUpdateDAReferencePrice(Number(daReferencePrice.toFixed(2)));
-    triggerSuccess(`DA reference price updated to ₱${daReferencePrice.toFixed(2)} per kg.`);
+    const price = Number(daReferencePrice.toFixed(2));
+    setConfirmation({
+      title: lang === 'en' ? 'Save DA reference price?' : 'I-save ang reference price ng DA?',
+      message: lang === 'en' ? `Confirm the new reference price of ₱${price.toFixed(2)} per kg.` : `Kumpirmahin ang bagong reference price na ₱${price.toFixed(2)} kada kilo.`,
+      confirmLabel: lang === 'en' ? 'Save Price' : 'I-save ang Presyo',
+      action: () => {
+        onUpdateDAReferencePrice(price);
+        triggerSuccess(`DA reference price updated to ₱${price.toFixed(2)} per kg.`);
+      },
+    });
   };
 
   return (
@@ -175,7 +187,7 @@ export default function SettingsTab({ user, lang, marketReferencePrice, onUpdate
 
           <form onSubmit={handleSaveProfile} className="space-y-3.5">
             <div className="space-y-1">
-              <label className="block font-bold text-slate-500">Admin Account Name</label>
+          <label className="block font-bold text-slate-500">{lang === 'en' ? 'Admin Account Name' : 'Pangalan ng Account ng Admin'}</label>
               <input
                 type="text"
                 required
@@ -186,7 +198,7 @@ export default function SettingsTab({ user, lang, marketReferencePrice, onUpdate
             </div>
 
             <div className="space-y-1">
-              <label className="block font-bold text-slate-500">Contact Email</label>
+          <label className="block font-bold text-slate-500">{lang === 'en' ? 'Contact Email' : 'Email para sa Kontak'}</label>
               <input
                 type="email"
                 required
@@ -197,7 +209,7 @@ export default function SettingsTab({ user, lang, marketReferencePrice, onUpdate
             </div>
 
             <div className="space-y-1">
-              <label className="block font-bold text-slate-500">Regional Authority Scope</label>
+          <label className="block font-bold text-slate-500">{lang === 'en' ? 'Regional Authority Scope' : 'Saklaw ng Rehiyon'}</label>
               <input
                 type="text"
                 required
@@ -294,8 +306,8 @@ export default function SettingsTab({ user, lang, marketReferencePrice, onUpdate
             {/* Email alerts switch */}
             <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">
               <div>
-                <span className="block font-bold text-slate-800 dark:text-white">Email Advisory Bulletins</span>
-                <span className="text-sm text-slate-600 dark:text-slate-300">Send published platform and agricultural advisories by email.</span>
+                <span className="block font-bold text-slate-800 dark:text-white">{lang === 'en' ? 'Email Advisory Bulletins' : 'Mga Paunawa sa Email'}</span>
+                <span className="text-sm text-slate-600 dark:text-slate-300">{lang === 'en' ? 'Send published platform and agricultural advisories by email.' : 'Ipadala sa email ang mga inilathalang paunawa ng platform at agrikultura.'}</span>
               </div>
               <input
                 type="checkbox"
@@ -306,19 +318,24 @@ export default function SettingsTab({ user, lang, marketReferencePrice, onUpdate
             </div>
             <button
               type="button"
-              onClick={() => void handleSaveEmailAlerts()}
+              onClick={() => setConfirmation({
+                title: lang === 'en' ? 'Save email notification preference?' : 'I-save ang preference sa email?',
+                message: lang === 'en' ? `Email notifications will be ${emailAlerts ? 'enabled' : 'disabled'} for the administrator account.` : `Ang mga abiso sa email ay ${emailAlerts ? 'i-on' : 'i-off'} para sa account ng admin.`,
+                confirmLabel: lang === 'en' ? 'Save Preference' : 'I-save ang Preference',
+                action: handleSaveEmailAlerts,
+              })}
               disabled={isSavingEmailAlerts}
               className="w-full rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isSavingEmailAlerts ? 'Saving email preference…' : 'Save Email Notification Preference'}
+              {isSavingEmailAlerts ? (lang === 'en' ? 'Saving email preference…' : 'Sine-save ang preference sa email…') : (lang === 'en' ? 'Save Email Notification Preference' : 'I-save ang Preference sa Email')}
             </button>
             {emailAlertsError && <p role="alert" className="rounded-xl border border-red-300 bg-red-50 p-3 text-xs font-bold text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">{emailAlertsError}</p>}
 
             {/* Push alerts switch */}
             <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">
               <div>
-                <span className="block font-bold text-slate-800 dark:text-white">New Registration Approval Notifications</span>
-                <span className="text-sm text-slate-600 dark:text-slate-300">Receive alert triggers when new farmer documents are uploaded.</span>
+                <span className="block font-bold text-slate-800 dark:text-white">{lang === 'en' ? 'New Registration Approval Notifications' : 'Mga Abiso sa Bagong Rehistrasyon'}</span>
+                <span className="text-sm text-slate-600 dark:text-slate-300">{lang === 'en' ? 'Receive alerts when new farmer documents are uploaded.' : 'Tumanggap ng abiso kapag may bagong dokumentong ipinasa ang magsasaka.'}</span>
               </div>
               <input
                 type="checkbox"
@@ -341,7 +358,7 @@ export default function SettingsTab({ user, lang, marketReferencePrice, onUpdate
             {/* Slider 1: Connection Match Radius */}
             <div className="space-y-1.5">
               <div className="flex justify-between font-bold">
-                <span className="text-slate-600">Maximum Connection Match Radius</span>
+                <span className="text-slate-600">{lang === 'en' ? 'Maximum Connection Match Radius' : 'Pinakamalayong Saklaw ng Pagpapares'}</span>
                 <span className="text-emerald-600">{connectionRadius} km</span>
               </div>
               <input
@@ -353,13 +370,13 @@ export default function SettingsTab({ user, lang, marketReferencePrice, onUpdate
                 onChange={(e) => setConnectionRadius(Number(e.target.value))}
                 className="w-full accent-emerald-600 bg-slate-100 h-1.5 rounded-lg appearance-none cursor-pointer"
               />
-              <span className="text-[10px] text-slate-400">The geographic boundary limit within which logistics and direct buyer contacts will be matched.</span>
+              <span className="text-[10px] text-slate-400">{lang === 'en' ? 'The maximum distance for matching logistics providers and buyers.' : 'Pinakamalayong distansya para maitugma ang logistics provider at mga buyer.'}</span>
             </div>
 
             {/* Slider 2: Spoilage Temp Limit */}
             <div className="space-y-1.5">
               <div className="flex justify-between font-bold">
-                <span className="text-slate-600">Max Temperature Spoilage Threshold</span>
+                <span className="text-slate-600">{lang === 'en' ? 'Max Temperature Spoilage Threshold' : 'Pinakamataas na Temperatura para sa Babala ng Pagkasira'}</span>
                 <span className="text-red-600">{tempLimit}°C</span>
               </div>
               <input
@@ -370,13 +387,13 @@ export default function SettingsTab({ user, lang, marketReferencePrice, onUpdate
                 onChange={(e) => setTempLimit(Number(e.target.value))}
                 className="w-full accent-red-500 bg-slate-100 h-1.5 rounded-lg appearance-none cursor-pointer"
               />
-              <span className="text-[10px] text-slate-400">Triggers critical warning if crop storage climate exceeds limit.</span>
+              <span className="text-[10px] text-slate-400">{lang === 'en' ? 'Triggers a warning if storage temperature exceeds this limit.' : 'Magbibigay ng babala kapag lumampas sa limitasyong ito ang temperatura sa imbakan.'}</span>
             </div>
 
             {/* Slider 3: Spoilage humidity limit */}
             <div className="space-y-1.5">
               <div className="flex justify-between font-bold">
-                <span className="text-slate-600">Relative Humidity Warning level</span>
+                <span className="text-slate-600">{lang === 'en' ? 'Relative Humidity Warning Level' : 'Antas ng Babala sa Halumigmig'}</span>
                 <span className="text-red-600">{humidityAlert}% RH</span>
               </div>
               <input
@@ -387,7 +404,7 @@ export default function SettingsTab({ user, lang, marketReferencePrice, onUpdate
                 onChange={(e) => setHumidityAlert(Number(e.target.value))}
                 className="w-full accent-red-500 bg-slate-100 h-1.5 rounded-lg appearance-none cursor-pointer"
               />
-              <span className="text-[10px] text-slate-400">High moisture levels trigger automated mechanical dryer dispatch guides.</span>
+              <span className="text-[10px] text-slate-400">{lang === 'en' ? 'High humidity triggers guidance to arrange mechanical drying.' : 'Kapag mataas ang halumigmig, magbibigay ng gabay para magpa-mechanical drying.'}</span>
             </div>
           </div>
         </div>
@@ -399,7 +416,7 @@ export default function SettingsTab({ user, lang, marketReferencePrice, onUpdate
               <Sparkles className="w-4 h-4 text-emerald-600" />
               <span>{lang === 'en' ? 'MySQL Database & PHP Backend Deployment' : 'MySQL Database at PHP Backend Deployment'}</span>
             </div>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold uppercase">Production Ready</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold uppercase">{lang === 'en' ? 'Production Ready' : 'Handa para sa Production'}</span>
           </h3>
 
           <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
@@ -408,26 +425,15 @@ export default function SettingsTab({ user, lang, marketReferencePrice, onUpdate
               : 'May MySQL schema at PHP API ang KAWING para sa deployment sa XAMPP, cPanel, o Linux.'}
           </p>
 
-          <div className="flex flex-wrap items-center gap-3 pt-2">
-            {/* Clear Demo Data Button */}
-            <button
-              type="button"
-              onClick={() => setClearDemoConfirm(true)}
-              className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer"
-            ><span className="inline-flex items-center gap-1.5 align-middle"><IconClearAll size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Clear All Demo Data (Start Fresh / Clean Slate)"}</span></button>
-          </div>
-
           <div className="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 text-[11px] font-mono text-slate-700 dark:text-slate-300 space-y-1">
-            <div className="font-bold text-slate-900 dark:text-white">Generated PHP API Endpoints:</div>
-            <div>• /api/config.php (Database Connection & CORS)</div>
-            <div>• /api/moisture_iot.php (ESP32 + Intel NUC Moisture Sensor Receiver)</div>
-            <div>• /api/harvests.php (Grain Post-Harvest Listings)</div>
-            <div>• /api/service_requests.php (Request Service Engine)</div>
-            <div>• /api/offers.php (Buyer Offer Center Ranking)</div>
+            <div className="font-bold text-slate-900 dark:text-white">{lang === 'en' ? 'Active PHP API Routes:' : 'Mga Aktibong PHP API Route:'}</div>
+            <div>- /api/ (PHP router for account, harvest, service, offer, loan, and notification data)</div>
+            <div>- /api/ratings (Transaction and service ratings)</div>
+            <div>- /api/moisture-readings (Temporary PalaySense reading relay)</div>
           </div>
         </div>
       </div>
-      {clearDemoConfirm && <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true"><div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6"><h3 className="text-lg font-extrabold text-slate-900 dark:text-white">{lang === 'en' ? 'Clear all demo data?' : 'Burahin ang lahat ng demo data?'}</h3><p className="mt-2 text-sm text-slate-700 dark:text-slate-300">{lang === 'en' ? 'This removes local demo data and reloads KAWING.' : 'Buburahin nito ang lokal na demo data at ire-reload ang KAWING.'}</p><div className="mt-6 flex gap-3"><button type="button" onClick={() => setClearDemoConfirm(false)} className="flex-1 rounded-xl border border-slate-300 dark:border-slate-600 py-2.5 text-sm font-bold text-slate-800 dark:text-slate-200">{lang === 'en' ? 'Cancel' : 'Kanselahin'}</button><button type="button" onClick={async () => { try { const res = await fetch('/api/db/clear-demo', { method: 'POST' }); if (!res.ok) throw new Error(); } catch { localStorage.clear(); } window.location.reload(); }} className="flex-1 rounded-xl bg-red-600 py-2.5 text-sm font-bold text-white">{lang === 'en' ? 'Confirm' : 'Kumpirmahin'}</button></div></div></div>}
+      {confirmation && <AdminConfirmationModal title={confirmation.title} message={confirmation.message} confirmLabel={confirmation.confirmLabel} cancelLabel={lang === 'en' ? 'Cancel' : 'Kanselahin'} onConfirm={confirmation.action} onCancel={() => setConfirmation(null)} />}
     </div>
   );
 }

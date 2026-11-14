@@ -8,7 +8,6 @@ import {
   Truck,
   History,
   BarChart3,
-  Star,
   Megaphone,
   Settings,
   LogOut,
@@ -31,7 +30,6 @@ import HarvestsTab from './admin/HarvestsTab';
 import ServicesTab from './admin/ServicesTab';
 import TransactionsTab from './admin/TransactionsTab';
 import ReportsTab from './admin/ReportsTab';
-import FeedbackTab from './admin/FeedbackTab';
 import SpoilageTab from './admin/SpoilageTab';
 import AnnouncementsTab from './admin/AnnouncementsTab';
 import SettingsTab from './admin/SettingsTab';
@@ -107,7 +105,6 @@ export default function AdminDashboard({
     if (/offer|transaction|deal/.test(title)) return 'transactions';
     if (/service|serbisyo|request|logistics/.test(title)) return 'services';
     if (/harvest|ani/.test(title)) return 'harvests';
-    if (/feedback|rating/.test(title)) return 'feedback';
     if (/spoilage|risk/.test(title)) return 'spoilage';
     if (/faq/.test(title)) return 'grainy-faqs';
     if (/price|setting/.test(title)) return 'settings';
@@ -126,13 +123,13 @@ export default function AdminDashboard({
     | 'services'
     | 'transactions'
     | 'reports'
-    | 'feedback'
     | 'spoilage'
     | 'announcements'
     | 'settings'
     | 'grainy-faqs'
   >('users');
   useEffect(() => {
+    if (activeTab === 'verification') return;
     unreadAdminNotifications.filter(notification => adminNotificationPage(notification) === activeTab)
       .forEach(notification => onMarkNotificationRead(notification.id));
   }, [activeTab, notifications]);
@@ -212,26 +209,26 @@ export default function AdminDashboard({
   };
 
   return (
-    <div className="admin-dashboard-shell h-dvh max-h-dvh overflow-hidden bg-slate-50 dark:bg-slate-950 backdrop-blur-lg flex flex-col font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300 [&_p]:leading-relaxed [&_input]:text-sm [&_textarea]:text-sm [&_select]:text-sm [&_button]:text-sm [&_table]:text-sm">
+    <div className="admin-dashboard-shell h-dvh max-h-dvh overflow-hidden bg-slate-100 dark:bg-slate-950 flex flex-col font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300 [&_p]:leading-relaxed [&_input]:text-sm [&_textarea]:text-sm [&_select]:text-sm [&_button]:text-sm [&_table]:text-sm">
       
       {/* Main Grid: Sidebar + Subcomponent container */}
-      <div className="flex-1 min-h-0 flex flex-col md:flex-row max-w-[1600px] w-full mx-auto px-2 sm:px-4 lg:px-8 py-2 md:py-6 gap-2 md:gap-4 lg:gap-6 overflow-hidden">
+      <div className="flex-1 min-h-0 flex flex-col md:flex-row max-w-[1800px] w-full mx-auto px-2 sm:px-4 xl:px-6 py-2 md:py-4 gap-2 md:gap-4 overflow-hidden">
         
         {/* LEFT SIDEBAR - Navigation Rail */}
-        <aside className="w-full md:w-64 lg:w-72 bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl md:rounded-3xl p-2 md:p-3 sm:p-4 lg:p-5 flex flex-col gap-2 md:gap-4 shrink-0 shadow-sm h-auto md:h-full z-10 overflow-y-hidden md:overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="max-md:hidden mx-1 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70 px-3 py-3 flex items-center gap-3">
+        <aside className="w-full md:w-60 lg:w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl md:rounded-2xl p-2 md:p-3 lg:p-4 flex flex-col gap-2 md:gap-3 shrink-0 h-auto md:h-full z-10 overflow-y-hidden md:overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="max-md:hidden mx-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 px-3 py-3 flex items-center gap-3">
             <div className="p-2.5 bg-emerald-950/50 text-emerald-400 rounded-xl shrink-0 ring-1 ring-emerald-500/20">
               <Shield className="w-5 h-5 stroke-[2.5]" />
             </div>
             <div>
               <h2 className="font-extrabold text-slate-900 dark:text-white text-sm tracking-tight font-display">Kawing Admin</h2>
-              <span className="text-[10px] uppercase font-bold text-emerald-400/80 tracking-wider">System registry</span>
+              <span className="text-[10px] uppercase font-bold text-emerald-400/80 tracking-wider">{lang === 'en' ? 'System registry' : 'Talaan ng sistema'}</span>
             </div>
           </div>
 
-          <nav className="flex flex-row md:flex-col gap-1.5 overflow-x-auto md:overflow-x-visible pb-1 md:pb-0">
+          <nav className="flex flex-row md:flex-col gap-1 overflow-x-auto md:overflow-x-visible pb-1 md:pb-0">
             {/* 1. Users Directory */}
-            <span className="px-3.5 pt-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Accounts</span>
+            <span className="px-3.5 pt-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">{lang === 'en' ? 'Accounts' : 'Mga Account'}</span>
             <button
               onClick={openUsersDirectory}
               title={lang === 'en' ? 'Users Directory' : 'Listahan ng Users'}
@@ -276,7 +273,7 @@ export default function AdminDashboard({
             </button>
 
             {/* 4. Harvest Records */}
-            <span className="mt-3 border-t border-slate-200 dark:border-slate-800 px-3.5 pt-3 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Operations</span>
+            <span className="mt-3 border-t border-slate-200 dark:border-slate-800 px-3.5 pt-3 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">{lang === 'en' ? 'Operations' : 'Mga Operasyon'}</span>
             <button
               onClick={() => setActiveTab('harvests')}
               title={lang === 'en' ? 'Harvest Records' : 'Talaan ng Ani'}
@@ -329,7 +326,7 @@ export default function AdminDashboard({
             </button>
 
             {/* 7. Reports & Analytics */}
-            <span className="mt-3 border-t border-slate-200 dark:border-slate-800 px-3.5 pt-3 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Monitoring</span>
+            <span className="mt-3 border-t border-slate-200 dark:border-slate-800 px-3.5 pt-3 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">{lang === 'en' ? 'Monitoring' : 'Pagsubaybay'}</span>
             <button
               onClick={() => setActiveTab('reports')}
               title={lang === 'en' ? 'Reports & Analytics' : 'Suri at Ulat'}
@@ -346,24 +343,7 @@ export default function AdminDashboard({
               </div>
             </button>
 
-            {/* 8. Feedback & Ratings */}
-            <button
-              onClick={() => setActiveTab('feedback')}
-              title={lang === 'en' ? 'Feedback & Ratings' : 'Puna at Marka'}
-              className={`flex items-center justify-between px-3.5 py-2.5 text-xs font-bold rounded-2xl transition-all cursor-pointer ${
-                activeTab === 'feedback'
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/10'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <Star className="w-4 h-4 shrink-0" />
-                <span className="truncate">{lang === 'en' ? 'Feedback & Ratings' : 'Puna at Marka'}</span>
-                {pageBadge('feedback')}
-              </div>
-            </button>
-
-            {/* 9. Spoilage Alerts */}
+            {/* Spoilage Alerts */}
             <button
               onClick={() => setActiveTab('spoilage')}
               title={lang === 'en' ? 'Spoilage Alerts' : 'Babala sa Pagkasira'}
@@ -382,7 +362,7 @@ export default function AdminDashboard({
             </button>
 
             {/* 10. Announcements */}
-            <span className="mt-3 border-t border-slate-200 dark:border-slate-800 px-3.5 pt-3 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Communication</span>
+            <span className="mt-3 border-t border-slate-200 dark:border-slate-800 px-3.5 pt-3 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">{lang === 'en' ? 'Communication' : 'Komunikasyon'}</span>
             <button
               onClick={() => setActiveTab('announcements')}
               title={lang === 'en' ? 'Announcements' : 'Mga Pahayag'}
@@ -400,7 +380,7 @@ export default function AdminDashboard({
             </button>
 
             {/* 11. DA reference price and settings */}
-            <span className="mt-3 border-t border-slate-200 dark:border-slate-800 px-3.5 pt-3 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Configuration</span>
+            <span className="mt-3 border-t border-slate-200 dark:border-slate-800 px-3.5 pt-3 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">{lang === 'en' ? 'Configuration' : 'Mga Setting'}</span>
             <button
               onClick={() => setActiveTab('settings')}
               title={lang === 'en' ? 'DA Reference Price & Settings' : 'DA Reference Price at Mga Setting'}
@@ -419,8 +399,8 @@ export default function AdminDashboard({
             </button>
 
             <div>
-              <button onClick={() => setActiveTab('grainy-faqs')} title="Grainy FAQ Management" className={`flex w-full items-center justify-between px-3.5 py-2.5 text-xs font-bold rounded-2xl transition-all cursor-pointer ${activeTab === 'grainy-faqs' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/10' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'}`}>
-                <div className="flex items-center gap-3 min-w-0"><FileText className="w-4 h-4 shrink-0" /><span className="truncate">Grainy FAQ Management</span></div>
+              <button onClick={() => setActiveTab('grainy-faqs')} title={lang === 'en' ? 'Grainy FAQ Management' : 'Pamamahala ng FAQ ni Grainy'} className={`flex w-full items-center justify-between px-3.5 py-2.5 text-xs font-bold rounded-2xl transition-all cursor-pointer ${activeTab === 'grainy-faqs' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/10' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'}`}>
+                <div className="flex items-center gap-3 min-w-0"><FileText className="w-4 h-4 shrink-0" /><span className="truncate">{lang === 'en' ? 'Grainy FAQ Management' : 'Pamamahala ng FAQ ni Grainy'}</span></div>
               </button>
             </div>
 
@@ -439,7 +419,7 @@ export default function AdminDashboard({
         </aside>
 
         {/* RIGHT BOARD - Content Router */}
-        <main className="dashboard-main flex-1 min-w-0 w-full max-w-[1440px] mx-auto h-full bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-3 sm:p-6 shadow-sm overflow-y-auto scroll-smooth">
+        <main className="dashboard-main flex-1 min-w-0 w-full max-w-none mx-auto h-full bg-transparent border-0 rounded-none p-3 sm:p-5 lg:p-6 overflow-y-auto scroll-smooth">
           {activeTab === 'users' && (
             <UsersTab 
               lang={lang}
@@ -447,7 +427,6 @@ export default function AdminDashboard({
               suspendedUsers={suspendedUsers}
               onToggleSuspend={handleToggleSuspend}
               onViewProfile={setViewingProfile}
-              onUpdateUser={handleUpdateUser}
               onDeleteUser={handleDeleteUser}
               onDeleteUsers={handleDeleteUsersLocal}
             />
@@ -464,6 +443,8 @@ export default function AdminDashboard({
               onRequestResubmission={handleRequestResubmission}
               onViewDoc={handleViewDoc}
               onDeleteUser={handleDeleteUser}
+              pendingNotificationCount={unreadUserDirectoryNotifications.length}
+              onMarkPendingNotificationsRead={() => unreadUserDirectoryNotifications.forEach(notification => onMarkNotificationRead(notification.id))}
             />
           )}
 
@@ -487,6 +468,8 @@ export default function AdminDashboard({
             <TransactionsTab 
               lang={lang}
               offersList={offers}
+              serviceRequests={serviceRequests}
+              registeredUsers={registeredUsers}
               onViewDoc={handleViewDoc}
             />
           )}
@@ -494,18 +477,17 @@ export default function AdminDashboard({
           {activeTab === 'reports' && (
             <ReportsTab 
               lang={lang}
-            />
-          )}
-
-          {activeTab === 'feedback' && (
-            <FeedbackTab 
-              lang={lang}
+              harvestsList={harvests}
+              servicesList={serviceRequests}
+              offersList={offers}
+              usersList={registeredUsers}
             />
           )}
 
           {activeTab === 'spoilage' && (
             <SpoilageTab 
               lang={lang}
+              harvestsList={harvests}
             />
           )}
 
@@ -596,7 +578,7 @@ export default function AdminDashboard({
         </div>
       )}
 
-      {approvalError && <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true"><div className="w-full max-w-md rounded-2xl border border-amber-700 bg-white dark:bg-slate-900 p-6 shadow-2xl"><AlertCircle className="mb-3 h-7 w-7 text-amber-400" /><h2 className="text-lg font-extrabold text-slate-900 dark:text-white">Registration incomplete</h2><p className="mt-2 text-sm text-slate-700 dark:text-slate-300">{approvalError}</p><button type="button" onClick={() => setApprovalError(null)} className="mt-5 w-full rounded-xl bg-emerald-600 px-4 py-2.5 font-bold text-white hover:bg-emerald-500">Close</button></div></div>}
+      {approvalError && <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true"><div className="w-full max-w-md rounded-2xl border border-amber-700 bg-white dark:bg-slate-900 p-6 shadow-2xl"><AlertCircle className="mb-3 h-7 w-7 text-amber-400" /><h2 className="text-lg font-extrabold text-slate-900 dark:text-white">{lang === 'en' ? 'Registration incomplete' : 'Hindi pa kumpleto ang rehistrasyon'}</h2><p className="mt-2 text-sm text-slate-700 dark:text-slate-300">{approvalError}</p><button type="button" onClick={() => setApprovalError(null)} className="mt-5 w-full rounded-xl bg-emerald-600 px-4 py-2.5 font-bold text-white hover:bg-emerald-500">{lang === 'en' ? 'Close' : 'Isara'}</button></div></div>}
 
       {/* MODAL 2: REGISTRATION DOCUMENT PREVIEW MODAL */}
       {selectedDoc && (

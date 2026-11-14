@@ -33,4 +33,25 @@ $pdo->prepare('INSERT INTO users (email,name,password_hash,role,is_approved,data
 applyLiveChanges($pdo, [$change('users', $farmer['email'], $account, [...$account, 'isApproved' => true])], $admin);
 check($pdo->query('SELECT password_hash FROM users')->fetchColumn() === $hash, 'Approval changed the password');
 check((int) liveVersions($pdo)['users'] > 0, 'User update did not publish');
-echo "MySQL integration checks passed using temporary tables: isolated concurrent saves, idempotent retries, conflict rollback, atomic versions, preserved credentials.\n";
+$account = [...$account, 'isApproved' => true];
+$service = ['id' => 'test-service', 'farmerEmail' => $farmer['email'], 'harvestId' => 'test-h1', 'type' => 'Storage', 'status' => 'pending'];
+$assignedService = ['id' => 'test-assigned-service', 'farmerEmail' => 'farmer2@example.test', 'type' => 'Storage', 'status' => 'matched', 'operatorEmail' => $farmer['email'], 'operatorName' => 'Farmer'];
+$offer = ['id' => 'test-offer', 'harvestId' => 'test-h1', 'farmerEmail' => $farmer['email'], 'buyerEmail' => 'buyer@example.test', 'status' => 'pending'];
+$providerService = ['id' => 'test-provider-service', 'providerEmail' => $farmer['email'], 'serviceType' => 'Storage', 'isAvailable' => true];
+$loan = ['id' => 'test-loan', 'farmerEmail' => $farmer['email'], 'buyerEmail' => 'buyer@example.test', 'status' => 'Pending', 'requestedAmount' => 100];
+$notification = ['id' => 'test-notification', 'userEmail' => $farmer['email'], 'type' => 'info', 'isRead' => false];
+$insert = static function (string $sql, array $values) use ($pdo): void { $pdo->prepare($sql)->execute($values); };
+$insert('INSERT INTO service_requests (id,harvest_id,farmer_email,service_type,status,data) VALUES (?,?,?,?,?,?)', [$service['id'], $service['harvestId'], $service['farmerEmail'], $service['type'], $service['status'], json_encode($service)]);
+$insert('INSERT INTO service_requests (id,harvest_id,farmer_email,service_type,status,data) VALUES (?,?,?,?,?,?)', [$assignedService['id'], null, $assignedService['farmerEmail'], $assignedService['type'], $assignedService['status'], json_encode($assignedService)]);
+$insert('INSERT INTO offers (id,harvest_id,buyer_email,farmer_email,status,data) VALUES (?,?,?,?,?,?)', [$offer['id'], $offer['harvestId'], $offer['buyerEmail'], $offer['farmerEmail'], $offer['status'], json_encode($offer)]);
+$insert('INSERT INTO offered_services (id,provider_email,service_type,is_available,data) VALUES (?,?,?,?,?)', [$providerService['id'], $providerService['providerEmail'], $providerService['serviceType'], 1, json_encode($providerService)]);
+$insert('INSERT INTO production_loans (id,farmer_email,buyer_email,status,requested_amount,data) VALUES (?,?,?,?,?,?)', [$loan['id'], $loan['farmerEmail'], $loan['buyerEmail'], $loan['status'], $loan['requestedAmount'], json_encode($loan)]);
+$insert('INSERT INTO notifications (id,user_email,is_read,notification_type,data) VALUES (?,?,?,?,?)', [$notification['id'], $notification['userEmail'], 0, $notification['type'], json_encode($notification)]);
+applyLiveChanges($pdo, [$change('users', $farmer['email'], $account, null)], $admin);
+foreach (['users' => 'email', 'harvests' => 'farmer_email', 'service_requests' => 'farmer_email', 'offers' => 'farmer_email', 'offered_services' => 'provider_email', 'production_loans' => 'farmer_email', 'notifications' => 'user_email'] as $table => $column) {
+    check((int) $pdo->query("SELECT COUNT(*) FROM {$table} WHERE {$column}='farmer@example.test'")->fetchColumn() === 0, "Deleting a user must remove related {$table} records");
+}
+check((int) $pdo->query("SELECT COUNT(*) FROM harvests WHERE id='test-h2'")->fetchColumn() === 1, 'Deleting one farmer must keep other farmers’ data');
+check((string) $pdo->query("SELECT status FROM service_requests WHERE id='test-assigned-service'")->fetchColumn() === 'pending', 'Deleting a service provider should reopen another farmer’s request');
+check($pdo->query("SELECT JSON_EXTRACT(data, '$.operatorEmail') FROM service_requests WHERE id='test-assigned-service'")->fetchColumn() === null, 'Reopened service should no longer reference the deleted provider');
+echo "MySQL integration checks passed using temporary tables: concurrent saves, retries, rollback, credentials, and user data cleanup.\n";

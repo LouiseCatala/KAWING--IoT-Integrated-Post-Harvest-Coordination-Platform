@@ -272,12 +272,12 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
       <div className="flex flex-wrap items-center gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-150 dark:border-slate-800 shadow-sm text-xs">
         <div className="flex items-center gap-2 text-slate-400 font-bold">
           <Filter className="w-4 h-4 text-emerald-600" />
-          <span>Filters:</span>
+          <span>{lang === 'en' ? 'Filters:' : 'Mga Filter:'}</span>
         </div>
 
         {/* Crop Filter */}
         <div className="flex items-center gap-1.5">
-          <span className="text-slate-500">Crop:</span>
+          <span className="text-slate-500">{lang === 'en' ? 'Crop:' : 'Ani:'}</span>
           <select
             value={cropFilter}
             onChange={(e) => {
@@ -286,7 +286,7 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
             }}
             className="px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs dark:text-white"
           >
-            <option value="all">All Crops</option>
+            <option value="all">{lang === 'en' ? 'All Crops' : 'Lahat ng Ani'}</option>
             {uniqueCrops.map(crop => (
               <option key={crop} value={crop}>{crop}</option>
             ))}
@@ -295,7 +295,7 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
 
         {/* Status Filter */}
         <div className="flex items-center gap-1.5">
-          <span className="text-slate-500">Status:</span>
+          <span className="text-slate-500">{lang === 'en' ? 'Status:' : 'Katayuan:'}</span>
           <select
             value={statusFilter}
             onChange={(e) => {
@@ -304,10 +304,10 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
             }}
             className="px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs dark:text-white"
           >
-            <option value="all">All Status</option>
-            <option value="posted">Posted</option>
-            <option value="in_progress">In Progress</option>
-            <option value="completed">Completed</option>
+            <option value="all">{lang === 'en' ? 'All Status' : 'Lahat ng Katayuan'}</option>
+            <option value="posted">{lang === 'en' ? 'Posted' : 'Nai-post'}</option>
+            <option value="in_progress">{lang === 'en' ? 'In Progress' : 'Isinasagawa'}</option>
+            <option value="completed">{lang === 'en' ? 'Completed' : 'Nakumpleto'}</option>
           </select>
         </div>
       </div>
@@ -316,7 +316,7 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
       {filteredHarvests.length > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-3 bg-red-50/50 dark:bg-red-950/10 p-4 rounded-2xl border border-red-150 dark:border-red-900/30 text-xs">
           <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-semibold">
-            <span>Selected: <strong>{selectedIds.length}</strong> of <strong>{filteredHarvests.length}</strong> records</span>
+            <span>{lang === 'en' ? 'Selected:' : 'Napili:'} <strong>{selectedIds.length}</strong> {lang === 'en' ? 'of' : 'sa'} <strong>{filteredHarvests.length}</strong> {lang === 'en' ? 'records' : 'talaan'}</span>
           </div>
           <div className="flex gap-2">
             <button
@@ -361,7 +361,7 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
                 <th className="p-4">{lang === 'en' ? 'Harvest Date' : 'Araw ng Pag-ani'}</th>
                 <th className="p-4">{lang === 'en' ? 'Farm Location' : 'Lokasyon'}</th>
                 <th className="p-4">{lang === 'en' ? 'Spoilage Risk' : 'Peligro'}</th>
-                <th className="p-4 text-center">Status</th>
+                <th className="p-4 text-center">{lang === 'en' ? 'Status' : 'Katayuan'}</th>
                 <th className="p-4 text-center">{lang === 'en' ? 'Actions' : 'Aksyon'}</th>
               </tr>
             </thead>
@@ -369,7 +369,7 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
               {paginatedHarvests.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="p-8 text-center text-slate-400">
-                    No harvest records match your filter criteria.
+                    {lang === 'en' ? 'No harvest records match your filter criteria.' : 'Walang tala ng ani na tumutugma sa iyong filter.'}
                   </td>
                 </tr>
               ) : (
@@ -432,7 +432,7 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
                           : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20'
                       }`}>
                         {h.spoilageRisk === 'high' && <AlertTriangle className="w-2.5 h-2.5" />}
-                        <span>{h.spoilageRisk} Risk</span>
+                        <span>{h.spoilageRisk === 'high' ? (lang === 'en' ? 'High Risk' : 'Mataas na Panganib') : h.spoilageRisk === 'medium' ? (lang === 'en' ? 'Medium Risk' : 'Katamtamang Panganib') : (lang === 'en' ? 'Low Risk' : 'Mababang Panganib')}</span>
                       </span>
                     </td>
 
@@ -445,7 +445,7 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
                           ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/40'
                           : 'bg-slate-100 text-slate-700 dark:bg-slate-800 text-slate-400'
                       }`}>
-                        {h.status.replace('_', ' ')}
+                        {h.status === 'in_progress' ? (lang === 'en' ? 'In Progress' : 'Isinasagawa') : h.status === 'completed' ? (lang === 'en' ? 'Completed' : 'Nakumpleto') : (lang === 'en' ? 'Posted' : 'Nai-post')}
                       </span>
                     </td>
 
@@ -490,7 +490,7 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
         {/* Pagination */}
         <div className="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs">
           <span className="text-slate-400">
-            Showing {filteredHarvests.length > 0 ? startIndex + 1 : 0} to {Math.min(startIndex + itemsPerPage, filteredHarvests.length)} of {filteredHarvests.length} records
+            {lang === 'en' ? 'Showing' : 'Ipinapakita'} {filteredHarvests.length > 0 ? startIndex + 1 : 0} {lang === 'en' ? 'to' : 'hanggang'} {Math.min(startIndex + itemsPerPage, filteredHarvests.length)} {lang === 'en' ? 'of' : 'sa'} {filteredHarvests.length} {lang === 'en' ? 'records' : 'talaan'}
           </span>
           <div className="flex gap-1">
             <button
@@ -498,7 +498,7 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               className="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg disabled:opacity-50 text-slate-700 dark:text-slate-300 font-bold transition-all"
             >
-              Previous
+              {lang === 'en' ? 'Previous' : 'Nakaraan'}
             </button>
             <span className="px-3 py-1 font-bold text-slate-700 dark:text-slate-300">
               {currentPage} / {totalPages}
@@ -508,7 +508,7 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               className="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg disabled:opacity-50 text-slate-700 dark:text-slate-300 font-bold transition-all"
             >
-              Next
+              {lang === 'en' ? 'Next' : 'Susunod'}
             </button>
           </div>
         </div>

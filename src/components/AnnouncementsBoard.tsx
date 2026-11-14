@@ -113,6 +113,16 @@ export default function AnnouncementsBoard({
   const [showClearConfirmation, setShowClearConfirmation] = useState(false);
   const [storedAnnouncements, setStoredAnnouncements] = useState<PlatformAnnouncement[]>([]);
 
+  const selectedActionFeature = selectedAnnouncement?.actionFeatureId === 'palay'
+    ? user.role === 'farmer'
+      ? 'harvests'
+      : user.role === 'buyer' || user.role === 'agricultural_business'
+        ? 'marketplace'
+        : user.role === 'miller' || user.role === 'dryer'
+          ? 'palay'
+          : undefined
+    : selectedAnnouncement?.actionFeatureId;
+
   useEffect(() => { let cancelled = false;
     fetch('/api/announcements').then(async response => {
       if (!response.ok) return;
@@ -483,11 +493,11 @@ export default function AnnouncementsBoard({
                 >
                   {lang === 'en' ? 'Close' : 'Isara'}
                 </button>
-                {selectedAnnouncement.actionFeatureId && onNavigateToFeature && (
+                {selectedActionFeature && onNavigateToFeature && (
                   <button
                     type="button"
                     onClick={() => {
-                      onNavigateToFeature(selectedAnnouncement.actionFeatureId!);
+                      onNavigateToFeature(selectedActionFeature);
                       setSelectedAnnouncement(null);
                     }}
                     className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-slate-950 via-slate-800 to-emerald-900 text-white text-sm font-black flex items-center justify-center gap-2 cursor-pointer shadow-md"

@@ -1,35 +1,26 @@
 import React, { useState } from 'react';
-import { Truck, Warehouse, Wind, ShieldAlert, Check, X, RefreshCw, Star, ArrowUpRight, Search, Zap } from 'lucide-react';
-import { ServiceRequest, Offer } from '../../types';
+import { Truck, Warehouse, Wind, ShieldAlert, RefreshCw, Search, List } from 'lucide-react';
+import { ServiceRequest } from '../../types';
 
 interface ServicesTabProps {
   lang: 'en' | 'tl';
   servicesList: ServiceRequest[];
-  offersList?: Offer[];
-  onApproveService?: (id: string) => void;
-  onAssignOperator?: (id: string, operatorName: string) => void;
 }
 
 export default function ServicesTab({
   lang,
   servicesList,
-  offersList = [],
-  onApproveService,
-  onAssignOperator
 }: ServicesTabProps) {
-  const [activeSubTab, setActiveSubTab] = useState<'transport' | 'storage' | 'dryer' | 'miller'>('transport');
+  const [activeSubTab, setActiveSubTab] = useState<'all' | 'transport' | 'storage' | 'dryer' | 'miller'>('all');
   const [search, setSearch] = useState('');
 
-  // Local state to simulate live updates on assignment
-  const [localServices, setLocalServices] = useState<ServiceRequest[]>(() => servicesList);
-
-  const handleApprove = (id: string) => {
-    setLocalServices(prev => prev.map(s => s.id === id ? { ...s, status: 'matched', operatorName: s.operatorName || 'Bayanihan Logistics Hub' } : s));
-    if (onApproveService) onApproveService(id);
-  };
-
   // Filter lists based on subtab
-  const filteredServices = localServices.filter(s => {
+  const filteredServices = servicesList.filter(s => {
+    if (activeSubTab === 'all') return (
+      s.farmerName.toLowerCase().includes(search.toLowerCase()) ||
+      s.cropType.toLowerCase().includes(search.toLowerCase()) ||
+      s.location.toLowerCase().includes(search.toLowerCase())
+    );
     if (activeSubTab === 'transport' && s.type !== 'transport') return false;
     if (activeSubTab === 'storage' && s.type !== 'storage') return false;
     if (activeSubTab === 'dryer' && s.type !== 'drying') return false;
@@ -71,6 +62,18 @@ export default function ServicesTab({
 
       {/* 3 Physical Services Tabs */}
       <div className="flex gap-1.5 flex-wrap bg-slate-100 dark:bg-slate-850 p-1 rounded-2xl w-fit">
+        <button
+          onClick={() => { setActiveSubTab('all'); setSearch(''); }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeSubTab === 'all'
+              ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/10'
+              : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+          }`}
+        >
+          <List className="w-4 h-4" />
+          <span>{lang === 'en' ? 'All' : 'Lahat'}</span>
+        </button>
+
         <button
           onClick={() => { setActiveSubTab('transport'); setSearch(''); }}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
@@ -124,7 +127,7 @@ export default function ServicesTab({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {filteredServices.length === 0 ? (
           <div className="col-span-full bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-3xl p-12 text-center text-slate-400">
-            No active coordination requests found under this category.
+            {lang === 'en' ? 'No active coordination requests found under this category.' : 'Walang aktibong kahilingan sa koordinasyon sa kategoryang ito.'}
           </div>
         ) : (
           filteredServices.map((req) => (
@@ -171,7 +174,7 @@ export default function ServicesTab({
                   {req.details?.daysRemaining && (
                     <p className="flex justify-between">
                       <span className="text-slate-400 font-bold">{lang === 'en' ? 'Safe Days Remaining:' : 'Natitirang Ligtas na Araw:'}</span>
-                      <span className="font-bold text-amber-600">{req.details.daysRemaining} days</span>
+                      <span className="font-bold text-amber-600">{req.details.daysRemaining} {lang === 'en' ? 'days' : 'araw'}</span>
                     </p>
                   )}
                   <p className="flex justify-between">
@@ -183,19 +186,6 @@ export default function ServicesTab({
                 </div>
               </div>
 
-              {/* Coordination Buttons */}
-              {req.status === 'pending' && (
-                <div className="mt-5 flex gap-2 pt-3">
-                  <button
-                    type="button"
-                    onClick={() => handleApprove(req.id)}
-                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <Check className="w-3.5 h-3.5" />
-                    <span>{lang === 'en' ? 'Assign KAWING Partner' : 'I-coordinate sa Kasosyo'}</span>
-                  </button>
-                </div>
-              )}
             </div>
           ))
         )}

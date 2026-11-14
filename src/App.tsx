@@ -22,117 +22,8 @@ import { useApp } from './context/AppContext';
 
 const DEFAULT_SETTINGS: AppSettings = { daReferencePrice: 22.8 };
 
-// Default Production Loan Requests
-const DEFAULT_PRODUCTION_LOANS: ProductionLoanRequest[] = [
-  {
-    id: 'PL-2026-001',
-    farmerEmail: 'magsasaka@kawing.com',
-    farmerName: 'Mang Juan Dela Cruz',
-    farmerPhone: '0917-888-1234',
-    farmerLocation: 'Arayat, Pampanga',
-    buyerEmail: 'mamimili@kawing.com',
-    buyerName: 'Aling Maria Santos',
-    buyerCompanyName: 'Aling Maria Trading Co.',
-    requestedAmount: 12000,
-    purpose: 'Rice Seeds',
-    plantingSeason: 'Wet Season 2026',
-    preferredRepaymentPeriod: '4 Months / Upon Harvest',
-    repaymentMethod: 'Harvest-Based Repayment (Farmer as Planter - Harvest allocated to Buyer)',
-    additionalNotes: 'Need budget for certified Rc222 seeds and 6 bags of urea fertilizer.',
-    status: 'Pending',
-    createdAt: new Date().toISOString().split('T')[0],
-    updatedAt: new Date().toISOString().split('T')[0],
-  }
-];
-
-// Default offered services
-const DEFAULT_OFFERED_SERVICES: OfferedService[] = [
-  {
-    id: 'os1',
-    providerEmail: 'mamimili@kawing.com',
-    providerName: 'Aling Maria Santos',
-    providerPhone: '0917-555-0100',
-    providerRole: 'buyer',
-    companyName: 'Aling Maria Trading Co.',
-    serviceType: 'transport',
-    title: 'Buyer Truck - Free Farm Pickup for 2,000+ kg Palay',
-    truckType: '6-Wheeler Hauling Truck',
-    capacity: '5,000 kg (100 sacks)',
-    locationCoverage: 'Cabanatuan City, Arayat, Candaba, & nearby barangays',
-    rateInfo: 'FREE Farm Pickup on purchases over 2,000kg (otherwise ₱1.00/kg)',
-    notes: 'Equipped with heavy duty tarp cover, digital weigh scale, and moisture meter.',
-    isAvailable: true,
-    createdAt: new Date().toISOString().split('T')[0],
-  }
-];
-
-// Default mock users to load into localStorage if empty
-const DEFAULT_USERS: UserAccount[] = [
-  { name: 'Mang Juan Dela Cruz', email: 'magsasaka@kawing.com', password: 'password123', role: 'farmer', rating: 4.8, isApproved: true },
-  {
-    name: 'Aling Maria Santos',
-    email: 'mamimili@kawing.com',
-    password: 'password123',
-    role: 'buyer',
-    rating: 4.9,
-    isApproved: true,
-    loanConfig: {
-      enabled: true,
-      minAmount: 5000,
-      maxAmount: 20000,
-      availableFund: 150000,
-      repaymentPeriod: '4 Months / Upon Harvest',
-      repaymentMethod: 'Harvest-Based Repayment (Farmer as Planter - Harvest allocated to Buyer)',
-      termsAndConditions: 'Exclusively for registered rice farmers. Priority palay output delivery upon harvest season.',
-      additionalRequirements: 'Valid Government ID and RSBSA Registration Number',
-      notes: 'Direct farm verification visit before releasing funds.',
-    }
-  },
-  {
-    name: 'Bayanihan Logistics',
-    email: 'logistics@kawing.com',
-    password: 'password123',
-    role: 'logistics',
-    rating: 4.8,
-    isApproved: true,
-    logisticsServices: {
-      transport: { enabled: true, approvalStatus: 'approved', isAvailable: true },
-      storage: { enabled: true, approvalStatus: 'approved', isAvailable: true },
-      drying: { enabled: true, approvalStatus: 'approved', isAvailable: true },
-      milling: { enabled: true, approvalStatus: 'approved', isAvailable: true },
-    },
-  },
-  {
-    name: 'Tatay Pedring Ramos',
-    password: 'password123',
-    role: 'farmer',
-    rating: 4.8,
-    isApproved: false,
-    contactNumber: '0917-123-4567',
-    address: 'Sitio Central, Brgy. San Juan, Cabanatuan City, Nueva Ecija',
-    documents: {
-      govId: 'government_id.jpg',
-      govIdData: 'https://images.unsplash.com/photo-1554774853-aae0a22c8aa4?w=500&auto=format&fit=crop&q=60'
-    }
-  }
-];
-
 const LEGACY_LOGISTICS_ROLE_MAP: Partial<Record<UserAccount['role'], LogisticsServiceType>> = {
   truck: 'transport', storage: 'storage', dryer: 'drying', miller: 'milling',
-};
-
-const DEMO_LOGISTICS_NAMES = new Set([
-  'Bayanihan Logistics',
-  'Sariaya Cold Storage',
-  'Central Luzon Dryer',
-  'Central Luzon Miller',
-]);
-
-const ALL_DEMO_LOGISTICS_SERVICES: UserAccount['logisticsServices'] = {
-  transport: { enabled: true, approvalStatus: 'approved', isAvailable: true },
-  storage: { enabled: true, approvalStatus: 'approved', isAvailable: true },
-  drying: { enabled: true, approvalStatus: 'approved', isAvailable: true },
-  milling: { enabled: true, approvalStatus: 'approved', isAvailable: true },
 };
 
 const stableUserId = (user: UserAccount) => {
@@ -146,7 +37,22 @@ const migrateLegacyProvider = (user: UserAccount): UserAccount => {
   const userId = user.userId || stableUserId(user);
   if (user.role === 'farmer' || user.role === 'admin') return { ...user, userId };
 
+  const logisticsServices = { ...(user.logisticsServices || {}) };
+  const serviceTypes = ['transport', 'storage', 'drying', 'milling'] as const;
+  serviceTypes.forEach((serviceType) => {
+    const profile = logisticsServices[serviceType];
+    if (profile?.enabled && profile.approvalStatus === 'pending') {
+      logisticsServices[serviceType] = { ...profile, approvalStatus: 'approved', isAvailable: true };
+    }
+  });
+
   const businessCapabilities = { ...(user.businessCapabilities || {}) };
+  serviceTypes.forEach((serviceType) => {
+    const profile = businessCapabilities[serviceType];
+    if (profile?.enabled && profile.approvalStatus === 'pending') {
+      businessCapabilities[serviceType] = { ...profile, approvalStatus: 'approved', isAvailable: true };
+    }
+  });
   if (user.role === 'agricultural_business' && !businessCapabilities.buyer) {
     businessCapabilities.buyer = { enabled: true, approvalStatus: user.isApproved === false ? 'pending' : 'approved', isAvailable: user.isApproved !== false };
   }
@@ -156,7 +62,7 @@ const migrateLegacyProvider = (user: UserAccount): UserAccount => {
   if (user.loanConfig?.enabled && !businessCapabilities.loan_provider) {
     businessCapabilities.loan_provider = { enabled: true, approvalStatus: user.isApproved === false ? 'pending' : 'approved', isAvailable: true };
   }
-  Object.entries(user.logisticsServices || {}).forEach(([capability, profile]) => {
+  Object.entries(logisticsServices).forEach(([capability, profile]) => {
     if (profile?.enabled && !businessCapabilities[capability as LogisticsServiceType]) {
       businessCapabilities[capability as LogisticsServiceType] = { ...profile };
     }
@@ -165,105 +71,17 @@ const migrateLegacyProvider = (user: UserAccount): UserAccount => {
   if (legacyService && !businessCapabilities[legacyService]) {
     businessCapabilities[legacyService] = { enabled: true, approvalStatus: user.isApproved === false ? 'pending' : 'approved', isAvailable: user.isAvailable !== false };
   }
-  if (DEMO_LOGISTICS_NAMES.has(user.name) && Object.keys(businessCapabilities).length === 0) {
-    Object.assign(businessCapabilities, ALL_DEMO_LOGISTICS_SERVICES);
-  }
   return {
     ...user,
     userId,
     role: 'agricultural_business',
     businessName: user.businessName || user.legalCompanyName || user.name,
+    logisticsServices,
     businessCapabilities,
   };
 };
 
-const migrateLegacyProviders = (users: UserAccount[]): UserAccount[] => {
-  let demoLogisticsAdded = false;
-  return users.reduce<UserAccount[]>((result, user) => {
-    if (DEMO_LOGISTICS_NAMES.has(user.name)) {
-      if (demoLogisticsAdded) return result;
-      demoLogisticsAdded = true;
-    }
-    result.push(migrateLegacyProvider(user));
-    return result;
-  }, []);
-};
-
-// Seed initial harvests in global pool
-const DEFAULT_HARVESTS: Harvest[] = [
-  {
-    id: 'h1',
-    cropType: 'Palay (Wet - Basa)',
-    quantity: 1500,
-    unit: 'kg',
-    harvestDate: '2026-07-10',
-    location: 'Farm A, Arayat, Pampanga',
-    urgency: 'high',
-    status: 'posted',
-    spoilageRisk: 'high',
-    farmerEmail: 'magsasaka@kawing.com',
-    farmerName: 'Mang Juan Dela Cruz',
-    farmerRating: 4.8,
-  },
-  {
-    id: 'h2',
-    cropType: 'Palay (Dry - Tuyo)',
-    quantity: 3500,
-    unit: 'kg',
-    harvestDate: '2026-07-09',
-    location: 'Farm B, Candaba, Pampanga',
-    urgency: 'medium',
-    status: 'posted',
-    spoilageRisk: 'medium',
-    farmerEmail: 'magsasaka@kawing.com',
-    farmerName: 'Mang Juan Dela Cruz',
-    farmerRating: 4.8,
-  },
-  {
-    id: 'h3',
-    cropType: 'Palay (Premium - RC 160)',
-    quantity: 2000,
-    unit: 'kg',
-    harvestDate: '2026-07-08',
-    location: 'Central Plain Farm, Cabanatuan',
-    urgency: 'low',
-    status: 'posted',
-    spoilageRisk: 'low',
-    farmerEmail: 'another_farmer@kawing.com',
-    farmerName: 'Mang Pedring Ramos',
-    farmerRating: 4.6,
-  },
-];
-
-// Seed initial service requests
-const DEFAULT_SERVICES: ServiceRequest[] = [
-  {
-    id: 's1',
-    type: 'transport',
-    harvestId: 'h1',
-    cropType: 'Palay (Wet - Basa)',
-    quantity: 1500,
-    unit: 'kg',
-    status: 'pending',
-    createdAt: '2026-07-11',
-    farmerEmail: 'magsasaka@kawing.com',
-    farmerName: 'Mang Juan Dela Cruz',
-    location: 'Farm A, Arayat, Pampanga',
-  },
-  {
-    id: 's2',
-    type: 'storage',
-    harvestId: 'h2',
-    cropType: 'Palay (Dry - Tuyo)',
-    quantity: 3500,
-    unit: 'kg',
-    status: 'pending',
-    createdAt: '2026-07-11',
-    farmerEmail: 'magsasaka@kawing.com',
-    farmerName: 'Mang Juan Dela Cruz',
-    location: 'Farm B, Candaba, Pampanga',
-  },
-];
+const migrateLegacyProviders = (users: UserAccount[]): UserAccount[] => users.map(migrateLegacyProvider);
 
 export default function App() {
   const { lang } = useApp();
@@ -486,7 +304,9 @@ export default function App() {
       addNotification(
         admin.email,
         'New Account Registration',
-        `${savedUser.name} submitted a new ${accountCategory} account for verification.`,
+        savedUser.registrationSource === 'kiosk'
+          ? `${savedUser.name} submitted a registration at the kiosk. Check the physical registration ID before approval.`
+          : `${savedUser.name} submitted a new ${accountCategory} account for verification.`,
         'alert',
         true,
         { 'Applicant': savedUser.name, 'Account Category': accountCategory, 'Status': 'Pending Verification' }
@@ -648,42 +468,6 @@ export default function App() {
     setRegisteredUsers(updatedUsers);
     localStorage.setItem('kawing_users', JSON.stringify(updatedUsers));
 
-    if (updated.role === 'logistics' || updated.role === 'agricultural_business') {
-      const serviceLabels: Record<LogisticsServiceType, string> = {
-        transport: 'Trucking & Hauling',
-        storage: 'Storage Facility',
-        drying: 'Drying Facility',
-        milling: 'Rice Milling',
-      };
-      const newlyPendingServices = (Object.keys(serviceLabels) as LogisticsServiceType[]).filter(serviceType => {
-        const previousStatus = updated.role === 'agricultural_business'
-          ? originalUser?.businessCapabilities?.[serviceType]?.approvalStatus
-          : originalUser?.logisticsServices?.[serviceType]?.approvalStatus;
-        const currentService = updated.role === 'agricultural_business'
-          ? updated.businessCapabilities?.[serviceType]
-          : updated.logisticsServices?.[serviceType];
-        return currentService?.enabled && currentService.approvalStatus === 'pending' && previousStatus !== 'pending';
-      });
-      const admin = registeredUsers.find(user => user.role === 'admin');
-      if (admin?.email) {
-        newlyPendingServices.forEach(serviceType => addNotification(
-          admin.email!,
-          'New Logistics Service Approval Request',
-          `${updated.legalCompanyName || updated.businessName || updated.name} submitted ${serviceLabels[serviceType]} for approval.`,
-          'alert',
-          true,
-          {
-            'Provider': updated.legalCompanyName || updated.businessName || updated.name,
-            'Requested Service': serviceLabels[serviceType],
-            'Coverage Area': (updated.role === 'agricultural_business'
-              ? updated.businessCapabilities?.[serviceType]?.locationCoverage
-              : updated.logisticsServices?.[serviceType]?.locationCoverage) || updated.serviceCoverageArea || 'Not specified',
-            'Status': 'Pending Admin Approval',
-          }
-        ));
-      }
-    }
-    
     // Sync active user session if they updated themselves
     if (activeUser && activeUser.name === originalName) {
       const newActive = { ...activeUser, ...updated };

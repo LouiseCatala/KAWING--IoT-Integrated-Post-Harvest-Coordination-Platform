@@ -97,7 +97,8 @@ function validateBusinessWrite(PDO $pdo, string $collection, ?array $current, ?a
             $provider = lockedRecord($pdo, 'users', liveEmail($next['operatorEmail'] ?? ''));
             if (!$provider || ($provider['isAvailable'] ?? true) === false) throw new LiveConflict('This provider is unavailable.');
             $profile = $provider['businessCapabilities'][$next['type']] ?? $provider['logisticsServices'][$next['type']] ?? null;
-            if ($profile && (empty($profile['enabled']) || ($profile['isAvailable'] ?? true) === false || !in_array($profile['approvalStatus'] ?? 'approved', ['approved'], true))) throw new LiveConflict('This service is not currently available.');
+            $legacyPendingApproval = ($profile['approvalStatus'] ?? '') === 'pending';
+            if ($profile && (empty($profile['enabled']) || (($profile['isAvailable'] ?? true) === false && !$legacyPendingApproval) || !in_array($profile['approvalStatus'] ?? 'approved', ['approved', 'pending'], true))) throw new LiveConflict('This service is not currently available.');
             checkServiceCapacity($pdo, $next, $profile ?? []);
             // The server clock is the source of truth for when the provider accepted.
             $next['acceptedAt'] = gmdate('c');

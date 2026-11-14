@@ -1,12 +1,12 @@
 import { IconAlertTriangle, IconArrowRight, IconArrowUpRight, IconCalendar, IconCash, IconCheck, IconCircleCheck, IconCircleX, IconCoin, IconConfetti, IconDroplet, IconFolderOpen, IconHammer, IconHeartHandshake, IconMapPin, IconMedal, IconPackage, IconSettings, IconTools, IconTrophy, IconTruck, IconWheat, IconWind, IconWorld, IconX } from '@tabler/icons-react';
-import { useLiveRevision } from '../lib/useLiveRevision';
 import React, { useEffect, useState } from 'react';
 import { Harvest, ServiceRequest, UserAccount, AppNotification, Offer, OfferedService } from '../types';
-import { Plus, Calendar, MapPin, AlertTriangle, TrendingUp, RefreshCw, Check, X, Phone, ShieldCheck, Trash2, Pencil, Truck, HardDrive, Wind, ChevronDown, ChevronUp, Star, CircleDot, Search } from 'lucide-react';
+import { Plus, Calendar, MapPin, AlertTriangle, TrendingUp, RefreshCw, Check, X, Phone, Mail, ShieldCheck, Trash2, Pencil, Truck, HardDrive, Wind, ChevronDown, ChevronUp, Star, CircleDot, Search } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { getMoistureClassification } from '../lib/moisture';
 import { getBusinessCapability, hasApprovedBusinessCapability } from '../lib/businessCapabilities';
+import { getContactNumbers } from '../lib/contactDetails';
 import Sidebar from './Sidebar';
 import TransactionRating from './TransactionRating';
 import RatingSummary from './RatingSummary';
@@ -17,6 +17,7 @@ import CoordinatedContactCard from './CoordinatedContactCard';
 import { ProductionLoanRequest } from '../types';
 import farmerBackground from '../assets/images/Farmer_Background.jpg';
 import { alertDialog, askConfirmation } from '../lib/appDialog';
+import { NotificationBadge, notificationDestination } from '../lib/notificationRouting';
 
 const alert = (message: string) => { void alertDialog(message, { tone: 'info' }); };
 
@@ -87,7 +88,7 @@ export default function FarmerDashboard({
   onLogout,
 }: FarmerDashboardProps) {
   const { t, lang } = useApp();
-  const [activeTab, setActiveTab] = useState<'harvests' | 'services' | 'interests' | 'buyers' | 'directory' | 'palay' | 'announcements' | 'loans'>('services');
+  const [activeTab, setActiveTab] = useState<'harvests' | 'services' | 'interests' | 'buyers' | 'directory' | 'announcements' | 'loans'>('services');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   // Modal states
   const [showRequestServiceModal, setShowRequestServiceModal] = useState(false);
@@ -222,20 +223,29 @@ export default function FarmerDashboard({
     setShowPostHarvestModal(true);
   };
 
-  const moistureRevision = useLiveRevision('moisture');
   useEffect(() => {
     if (!showPostHarvestModal || !palaySenseSessionStart) return;
     let cancelled = false;
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout>;
+    const pairDevice = async () => {
+      const response = await fetch('/api/moisture-pair', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId: 'ESP32-GRAIN-01' }),
+        signal: controller.signal,
+      });
+      if (!response.ok) throw new Error('Could not connect PalaySense');
+    };
 
     const readPalaySense = async () => {
       try {
         const params = new URLSearchParams({
           limit: '1',
           since: palaySenseSessionStart,
-          includeUnassigned: 'true',
         });
-        if (user.email) params.set('farmerEmail', user.email);
-        const response = await fetch(`/api/moisture-readings?${params.toString()}`);
+        const response = await fetch(`/api/moisture-readings?${params.toString()}`, { credentials: 'include', cache: 'no-store', signal: controller.signal });
         if (!response.ok) throw new Error('PalaySense service unavailable');
         const payload = await response.json();
         const reading = payload.data?.[0];
@@ -248,16 +258,28 @@ export default function FarmerDashboard({
         }
       } catch {
         if (!cancelled) setPalaySenseStatus('error');
+      } finally {
+        if (!cancelled) timer = setTimeout(readPalaySense, 1500);
       }
     };
 
-    readPalaySense();
+    void pairDevice().then(() => { if (!cancelled) readPalaySense(); }).catch(() => {
+      if (!cancelled) setPalaySenseStatus('error');
+    });
 
     return () => {
       cancelled = true;
-
+      controller.abort();
+      clearTimeout(timer);
+      void fetch('/api/moisture-pair', {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId: 'ESP32-GRAIN-01' }),
+        keepalive: true,
+      });
     };
-  }, [showPostHarvestModal, palaySenseSessionStart, user.email, moistureRevision]);
+  }, [showPostHarvestModal, palaySenseSessionStart, user.email]);
 
   useEffect(() => {
     const quantityKg = Number(reqContainerQuantity) * Number(reqEstimatedKgPerContainer);
@@ -281,6 +303,24 @@ export default function FarmerDashboard({
     : requestView === 'completed'
       ? myServices.filter(service => service.status === 'completed')
       : myServices;
+  const farmerTabs = ['services', 'directory', 'announcements', 'loans', 'harvests', 'interests'];
+  const farmerUnreadForPage = (page: string) => notifications.filter(notification =>
+    notification.userEmail.toLowerCase() === (user.email || '').toLowerCase()
+    && !notification.isRead
+    && notificationDestination(notification, user.role, farmerTabs) === page
+  );
+  const serviceNotificationView = (notification: AppNotification) => {
+    const text = `${notification.title} ${notification.message}`.toLowerCase();
+    if (/nakumpleto|completed|fulfilled/.test(text)) return 'completed';
+    if (/tinatanggap|accepted/.test(text)) return 'accepted';
+    return 'posted';
+  };
+  const requestViewUnread = (view: 'posted' | 'accepted' | 'completed') => farmerUnreadForPage('directory').filter(notification => serviceNotificationView(notification) === view);
+  const markRequestViewRead = (view: 'posted' | 'accepted' | 'completed') => requestViewUnread(view).forEach(notification => onMarkNotificationRead(notification.id));
+  const offerViewUnread = (view: 'bids' | 'accepted') => farmerUnreadForPage('interests').filter(notification => {
+    const text = `${notification.title} ${notification.message}`.toLowerCase();
+    return view === 'accepted' ? /nakapili|accepted|tinanggap/.test(text) : !/nakapili|accepted|tinanggap/.test(text);
+  });
   const myIncomingOffers = offers.filter(o => o.farmerEmail === user.email);
   const verifiedBuyers = registeredUsers.filter(buyer => hasApprovedBusinessCapability(buyer, 'buyer'));
   const visiblePostedServices = offeredServices.filter(service => {
@@ -720,34 +760,37 @@ export default function FarmerDashboard({
                   type="button"
                   role="tab"
                   aria-selected={requestView === 'posted'}
-                  onClick={() => setRequestView('posted')}
+                  onClick={() => { setRequestView('posted'); markRequestViewRead('posted'); }}
                   className={`flex min-h-12 items-center justify-center gap-2 rounded-xl border px-4 py-3 text-xs font-extrabold transition-all sm:text-sm ${requestView === 'posted' ? 'border-amber-400 bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20' : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-100 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-800'}`}
                 >
                   <IconFolderOpen size={18} stroke={2.2} aria-hidden="true" />
                   <span>{lang === 'en' ? 'Posted Requests' : 'Mga Na-post na Hiling'}</span>
                   <span className="rounded-full bg-black/10 px-2 py-0.5 text-[10px] tabular-nums dark:bg-white/10">{myServices.length}</span>
+                  <NotificationBadge count={requestViewUnread('posted').length} />
                 </button>
                 <button
                   type="button"
                   role="tab"
                   aria-selected={requestView === 'accepted'}
-                  onClick={() => setRequestView('accepted')}
+                  onClick={() => { setRequestView('accepted'); markRequestViewRead('accepted'); }}
                   className={`flex min-h-12 items-center justify-center gap-2 rounded-xl border px-4 py-3 text-xs font-extrabold transition-all sm:text-sm ${requestView === 'accepted' ? 'border-emerald-600 bg-emerald-600 text-white shadow-md shadow-emerald-600/20' : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-100 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-800'}`}
                 >
                   <IconCircleCheck size={18} stroke={2.2} aria-hidden="true" />
                   <span>{lang === 'en' ? 'Accepted Services' : 'Mga Tinanggap na Serbisyo'}</span>
                   <span className="rounded-full bg-black/10 px-2 py-0.5 text-[10px] tabular-nums dark:bg-white/10">{myServices.filter(service => service.status === 'matched').length}</span>
+                  <NotificationBadge count={requestViewUnread('accepted').length} />
                 </button>
                 <button
                   type="button"
                   role="tab"
                   aria-selected={requestView === 'completed'}
-                  onClick={() => setRequestView('completed')}
+                  onClick={() => { setRequestView('completed'); markRequestViewRead('completed'); }}
                   className={`flex min-h-12 items-center justify-center gap-2 rounded-xl border px-4 py-3 text-xs font-extrabold transition-all sm:text-sm ${requestView === 'completed' ? 'border-blue-600 bg-blue-600 text-white shadow-md shadow-blue-600/20' : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-100 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-800'}`}
                 >
                   <IconCheck size={18} stroke={2.2} aria-hidden="true" />
                   <span>{lang === 'en' ? 'Completed' : 'Natapos'}</span>
                   <span className="rounded-full bg-black/10 px-2 py-0.5 text-[10px] tabular-nums dark:bg-white/10">{myServices.filter(service => service.status === 'completed').length}</span>
+                  <NotificationBadge count={requestViewUnread('completed').length} />
                 </button>
               </div>
 
@@ -763,6 +806,7 @@ export default function FarmerDashboard({
                         ? (lang === 'en' ? 'No completed services yet' : 'Wala pang natapos na serbisyo')
                       : (lang === 'en' ? 'No service requests yet' : 'Wala pang hiling na serbisyo')}
                   </h2>
+                  {requestViewUnread(requestView).length > 0 && <p className="mx-auto mt-2 flex w-fit items-center gap-2 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 dark:bg-red-950/30 dark:text-red-300"><NotificationBadge count={requestViewUnread(requestView).length} />{lang === 'en' ? 'New update(s) for this section' : 'May bagong update sa bahaging ito'}</p>}
                   <p className="mt-1 max-w-md text-sm text-slate-600 dark:text-slate-400">
                     {requestView === 'accepted'
                       ? (lang === 'en'
@@ -1225,7 +1269,7 @@ export default function FarmerDashboard({
                               {lang === 'en' ? 'No verified providers found' : 'Walang nakitang beripikadong provider'}
                             </p>
                             <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
-                              {lang === 'en' ? 'Approved providers for this service will appear in this directory.' : 'Lalabas dito ang mga aprubadong provider para sa serbisyong ito.'}
+                              {lang === 'en' ? 'Providers offering this service will appear in this directory.' : 'Lalabas dito ang mga provider na nag-aalok ng serbisyong ito.'}
                             </p>
                           </div>
                         );
@@ -1479,6 +1523,7 @@ export default function FarmerDashboard({
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
                     {lang === 'en' ? 'Click "Post Harvest" to list your palay with photos and moisture level for buyers!' : 'Pindutin ang "Mag-Post ng Ani" upang mag-post ng palay kasama ang larawan at moisture level para sa mga buyer!'}
                   </p>
+                  {offerViewUnread(offerView).length > 0 && <p className="mx-auto mt-3 flex w-fit items-center gap-2 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 dark:bg-red-950/30 dark:text-red-300"><NotificationBadge count={offerViewUnread(offerView).length} />{lang === 'en' ? 'New offer update for this section' : 'May bagong update ng alok sa bahaging ito'}</p>}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1579,159 +1624,7 @@ export default function FarmerDashboard({
                 </div>
               )}
             </div>
-          ) : activeTab === 'directory' ? null : false ? (
-            <div className="space-y-6">
-              {/* Category sub-tabs without buyer */}
-              <div className="flex flex-wrap gap-2 bg-slate-100 dark:bg-slate-900/50 p-1.5 rounded-2xl w-fit border border-slate-200/50 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setServiceCategory('all')}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    serviceCategory === 'all'
-                      ? 'bg-white dark:bg-slate-900 text-slate-950 dark:text-white shadow-sm'
-                      : 'text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white'
-                  }`}
-                ><span className="inline-flex items-center gap-1.5 align-middle mr-1.5"><IconWorld size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>{lang === 'en' ? 'All Requests' : 'Lahat ng Hiling'} ({myServices.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setServiceCategory('transport')}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    serviceCategory === 'transport'
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white'
-                  }`}
-                ><span className="inline-flex items-center gap-1.5 align-middle"><IconTruck size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>{lang === 'en' ? 'Transport' : 'Transportasyon'} ({myServices.filter(s => s.type === 'transport').length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setServiceCategory('storage')}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    serviceCategory === 'storage'
-                      ? 'bg-purple-600 text-white shadow-sm'
-                      : 'text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white'
-                  }`}
-                ><span className="inline-flex items-center gap-1.5 align-middle"><IconPackage size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>{lang === 'en' ? 'Cold Storage' : 'Cold Storage'} ({myServices.filter(s => s.type === 'storage').length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setServiceCategory('drying')}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    serviceCategory === 'drying'
-                      ? 'bg-amber-600 text-white shadow-sm'
-                      : 'text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white'
-                  }`}
-                ><span className="inline-flex items-center gap-1.5 align-middle"><IconWind size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>{lang === 'en' ? 'Drying' : 'Patuyuan'} ({myServices.filter(s => s.type === 'drying').length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setServiceCategory('milling')}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    serviceCategory === 'milling'
-                      ? 'bg-emerald-600 text-white shadow-sm'
-                      : 'text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white'
-                  }`}
-                ><span className="inline-flex items-center gap-1.5 align-middle"><IconWheat size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>{lang === 'en' ? 'Milling' : 'Gilingan'} ({myServices.filter(s => s.type === 'milling').length})
-                </button>
-              </div>
-
-              <div className="mb-4 flex gap-2 overflow-x-auto rounded-xl border border-slate-200 bg-white p-2 dark:border-slate-800 dark:bg-slate-900" aria-label={lang === 'en' ? 'Request status' : 'Status ng request'}>
-                {([
-                  ['all', lang === 'en' ? 'All' : 'Lahat'],
-                  ['pending', lang === 'en' ? 'Open' : 'Bukas'],
-                  ['matched', lang === 'en' ? 'Active' : 'Aktibo'],
-                  ['completed', lang === 'en' ? 'Completed' : 'Tapos'],
-                  ['expired', lang === 'en' ? 'Expired' : 'Nag-expire'],
-                ] as const).map(([status, label]) => (
-                  <button key={status} type="button" onClick={() => setServiceStatus(status)} className={`min-h-10 whitespace-nowrap rounded-lg px-3 text-xs font-bold transition-colors ${serviceStatus === status ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'}`}>
-                    {label} ({status === 'all' ? myServices.length : myServices.filter(service => service.status === status).length})
-                  </button>
-                ))}
-              </div>
-
-              {/* List */}
-              {filteredMyServices.length === 0 ? (
-                <div className="bg-white dark:bg-slate-900 text-center py-16 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm transition-all duration-300">
-                  <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
-                    {serviceCategory === 'transport' ? <span className="inline-flex items-center gap-1.5 align-middle"><IconTruck size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span> : serviceCategory === 'storage' ? <span className="inline-flex items-center gap-1.5 align-middle"><IconPackage size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span> : serviceCategory === 'drying' ? <span className="inline-flex items-center gap-1.5 align-middle"><IconWind size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span> : serviceCategory === 'milling' ? <span className="inline-flex items-center gap-1.5 align-middle"><IconWheat size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span> : <span className="inline-flex items-center gap-1.5 align-middle"><IconFolderOpen size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>}
-                  </div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                    {serviceCategory === 'all' 
-                      ? t('empty_services') 
-                      : lang === 'en' ? 'No Request Found' : 'Walang nahanap na hiling'}
-                  </h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
-                    {lang === 'en' ? 'Use the "Request Service" button to order transport, drying, or cold storage.' : 'Gamitin ang "Humiling ng Serbisyo" button para mag-order ng truck, patuyuan, o cold storage.'}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {filteredMyServices.map((s) => (
-                    <div
-                      key={s.id}
-                      className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-300"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${
-                          s.type === 'transport' ? 'bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400' :
-                          s.type === 'storage' ? 'bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-400' :
-                          s.type === 'drying' ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400' :
-                          'bg-emerald-50 dark:bg-emerald-100/10 text-emerald-700 dark:text-emerald-400'
-                        }`}>
-                          {s.type === 'transport' ? <span className="inline-flex items-center gap-1.5 align-middle"><IconTruck size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span> : s.type === 'storage' ? <span className="inline-flex items-center gap-1.5 align-middle"><IconPackage size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span> : s.type === 'drying' ? <span className="inline-flex items-center gap-1.5 align-middle"><IconWind size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span> : <span className="inline-flex items-center gap-1.5 align-middle"><IconWheat size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="font-bold text-slate-900 dark:text-white capitalize font-display">
-                              {s.type === 'transport' 
-                                ? (lang === 'en' ? <span className="inline-flex items-center gap-1.5 align-middle"><IconTruck size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Transport Request"}</span> : <span className="inline-flex items-center gap-1.5 align-middle"><IconTruck size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Hiling sa Transportasyon"}</span>) 
-                                : s.type === 'storage' 
-                                  ? (lang === 'en' ? <span className="inline-flex items-center gap-1.5 align-middle"><IconPackage size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Cold Storage Request"}</span> : <span className="inline-flex items-center gap-1.5 align-middle"><IconPackage size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Hiling sa Cold Storage"}</span>) 
-                                  : s.type === 'drying'
-                                    ? (lang === 'en' ? <span className="inline-flex items-center gap-1.5 align-middle"><IconWind size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Drying Queue Request"}</span> : <span className="inline-flex items-center gap-1.5 align-middle"><IconWind size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Hiling sa Patuyuan"}</span>)
-                                    : (lang === 'en' ? <span className="inline-flex items-center gap-1.5 align-middle"><IconWheat size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Milling Service Request"}</span> : <span className="inline-flex items-center gap-1.5 align-middle"><IconWheat size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Hiling sa Gilingan"}</span>)}
-                            </h4>
-                            <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${
-                              s.status === 'pending' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400' :
-                              s.status === 'matched' ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400' :
-                              s.status === 'rejected' ? 'bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400' :
-                              s.status === 'expired' ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' :
-                              'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400'
-                            }`}>
-                              {s.status === 'pending' ? (lang === 'en' ? 'Awaiting Operator' : 'Naghihintay') :
-                               s.status === 'matched' ? (lang === 'en' ? 'Matched' : 'Naitugma na') :
-                               s.status === 'rejected' ? (lang === 'en' ? 'Declined' : 'Tinanggihan') :
-                               s.status === 'expired' ? (lang === 'en' ? 'Expired' : 'Nag-expire') :
-                               (lang === 'en' ? 'Completed' : 'Nakumpleto')}
-                            </span>
-                          </div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                            {lang === 'en' ? 'For crop:' : 'Para sa ani na:'} <strong className="text-slate-700 dark:text-slate-200">{s.cropType} ({s.quantity} {s.unit})</strong> • {s.location}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="text-left sm:text-right">
-                        <span className="text-xs text-slate-500 dark:text-slate-400 block">{lang === 'en' ? 'Request Date' : 'Petsa ng Hiling'}</span>
-                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">{s.createdAt}</span>
-                        {s.operatorName && (
-                          <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold block mt-1">
-                            Operator: {s.operatorName}
-                          </span>
-                        )}
-                        {s.status === 'expired' && (
-                          <div className="mt-3 flex gap-2 sm:justify-end">
-                            <button type="button" onClick={() => onRepostServiceRequest(s.id)} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-500">{lang === 'en' ? 'Repost Request' : 'I-post Muli'}</button>
-                            <button type="button" onClick={() => askConfirmation(lang === 'en' ? 'Permanently delete this expired request?' : 'Permanenteng burahin ang expired request na ito?', () => { void onDeleteServiceRequest(s.id); }, { title: lang === 'en' ? 'Delete expired request' : 'Burahin ang expired request', tone: 'danger', confirmLabel: lang === 'en' ? 'Delete Permanently' : 'Burahin' })} className="rounded-lg border border-red-300 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30">{lang === 'en' ? 'Delete Permanently' : 'Burahin'}</button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : activeTab === 'interests' ? (
+          ) : activeTab === 'directory' ? null : activeTab === 'interests' ? (
             /* RANKING SYSTEM FOR BUYER OFFERS */
             <div className="space-y-6">
               <div className="overflow-hidden rounded-3xl border border-emerald-800/60 bg-emerald-950 p-5 text-white shadow-xl shadow-emerald-950/15 sm:p-6">
@@ -1774,21 +1667,23 @@ export default function FarmerDashboard({
                   type="button"
                   role="tab"
                   aria-selected={offerView === 'bids'}
-                  onClick={() => setOfferView('bids')}
+                  onClick={() => { setOfferView('bids'); offerViewUnread('bids').forEach(notification => onMarkNotificationRead(notification.id)); }}
                   className={`flex min-h-12 items-center justify-center gap-2 rounded-xl border px-4 py-3 text-xs font-extrabold transition-all sm:text-sm ${offerView === 'bids' ? 'border-amber-400 bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20' : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-100 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-800'}`}
                 >
                   <IconTrophy size={18} stroke={2.2} aria-hidden="true" />
                   {lang === 'en' ? 'Bid Rankings' : 'Ranggo ng mga Bid'}
+                  <NotificationBadge count={offerViewUnread('bids').length} />
                 </button>
                 <button
                   type="button"
                   role="tab"
                   aria-selected={offerView === 'accepted'}
-                  onClick={() => setOfferView('accepted')}
+                  onClick={() => { setOfferView('accepted'); offerViewUnread('accepted').forEach(notification => onMarkNotificationRead(notification.id)); }}
                   className={`flex min-h-12 items-center justify-center gap-2 rounded-xl border px-4 py-3 text-xs font-extrabold transition-all sm:text-sm ${offerView === 'accepted' ? 'border-emerald-600 bg-emerald-600 text-white shadow-md shadow-emerald-600/20' : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-100 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-800'}`}
                 >
                   <IconCircleCheck size={18} stroke={2.2} aria-hidden="true" />
                   {lang === 'en' ? 'Accepted Deal' : 'Tinanggap na Deal'}
+                  <NotificationBadge count={offerViewUnread('accepted').length} />
                 </button>
               </div>
               {myIncomingOffers.length === 0 ? (
@@ -1816,9 +1711,12 @@ export default function FarmerDashboard({
                       {displayedOffers.length === 0 ? (
                         <div className="rounded-2xl border border-slate-200 bg-white px-5 py-12 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
                           <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">{offerView === 'accepted' ? (lang === 'en' ? 'No accepted deal yet' : 'Wala pang tinanggap na deal') : (lang === 'en' ? 'No bids available' : 'Walang available na bid')}</h3>
+                          {offerViewUnread(offerView).length > 0 && <p className="mx-auto mt-2 flex w-fit items-center gap-2 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 dark:bg-red-950/30 dark:text-red-300"><NotificationBadge count={offerViewUnread(offerView).length} />{lang === 'en' ? 'New offer update for this section' : 'May bagong update ng alok sa bahaging ito'}</p>}
                         </div>
                       ) : <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
                         {displayedOffers.map((o) => {
+                          const buyerContact = registeredUsers.find(account => account.email?.toLowerCase() === o.buyerEmail?.toLowerCase());
+                          const buyerContactNumbers = [...new Set([o.buyerPhone, ...(buyerContact ? getContactNumbers(buyerContact) : [])].flatMap(number => number?.trim() ? [number.trim()] : []))];
                           const rankIndex = rankedOffers.findIndex((offer) => offer.id === o.id);
                           const isAccepted = o.status === 'accepted';
                           const isTopRank = !isAccepted && rankIndex === 0;
@@ -1940,26 +1838,33 @@ export default function FarmerDashboard({
                                 ) : o.status === 'accepted' ? (
                                   <div className="space-y-3 bg-emerald-50 dark:bg-emerald-950/30 p-4 rounded-xl border-2 border-emerald-300 dark:border-emerald-700">
                                     <div className="p-2 bg-emerald-600 text-white rounded-lg text-center font-bold text-xs"><span className="inline-flex items-center gap-1.5 align-middle"><IconConfetti size={16} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Congratulations! This offer is accepted. Continue tracking the transaction in KAWING."}</span></div>
-                                    <div className="rounded-xl border border-emerald-200 bg-white p-4 dark:border-emerald-800 dark:bg-slate-900">
+                                    <div className="rounded-xl border border-emerald-300 bg-emerald-50 p-4 dark:border-emerald-700 dark:bg-emerald-950/30">
                                       <div className="flex items-center justify-between gap-3">
                                         <div>
                                           <p className="text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">{lang === 'en' ? 'Buyer contact' : 'Kontak ng buyer'}</p>
                                           <p className="mt-1 text-sm font-extrabold text-slate-900 dark:text-white">{o.buyerCompanyName || o.buyerName}</p>
                                         </div>
-                                        <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[9px] font-black uppercase text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">Verified</span>
+                                        <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[9px] font-black uppercase text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">{lang === 'en' ? 'Verified' : 'Beripikado'}</span>
                                       </div>
-                                      <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-emerald-200 pt-3 dark:border-emerald-800">
-                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-                                          <Phone className="h-5 w-5" />
-                                        </div>
-                                        <div className="min-w-0">
-                                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Contact number' : 'Numero ng kontak'}</p>
-                                          <p className="text-xl font-black tracking-wide text-slate-900 dark:text-white">{o.buyerPhone || (lang === 'en' ? 'No phone provided' : 'Walang numero')}</p>
-                                        </div>
-                                        <TransactionRating offerId={o.id} />
+                                      <div className="mt-3 space-y-3 border-t border-emerald-200 pt-3 dark:border-emerald-800">
+                                        {buyerContactNumbers.length > 0 ? buyerContactNumbers.map((number, index) => (
+                                          <div key={number} className="flex min-w-0 items-center gap-3">
+                                            <Phone className="h-5 w-5 shrink-0 text-emerald-700 dark:text-emerald-300" />
+                                            <div className="min-w-0">
+                                              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{index === 0 ? (lang === 'en' ? 'Contact number' : 'Numero ng kontak') : (lang === 'en' ? 'Additional contact' : 'Karagdagang numero')}</p>
+                                              <p className="break-all text-lg font-black tracking-wide text-slate-900 dark:text-white">{number}</p>
+                                            </div>
+                                          </div>
+                                        )) : <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">{lang === 'en' ? 'No phone provided' : 'Walang numero'}</p>}
+                                        {(buyerContact?.email || o.buyerEmail) && <div className="flex min-w-0 items-center gap-3 border-t border-emerald-200 pt-3 dark:border-emerald-800">
+                                          <Mail className="h-5 w-5 shrink-0 text-emerald-700 dark:text-emerald-300" />
+                                          <p className="break-all font-bold text-slate-800 dark:text-slate-100">{buyerContact?.email || o.buyerEmail}</p>
+                                        </div>}
                                       </div>
                                     </div>
-                                    <CoordinatedContactCard user={registeredUsers.find(account => account.email?.toLowerCase() === o.buyerEmail?.toLowerCase())} email={o.buyerEmail} primaryNumber={o.buyerPhone} title={lang === 'en' ? 'Buyer Coordination Contact' : 'Contact ng Buyer'} />
+                                    <div className="rounded-xl border border-emerald-200 bg-white p-4 dark:border-emerald-800 dark:bg-slate-900">
+                                      <TransactionRating offerId={o.id} />
+                                    </div>
                                   </div>
                                 ) : (
                                   <div className="text-xs text-slate-400 dark:text-slate-500 italic text-center py-1"><span className="inline-flex items-center gap-1.5 align-middle mr-1.5"><IconCircleX size={16} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>{lang === 'en' ? 'Other offer was selected for this harvest.' : 'Ibang offer ang napili para sa ani na ito.'}
@@ -1994,7 +1899,7 @@ export default function FarmerDashboard({
           >
             <div className="flex items-start justify-between gap-4 border-b border-slate-200 dark:border-slate-800 bg-emerald-900 px-5 py-4 sm:px-7">
               <div>
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-emerald-200">My Harvest Post</p>
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-emerald-200">{lang === 'en' ? 'My Harvest Post' : 'Aking Post ng Ani'}</p>
                 <h2 className="mt-1 text-xl font-black text-white sm:text-2xl">{selectedHarvestPost.cropType}</h2>
                 <p className="mt-1 text-xs text-emerald-100">View the complete listing or update its information.</p>
               </div>
@@ -2020,8 +1925,8 @@ export default function FarmerDashboard({
                   </label>
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Selling Method
                     <select value={harvestEditDraft.sellingMethod || 'fixed_price'} onChange={e => setHarvestEditDraft({ ...harvestEditDraft, sellingMethod: e.target.value as Harvest['sellingMethod'] })} className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-emerald-500">
-                      <option value="fixed_price">Fixed Asking Price</option>
-                      {!harvestEditDraft.targetBuyerEmail && <option value="bidding">Open for Bidding</option>}
+                      <option value="fixed_price">{lang === 'en' ? 'Fixed Asking Price' : 'Nakatakdang Presyo'}</option>
+                      {!harvestEditDraft.targetBuyerEmail && <option value="bidding">{lang === 'en' ? 'Open for Bidding' : 'Bukas para sa Tawaran'}</option>}
                     </select>
                   </label>
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Moisture Content (PalaySense)
@@ -2031,7 +1936,7 @@ export default function FarmerDashboard({
                   </label>
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Urgency
                     <select value={harvestEditDraft.urgency} onChange={e => setHarvestEditDraft({ ...harvestEditDraft, urgency: e.target.value as Harvest['urgency'] })} className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-emerald-500">
-                      <option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option>
+                      <option value="low">{lang === 'en' ? 'Low' : 'Mababa'}</option><option value="medium">{lang === 'en' ? 'Medium' : 'Katamtaman'}</option><option value="high">{lang === 'en' ? 'High' : 'Mataas'}</option>
                     </select>
                   </label>
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Pickup / Farm Location
@@ -2144,7 +2049,7 @@ export default function FarmerDashboard({
                       <option value="NSIC Rc160">NSIC Rc160</option>
                       <option value="Dinorado">Dinorado</option>
                       <option value="Jasmine">Jasmine</option>
-                      <option value="Others">Others</option>
+                      <option value="Others">{lang === 'en' ? 'Others' : 'Iba pa'}</option>
                     </select>
                   </div>
 
@@ -2426,7 +2331,7 @@ export default function FarmerDashboard({
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block">Preferred Time</label>
+                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block">{lang === 'en' ? 'Preferred Time' : 'Gustong Oras'}</label>
                     <select
                       value={reqPrefTime}
                       onChange={(e) => setReqPrefTime(e.target.value)}
@@ -2551,7 +2456,7 @@ export default function FarmerDashboard({
                       <option value="NSIC Rc160">NSIC Rc160</option>
                       <option value="Dinorado">Dinorado</option>
                       <option value="Jasmine">Jasmine</option>
-                      <option value="Others">Others</option>
+                      <option value="Others">{lang === 'en' ? 'Others' : 'Iba pa'}</option>
                     </select>
                   </div>
 
@@ -2632,7 +2537,7 @@ export default function FarmerDashboard({
                 {/* Description stays directly below the harvest fields. */}
                 <div className="post-harvest-description space-y-1.5">
                   <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center justify-between">
-                    <span>Description</span>
+                    <span>{lang === 'en' ? 'Description' : 'Paglalarawan'}</span>
                     <span className="text-[10px] text-slate-400 font-normal lowercase">({lang === 'en' ? 'optional' : 'opsyonal'})</span>
                   </label>
                   <textarea
@@ -2800,17 +2705,17 @@ export default function FarmerDashboard({
                     <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Review the information before publishing.</p>
                   </div>
                   <div className="space-y-1.5 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs dark:border-slate-700 dark:bg-slate-950/60">
-                    {targetHarvestBuyer && <div className="flex justify-between gap-4"><span className="text-slate-500">Buyer</span><strong className="text-right text-slate-900 dark:text-white">{targetHarvestBuyer.businessName || targetHarvestBuyer.name}</strong></div>}
-                    <div className="flex justify-between gap-4"><span className="text-slate-500">Rice variety</span><strong className="text-right text-slate-900 dark:text-white">{postRiceVariety}</strong></div>
-                    <div className="flex justify-between gap-4"><span className="text-slate-500">Harvest date</span><strong className="text-right text-slate-900 dark:text-white">{postHarvestDate}</strong></div>
-                    <div className="flex justify-between gap-4"><span className="text-slate-500">Quantity</span><strong className="text-right text-slate-900 dark:text-white">{postWeightKg.toLocaleString()} kg</strong></div>
-                    <div className="flex justify-between gap-4"><span className="text-slate-500">Packaging</span><strong className="text-right text-slate-900 dark:text-white">{Number(postContainerQuantity).toLocaleString()} {postContainerType === 'sacks' ? 'sacks' : 'plastic bags'}</strong></div>
-                    <div className="flex justify-between gap-4"><span className="text-slate-500">Moisture</span><strong className="text-right text-blue-600">{postMoisture}%</strong></div>
-                    {!targetHarvestBuyer && <div className="flex justify-between gap-4"><span className="text-slate-500">Selling method</span><strong className="text-right text-slate-900 dark:text-white">{postSellingMethod === 'fixed_price' ? 'Fixed asking price' : 'Open for bidding'}</strong></div>}
-                    <div className="flex justify-between gap-4"><span className="text-slate-500">Price</span><strong className="text-right text-emerald-600">₱{Number(postTargetPrice).toLocaleString(undefined, { minimumFractionDigits: 2 })}/kg</strong></div>
-                    <div className="flex justify-between gap-4 border-t border-slate-200 pt-1.5 dark:border-slate-700"><span className="font-bold text-slate-700 dark:text-slate-300">Total</span><strong className="text-right text-base text-emerald-600">₱{postTotalPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></div>
-                    <div className="flex justify-between gap-4"><span className="text-slate-500">Location</span><strong className="max-w-[65%] text-right text-slate-900 dark:text-white">{postLocation.trim() || user.address || 'Barangay San Jose'}</strong></div>
-                    {postRemarks.trim() && <div className="border-t border-slate-200 pt-2 dark:border-slate-700"><span className="block text-slate-500">Notes</span><p className="mt-1 whitespace-pre-wrap font-medium text-slate-900 dark:text-white">{postRemarks}</p></div>}
+                    {targetHarvestBuyer && <div className="flex justify-between gap-4"><span className="text-slate-500">{lang === 'en' ? 'Buyer' : 'Buyer'}</span><strong className="text-right text-slate-900 dark:text-white">{targetHarvestBuyer.businessName || targetHarvestBuyer.name}</strong></div>}
+                    <div className="flex justify-between gap-4"><span className="text-slate-500">{lang === 'en' ? 'Rice variety' : 'Uri ng palay'}</span><strong className="text-right text-slate-900 dark:text-white">{postRiceVariety}</strong></div>
+                    <div className="flex justify-between gap-4"><span className="text-slate-500">{lang === 'en' ? 'Harvest date' : 'Petsa ng anihan'}</span><strong className="text-right text-slate-900 dark:text-white">{postHarvestDate}</strong></div>
+                    <div className="flex justify-between gap-4"><span className="text-slate-500">{lang === 'en' ? 'Quantity' : 'Dami'}</span><strong className="text-right text-slate-900 dark:text-white">{postWeightKg.toLocaleString()} kg</strong></div>
+                    <div className="flex justify-between gap-4"><span className="text-slate-500">{lang === 'en' ? 'Packaging' : 'Lalagyan'}</span><strong className="text-right text-slate-900 dark:text-white">{Number(postContainerQuantity).toLocaleString()} {postContainerType === 'sacks' ? (lang === 'en' ? 'sacks' : 'sako') : (lang === 'en' ? 'plastic bags' : 'plastic bag')}</strong></div>
+                    <div className="flex justify-between gap-4"><span className="text-slate-500">{lang === 'en' ? 'Moisture' : 'Halumigmig'}</span><strong className="text-right text-blue-600">{postMoisture}%</strong></div>
+                    {!targetHarvestBuyer && <div className="flex justify-between gap-4"><span className="text-slate-500">{lang === 'en' ? 'Selling method' : 'Paraan ng pagbebenta'}</span><strong className="text-right text-slate-900 dark:text-white">{postSellingMethod === 'fixed_price' ? (lang === 'en' ? 'Fixed asking price' : 'Nakatakdang presyo') : (lang === 'en' ? 'Open for bidding' : 'Bukas para sa tawaran')}</strong></div>}
+                    <div className="flex justify-between gap-4"><span className="text-slate-500">{lang === 'en' ? 'Price' : 'Presyo'}</span><strong className="text-right text-emerald-600">₱{Number(postTargetPrice).toLocaleString(undefined, { minimumFractionDigits: 2 })}/kg</strong></div>
+                    <div className="flex justify-between gap-4 border-t border-slate-200 pt-1.5 dark:border-slate-700"><span className="font-bold text-slate-700 dark:text-slate-300">{lang === 'en' ? 'Total' : 'Kabuuan'}</span><strong className="text-right text-base text-emerald-600">₱{postTotalPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></div>
+                    <div className="flex justify-between gap-4"><span className="text-slate-500">{lang === 'en' ? 'Location' : 'Lokasyon'}</span><strong className="max-w-[65%] text-right text-slate-900 dark:text-white">{postLocation.trim() || user.address || 'Barangay San Jose'}</strong></div>
+                    {postRemarks.trim() && <div className="border-t border-slate-200 pt-2 dark:border-slate-700"><span className="block text-slate-500">{lang === 'en' ? 'Notes' : 'Mga tala'}</span><p className="mt-1 whitespace-pre-wrap font-medium text-slate-900 dark:text-white">{postRemarks}</p></div>}
                   </div>
                   <div className="mt-4 flex gap-2.5">
                     <button type="button" onClick={() => setShowPostHarvestReview(false)} className="flex-1 rounded-xl border border-slate-300 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">{lang === 'en' ? 'Cancel' : 'Kanselahin'}</button>
@@ -2893,15 +2798,15 @@ export default function FarmerDashboard({
             <h2 className="text-xl font-black">{editingServiceRequest ? 'Confirm Request Changes' : 'Review Service Request'}</h2>
             <p className="mt-1 text-xs text-slate-400">{editingServiceRequest ? 'Confirm the updated details before saving.' : 'Confirm all details before this request is sent.'}</p>
             <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
-              <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><dt className="text-xs text-slate-400">Services</dt><dd className="font-bold capitalize">{reqServices.join(', ')}</dd></div>
-              <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><dt className="text-xs text-slate-400">Provider</dt><dd className="font-bold">{selectedServiceProvider?.businessName || selectedServiceProvider?.name || 'Any approved available provider'}</dd></div>
-              <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><dt className="text-xs text-slate-400">Harvest</dt><dd className="font-bold">Palay ({reqRiceVariety})</dd></div>
-              <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><dt className="text-xs text-slate-400">Quantity</dt><dd className="font-bold">{requestLoadKg.toLocaleString()} kg</dd></div>
+              <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><dt className="text-xs text-slate-400">{lang === 'en' ? 'Services' : 'Mga Serbisyo'}</dt><dd className="font-bold capitalize">{reqServices.join(', ')}</dd></div>
+              <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><dt className="text-xs text-slate-400">{lang === 'en' ? 'Provider' : 'Tagapagbigay ng Serbisyo'}</dt><dd className="font-bold">{selectedServiceProvider?.businessName || selectedServiceProvider?.name || (lang === 'en' ? 'Any approved available provider' : 'Sinumang aprubadong provider na available')}</dd></div>
+              <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><dt className="text-xs text-slate-400">{lang === 'en' ? 'Harvest' : 'Ani'}</dt><dd className="font-bold">{lang === 'en' ? 'Palay' : 'Palay'} ({reqRiceVariety})</dd></div>
+              <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><dt className="text-xs text-slate-400">{lang === 'en' ? 'Quantity' : 'Dami'}</dt><dd className="font-bold">{requestLoadKg.toLocaleString()} kg</dd></div>
               <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3 sm:col-span-2"><dt className="text-xs text-slate-400">Location / Route</dt><dd className="font-bold">{reqServices.includes('transport') ? `${reqPickupPlace}  to  ${reqDropPlace}` : (reqLocation || user.address)}</dd></div>
-              <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><dt className="text-xs text-slate-400">Schedule</dt><dd className="font-bold">{reqPrefDate || 'Earliest available'} {reqPrefTime}</dd></div>
-              <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><dt className="text-xs text-slate-400">Rate and contact</dt><dd className="font-bold">{selectedServiceProvider ? `${selectedServiceProvider.contactNumber || 'Contact shared after acceptance'} • Rate confirmed by provider` : 'Shown after provider accepts'}</dd></div>
+              <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><dt className="text-xs text-slate-400">{lang === 'en' ? 'Schedule' : 'Iskedyul'}</dt><dd className="font-bold">{reqPrefDate || (lang === 'en' ? 'Earliest available' : 'Pinakamaagang available')} {reqPrefTime}</dd></div>
+              <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><dt className="text-xs text-slate-400">{lang === 'en' ? 'Rate and contact' : 'Bayad at contact'}</dt><dd className="font-bold">{selectedServiceProvider ? `${selectedServiceProvider.contactNumber || (lang === 'en' ? 'Contact shared after acceptance' : 'Ibabahagi ang contact pagkatapos tanggapin')} • ${lang === 'en' ? 'Rate confirmed by provider' : 'Kukumpirmahin ng provider ang bayad'}` : (lang === 'en' ? 'Shown after provider accepts' : 'Lalabas kapag may provider nang tumanggap')}</dd></div>
             </dl>
-            <div className="mt-6 flex gap-3"><button type="button" onClick={() => setShowRequestServiceReview(false)} className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 py-3 text-sm font-bold">Back and Edit</button><button type="button" onClick={() => { void confirmRequestService(); }} className="flex-1 rounded-xl bg-emerald-600 py-3 text-sm font-black">{editingServiceRequest ? 'Save Changes' : 'Submit Request'}</button></div>
+            <div className="mt-6 flex gap-3"><button type="button" onClick={() => setShowRequestServiceReview(false)} className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 py-3 text-sm font-bold">{lang === 'en' ? 'Back and Edit' : 'Bumalik at I-edit'}</button><button type="button" onClick={() => { void confirmRequestService(); }} className="flex-1 rounded-xl bg-emerald-600 py-3 text-sm font-black">{editingServiceRequest ? (lang === 'en' ? 'Save Changes' : 'I-save ang Pagbabago') : (lang === 'en' ? 'Submit Request' : 'Ipadala ang Kahilingan')}</button></div>
           </motion.div>
         </div>
       )}
@@ -2916,7 +2821,7 @@ export default function FarmerDashboard({
           >
             <div className="flex items-start justify-between bg-emerald-700 p-6 text-white">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-100">Verified Harvest Buyer</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-100">{lang === 'en' ? 'Verified Harvest Buyer' : 'Beripikadong Buyer ng Ani'}</p>
                 <h2 className="mt-1 text-xl font-extrabold">{selectedBuyerModal.businessName || selectedBuyerModal.name}</h2>
                 {selectedBuyerModal.businessName && <p className="text-xs text-white/80">{selectedBuyerModal.name}</p>}
               </div>
@@ -2928,11 +2833,11 @@ export default function FarmerDashboard({
             <div className="space-y-4 p-6 text-sm text-slate-800 dark:text-slate-200">
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-2xl bg-slate-100 dark:bg-slate-800 p-4">
-                  <p className="text-[10px] font-bold uppercase text-slate-400">Rating</p>
+                  <p className="text-[10px] font-bold uppercase text-slate-400">{lang === 'en' ? 'Rating' : 'Rating'}</p>
                   <p className="mt-1 flex items-center gap-1 font-extrabold text-amber-400"><Star className="h-4 w-4 fill-current" /><RatingSummary email={selectedBuyerModal.email} /></p>
                 </div>
                 <div className="rounded-2xl bg-slate-100 dark:bg-slate-800 p-4">
-                  <p className="text-[10px] font-bold uppercase text-slate-400">Status</p>
+                  <p className="text-[10px] font-bold uppercase text-slate-400">{lang === 'en' ? 'Status' : 'Katayuan'}</p>
                   <p className="mt-1 flex items-center gap-1 font-extrabold text-emerald-400"><ShieldCheck className="h-4 w-4" /> Verified</p>
                 </div>
               </div>

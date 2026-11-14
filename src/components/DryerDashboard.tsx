@@ -209,7 +209,7 @@ export default function DryerDashboard({
                           <Percent className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                           <div>
                             <span className="text-[9px] text-slate-400 dark:text-slate-500 block font-semibold uppercase">{t('drying_rate')}</span>
-                            <span className="text-xs font-bold text-slate-800 dark:text-white">Active</span>
+                            <span className="text-xs font-bold text-slate-800 dark:text-white">{lang === 'en' ? 'Active' : 'Aktibo'}</span>
                           </div>
                         </div>
                       </div>

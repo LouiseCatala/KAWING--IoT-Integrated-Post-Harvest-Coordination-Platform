@@ -2,30 +2,12 @@ CREATE DATABASE IF NOT EXISTS kawing CHARACTER SET utf8mb4 COLLATE utf8mb4_unico
 USE kawing;
 
 CREATE TABLE IF NOT EXISTS users (
-  email VARCHAR(191) PRIMARY KEY, user_id VARCHAR(32) NULL UNIQUE, name VARCHAR(191) NOT NULL, password_hash VARCHAR(255) NULL, role VARCHAR(32) NOT NULL,
+  email VARCHAR(191) PRIMARY KEY, name VARCHAR(191) NOT NULL, password_hash VARCHAR(255) NULL, role VARCHAR(32) NOT NULL,
   is_approved BOOLEAN NOT NULL DEFAULT FALSE, data JSON NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_users_role_approved (role, is_approved)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS business_capabilities (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  user_id VARCHAR(32) NOT NULL,
-  capability ENUM('buyer','loan_provider','transport','storage','drying','milling') NOT NULL,
-  enabled BOOLEAN NOT NULL DEFAULT TRUE,
-  approval_status ENUM('inactive','pending','approved','rejected','suspended') NOT NULL DEFAULT 'pending',
-  is_available BOOLEAN NOT NULL DEFAULT FALSE,
-  capacity VARCHAR(191) NULL,
-  rate_info VARCHAR(255) NULL,
-  location_coverage VARCHAR(255) NULL,
-  details_json JSON NULL,
-  approved_by VARCHAR(32) NULL,
-  approved_at DATETIME NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  UNIQUE KEY uq_business_capability (user_id, capability),
-  INDEX idx_capability_status (capability, approval_status, enabled)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Create the first Administrator through a private deployment procedure.
 -- No default Administrator identity or password is embedded in this schema.
@@ -65,20 +47,7 @@ CREATE TABLE IF NOT EXISTS notifications (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_notifications_user_read (user_email, is_read)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-CREATE TABLE IF NOT EXISTS iot_devices (
-  device_id VARCHAR(100) PRIMARY KEY, gateway_id VARCHAR(100), device_name VARCHAR(191),
-  is_active BOOLEAN NOT NULL DEFAULT TRUE, last_seen_at DATETIME,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-CREATE TABLE IF NOT EXISTS moisture_readings (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, harvest_id VARCHAR(64), batch_id VARCHAR(100) NOT NULL,
-  farmer_email VARCHAR(191), farmer_name VARCHAR(191), raw_value DECIMAL(12,4) NULL, moisture_percentage DECIMAL(5,2) NOT NULL,
-  quality_classification VARCHAR(100) NOT NULL, device_id VARCHAR(100) NOT NULL, gateway_id VARCHAR(100),
-  recorded_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_moisture_harvest_time (harvest_id, recorded_at), INDEX idx_moisture_batch_time (batch_id, recorded_at),
-  INDEX idx_moisture_device (device_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
+-- PalaySense readings are temporary inputs; harvests retain the submitted moisture value.
 CREATE TABLE IF NOT EXISTS system_settings (
   setting_key VARCHAR(100) PRIMARY KEY,
   setting_value JSON NOT NULL,

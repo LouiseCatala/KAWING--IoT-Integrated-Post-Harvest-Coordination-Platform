@@ -15,17 +15,21 @@ import {
   ExternalLink,
   Info
 } from 'lucide-react';
-import { Offer } from '../../types';
+import { Offer, ServiceRequest, UserAccount } from '../../types';
 
 interface TransactionsTabProps {
   lang: 'en' | 'tl';
   offersList: Offer[];
+  serviceRequests: ServiceRequest[];
+  registeredUsers: UserAccount[];
   onViewDoc?: (name: string, type: string, data: string) => void;
 }
 
 export default function TransactionsTab({ 
   lang, 
   offersList = [], 
+  serviceRequests = [],
+  registeredUsers = [],
   onViewDoc 
 }: TransactionsTabProps) {
   const [activeSubTab, setActiveSubTab] = useState<'logistics' | 'buyer_interest'>('logistics');
@@ -34,93 +38,23 @@ export default function TransactionsTab({
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  // Real-looking simulated logistics matches with contacts instead of money/escrow
-  const [connections, setConnections] = useState([
-    { 
-      id: 'MCH-8219', 
-      farmer: 'Mang Juan Dela Cruz', 
-      farmerPhone: '0917-555-0192', 
-      provider: 'Bayanihan Logistics', 
-      providerPhone: '0918-333-4921', 
-      crop: 'Rice (Palay)', 
-      qty: '120 sacks', 
-      status: 'In Progress', 
-      date: '2026-07-11' 
-    },
-    { 
-      id: 'MCH-9041', 
-      farmer: 'Tatay Pedring Ramos', 
-      farmerPhone: '0919-444-2391', 
-      provider: 'Central Luzon Dryer', 
-      providerPhone: '0922-888-1122', 
-      crop: 'Palay (Wet - Basa)', 
-      qty: '80 sacks', 
-      status: 'Completed', 
-      date: '2026-07-10' 
-    },
-    { 
-      id: 'MCH-4831', 
-      farmer: 'Mang Juan Dela Cruz', 
-      farmerPhone: '0917-555-0192', 
-      provider: 'Sariaya Cold Storage', 
-      providerPhone: '0939-777-8833', 
-      crop: 'Palay (Dry - Tuyo)', 
-      qty: '2,500 kg', 
-      status: 'In Progress', 
-      date: '2026-07-09' 
-    },
-    { 
-      id: 'MCH-1055', 
-      farmer: 'Aling Maria Santos', 
-      farmerPhone: '0915-222-3103', 
-      provider: 'Bayanihan Logistics', 
-      providerPhone: '0918-333-4921', 
-      crop: 'Palay (Premium - RC 160)', 
-      qty: '1,500 kg', 
-      status: 'Completed', 
-      date: '2026-07-08' 
-    },
-    { 
-      id: 'MCH-7369', 
-      farmer: 'Tatay Pedring Ramos', 
-      farmerPhone: '0919-444-2391', 
-      provider: 'Sariaya Cold Storage', 
-      providerPhone: '0939-777-8833', 
-      crop: 'Palay (Premium - RC 218)', 
-      qty: '200 sacks', 
-      status: 'In Progress', 
-      date: '2026-07-07' 
-    },
-    { 
-      id: 'MCH-2190', 
-      farmer: 'Aling Maria Santos', 
-      farmerPhone: '0915-222-3103', 
-      provider: 'Central Luzon Dryer', 
-      providerPhone: '0922-888-1122', 
-      crop: 'Palay (Regular - Basa)', 
-      qty: '120 sacks', 
-      status: 'Completed', 
-      date: '2026-07-05' 
-    }
-  ]);
-
-  // Success alert state for visual feedback
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
-
-  const triggerSuccess = (msg: string) => {
-    setSuccessMsg(msg);
-    setTimeout(() => setSuccessMsg(null), 3000);
-  };
-
-  const handleToggleStatus = (id: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'In Progress' ? 'Completed' : 'In Progress';
-    setConnections(prev => prev.map(c => c.id === id ? { ...c, status: newStatus } : c));
-    triggerSuccess(
-      lang === 'en' 
-        ? `Updated matching connection ${id} status to ${newStatus}.` 
-        : `Na-update ang koneksyon ng matching ${id} bilang ${newStatus === 'Completed' ? 'Tapos na' : 'Sinasagawa'}.`
-    );
-  };
+  const connections = serviceRequests
+    .filter(request => request.operatorEmail && ['matched', 'completed'].includes(request.status))
+    .map(request => {
+      const farmer = registeredUsers.find(account => account.email?.toLowerCase() === request.farmerEmail.toLowerCase());
+      const provider = registeredUsers.find(account => account.email?.toLowerCase() === request.operatorEmail?.toLowerCase());
+      return {
+        id: request.id,
+        farmer: request.farmerName || farmer?.name || request.farmerEmail,
+        farmerPhone: request.farmerPhone || farmer?.contactNumber || '',
+        provider: request.operatorName || provider?.businessName || provider?.name || request.operatorEmail || '',
+        providerPhone: provider?.contactNumber || '',
+        crop: request.cropType || request.type,
+        qty: `${request.quantity} ${request.unit}`,
+        status: request.status === 'completed' ? 'Completed' : 'In Progress',
+        date: request.acceptedAt || request.createdAt,
+      };
+    });
 
   // 1. Filtering for Logistics Matching tab
   const filteredConnections = connections.filter(c => {
@@ -244,14 +178,6 @@ export default function TransactionsTab({
         </button>
       </div>
 
-      {/* Success notification alert */}
-      {successMsg && (
-        <div className="bg-emerald-50 border border-emerald-200 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-400 p-4 rounded-xl text-xs flex items-center gap-3">
-          <CheckCircle className="w-5 h-5 shrink-0 animate-bounce" />
-          <span className="font-bold">{successMsg}</span>
-        </div>
-      )}
-
       {/* Filter Row */}
       <div className="flex flex-wrap items-center gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-150 dark:border-slate-800 shadow-sm text-xs">
         <div className="flex items-center gap-2 text-slate-400 font-bold">
@@ -301,14 +227,13 @@ export default function TransactionsTab({
                   <th className="p-4">{lang === 'en' ? 'Produce / Service' : 'Paninda o Serbisyo'}</th>
                   <th className="p-4">{lang === 'en' ? 'Date Merged' : 'Petsa ng Pagtutugma'}</th>
                   <th className="p-4">{lang === 'en' ? 'Matching Status' : 'Kalagayan ng Pagtutugma'}</th>
-                  <th className="p-4 text-center">{lang === 'en' ? 'Connection Control' : 'Kontrol ng Koneksyon'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {paginatedConnections.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="p-8 text-center text-slate-400">
-                      No active matching connections found matching your filter criteria.
+                    <td colSpan={6} className="p-8 text-center text-slate-400">
+                      {lang === 'en' ? 'No active matching connections found matching your filter criteria.' : 'Walang aktibong koneksyong tumutugma sa iyong filter.'}
                     </td>
                   </tr>
                 ) : (
@@ -354,26 +279,6 @@ export default function TransactionsTab({
                         </span>
                       </td>
 
-                      {/* Toggle status control button */}
-                      <td className="p-4">
-                        <div className="flex justify-center">
-                          <button
-                            onClick={() => handleToggleStatus(c.id, c.status)}
-                            className={`px-3 py-1.5 font-bold rounded-lg text-[10px] shadow-sm transition-all flex items-center gap-1.5 cursor-pointer border ${
-                              c.status === 'In Progress'
-                                ? 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-900/30 dark:text-emerald-400'
-                                : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300'
-                            }`}
-                          >
-                            <Check className="w-3.5 h-3.5 shrink-0" />
-                            <span>
-                              {c.status === 'In Progress' 
-                                ? (lang === 'en' ? 'Mark Completed' : 'Markahan bilang Tapos') 
-                                : (lang === 'en' ? 'Reopen Match' : 'Buksan Muli')}
-                            </span>
-                          </button>
-                        </div>
-                      </td>
                     </tr>
                   ))
                 )}
@@ -397,7 +302,7 @@ export default function TransactionsTab({
                 {paginatedOffers.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="p-8 text-center text-slate-400">
-                      No active buyer-farmer interest records found.
+                      {lang === 'en' ? 'No active buyer-farmer interest records found.' : 'Walang aktibong tala ng interes ng mamimili sa magsasaka.'}
                     </td>
                   </tr>
                 ) : (
@@ -419,7 +324,7 @@ export default function TransactionsTab({
                         </div>
                         <span className="text-[10px] text-slate-400 truncate">{o.buyerEmail}</span>
                       </td>
-                      <td className="p-4 text-slate-400 font-mono text-[11px]">{o.createdAt || '2026-07-13'}</td>
+                      <td className="p-4 text-slate-400 font-mono text-[11px]">{o.createdAt || '—'}</td>
                       <td className="p-4">
                         <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
                           o.status === 'accepted'
@@ -458,7 +363,7 @@ export default function TransactionsTab({
         {/* Pagination */}
         <div className="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs">
           <span className="text-slate-400">
-            Showing {currentListLength > 0 ? startIndex + 1 : 0} to {Math.min(startIndex + itemsPerPage, currentListLength)} of {currentListLength} entries
+            {lang === 'en' ? 'Showing' : 'Ipinapakita'} {currentListLength > 0 ? startIndex + 1 : 0} {lang === 'en' ? 'to' : 'hanggang'} {Math.min(startIndex + itemsPerPage, currentListLength)} {lang === 'en' ? 'of' : 'sa'} {currentListLength} {lang === 'en' ? 'entries' : 'tala'}
           </span>
           <div className="flex gap-1">
             <button
@@ -466,7 +371,7 @@ export default function TransactionsTab({
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               className="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg disabled:opacity-50 text-slate-700 dark:text-slate-300 font-bold transition-all"
             >
-              Previous
+              {lang === 'en' ? 'Previous' : 'Nakaraan'}
             </button>
             <span className="px-3 py-1 font-bold text-slate-700 dark:text-slate-300">
               {currentPage} / {totalPages}
@@ -476,7 +381,7 @@ export default function TransactionsTab({
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               className="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg disabled:opacity-50 text-slate-700 dark:text-slate-300 font-bold transition-all"
             >
-              Next
+              {lang === 'en' ? 'Next' : 'Susunod'}
             </button>
           </div>
         </div>

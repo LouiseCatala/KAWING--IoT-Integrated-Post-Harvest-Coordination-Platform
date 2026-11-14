@@ -2,6 +2,7 @@ import { useLiveRevision } from '../../lib/useLiveRevision';
 import React, { useEffect, useRef, useState } from 'react';
 import { Trash2, Pencil, PlusCircle, X, Save, Calendar, CheckCircle } from 'lucide-react';
 import WeatherWidget from '../WeatherWidget';
+import AdminConfirmationModal from './AdminConfirmationModal';
 
 interface AnnouncementsTabProps {
   lang: 'en' | 'tl';
@@ -15,6 +16,7 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
   const [isSaving, setIsSaving] = useState(false);
   const savingRef = useRef(false);
   const [saveError, setSaveError] = useState('');
+  const [confirmation, setConfirmation] = useState<{ title: string; message: string; confirmLabel: string; intent?: 'primary' | 'danger'; action: () => void | Promise<void> } | null>(null);
 
   useEffect(() => { let cancelled = false;
     fetch('/api/announcements').then(async response => {
@@ -66,10 +68,7 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
     setTimeout(() => setNotif(null), 3000);
   };
 
-  const handleAdd = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTitle.trim() || !newContent.trim()) return;
-
+  const saveNewAnnouncement = async () => {
     const added = {
       id: Date.now(),
       title: newTitle,
@@ -85,13 +84,21 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
     setNewTitle('');
     setNewContent('');
     setNotifyAllByEmail(false);
-    triggerNotif('Successfully posted new advisory bulletin.');
+    triggerNotif(lang === 'en' ? 'Successfully posted new advisory bulletin.' : 'Matagumpay na nailathala ang bagong paunawa.');
+  };
+
+  const handleAdd = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim() || !newContent.trim()) return;
+    setConfirmation({ title: lang === 'en' ? 'Publish this advisory?' : 'I-post ang paunawang ito?', message: lang === 'en' ? `Save this advisory to the board?${newStatus === 'Published' && notifyAllByEmail ? ' It will also be emailed to users.' : ''}` : `I-save ang paunawang ito sa board?${newStatus === 'Published' && notifyAllByEmail ? ' Ipapadala rin ito sa mga gumagamit sa email.' : ''}`, confirmLabel: newStatus === 'Published' ? (lang === 'en' ? 'Publish Advisory' : 'I-post ang Paunawa') : (lang === 'en' ? 'Save Draft' : 'I-save bilang Draft'), action: saveNewAnnouncement });
   };
 
   const handleDelete = async (id: number) => {
     if (!(await persistAnnouncements(announcements.filter(a => a.id !== id)))) return;
-    triggerNotif('Successfully deleted advisory bulletin.');
+    triggerNotif(lang === 'en' ? 'Successfully deleted advisory bulletin.' : 'Matagumpay na nabura ang paunawa.');
   };
+
+  const requestDelete = (id: number) => setConfirmation({ title: lang === 'en' ? 'Delete this advisory?' : 'Burahin ang paunawang ito?', message: lang === 'en' ? 'This advisory will be removed from the announcements board.' : 'Aalisin ang paunawang ito sa announcement board.', confirmLabel: lang === 'en' ? 'Delete Advisory' : 'Burahin ang Paunawa', intent: 'danger', action: () => handleDelete(id) });
 
   const handleOpenEdit = (ann: any) => {
     setEditingAnn({ ...ann, baseline: announcements });
@@ -101,10 +108,7 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
     setEditStatus(ann.status);
   };
 
-  const handleSaveEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editTitle.trim() || !editContent.trim()) return;
-
+  const saveEdit = async () => {
     const next = announcements.map(a => a.id === editingAnn.id ? {
       ...a,
       title: editTitle,
@@ -115,7 +119,13 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
     if (!(await persistAnnouncements(next, editingAnn.baseline))) return;
 
     setEditingAnn(null);
-    triggerNotif('Successfully updated advisory bulletin.');
+    triggerNotif(lang === 'en' ? 'Successfully updated advisory bulletin.' : 'Matagumpay na na-update ang paunawa.');
+  };
+
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editTitle.trim() || !editContent.trim()) return;
+    setConfirmation({ title: lang === 'en' ? 'Save advisory changes?' : 'I-save ang mga pagbabago sa paunawa?', message: lang === 'en' ? 'Update this advisory with the details entered?' : 'I-update ang paunawang ito gamit ang mga inilagay mong detalye?', confirmLabel: lang === 'en' ? 'Save Changes' : 'I-save ang mga Pagbabago', action: saveEdit });
   };
 
   return (
@@ -173,8 +183,8 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
                 onChange={(e) => setNewCategory(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-250 dark:border-slate-850 bg-slate-50 dark:bg-slate-900 dark:text-white rounded-lg"
               >
-                <option value="System Maintenance">System Maintenance</option>
-                <option value="Harvest Advisory">Harvest Advisory (Sakahan)</option>
+                <option value="System Maintenance">{lang === 'en' ? 'System Maintenance' : 'Pagpapanatili ng Sistema'}</option>
+                <option value="Harvest Advisory">{lang === 'en' ? 'Harvest Advisory' : 'Paunawa sa Anihan'}</option>
               </select>
             </div>
 
@@ -186,8 +196,8 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
                 onChange={(e) => setNewStatus(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-250 dark:border-slate-850 bg-slate-50 dark:bg-slate-900 dark:text-white rounded-lg"
               >
-                <option value="Published">Published (I-broadcast agad)</option>
-                <option value="Draft">Draft (Itabi muna)</option>
+                <option value="Published">{lang === 'en' ? 'Published' : 'Nailathala'}</option>
+                <option value="Draft">{lang === 'en' ? 'Draft' : 'Naka-draft'}</option>
               </select>
             </div>
 
@@ -282,7 +292,7 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
 
                     <button
                       type="button"
-                      onClick={() => handleDelete(ann.id)}
+                      onClick={() => requestDelete(ann.id)}
                       className="p-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 text-red-600 rounded-lg transition-all cursor-pointer border border-red-100 dark:border-red-900/40"
                       title={lang === 'en' ? 'Delete' : 'Burahin'}
                     >
@@ -334,8 +344,8 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
                   onChange={(e) => setEditCategory(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 dark:text-white rounded-lg"
                 >
-                  <option value="System Maintenance">System Maintenance</option>
-                  <option value="Harvest Advisory">Harvest Advisory (Sakahan)</option>
+                  <option value="System Maintenance">{lang === 'en' ? 'System Maintenance' : 'Pagpapanatili ng Sistema'}</option>
+                  <option value="Harvest Advisory">{lang === 'en' ? 'Harvest Advisory' : 'Paunawa sa Anihan'}</option>
                 </select>
               </div>
 
@@ -346,8 +356,8 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
                   onChange={(e) => setEditStatus(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 dark:text-white rounded-lg"
                 >
-                  <option value="Published">Published (I-broadcast agad)</option>
-                  <option value="Draft">Draft (Itabi muna)</option>
+                  <option value="Published">{lang === 'en' ? 'Published' : 'Nailathala'}</option>
+                  <option value="Draft">{lang === 'en' ? 'Draft' : 'Naka-draft'}</option>
                 </select>
               </div>
 
@@ -368,7 +378,7 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
                   onClick={() => setEditingAnn(null)}
                   className="flex-grow py-2.5 text-center text-xs font-bold rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 transition-all cursor-pointer"
                 >
-                  Cancel
+                  {lang === 'en' ? 'Cancel' : 'Kanselahin'}
                 </button>
                 <button
                   type="submit"
@@ -381,6 +391,17 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
             </form>
           </div>
         </div>
+      )}
+      {confirmation && (
+        <AdminConfirmationModal
+          title={confirmation.title}
+          message={confirmation.message}
+          confirmLabel={confirmation.confirmLabel}
+          cancelLabel={lang === 'en' ? 'Cancel' : 'Kanselahin'}
+          intent={confirmation.intent}
+          onConfirm={confirmation.action}
+          onCancel={() => setConfirmation(null)}
+        />
       )}
     </div>
   );

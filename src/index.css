@@ -918,6 +918,148 @@ html:not(.dark) .sidebar-content > .flex-1 > .sidebar-expanded-only button.bg-em
   line-height: 1.65;
 }
 
+/* Admin workspace: one quiet canvas, a compact navigation rail, and consistent page rhythm. */
+.admin-dashboard-shell {
+  background-image: none;
+}
+
+.admin-dashboard-shell > div {
+  max-width: 1800px;
+}
+
+.admin-dashboard-shell aside {
+  border-radius: 1rem;
+}
+
+.admin-dashboard-shell aside nav > button {
+  min-height: 2.65rem;
+  border-radius: 0.7rem;
+}
+
+.admin-dashboard-shell aside nav > span {
+  padding-left: 0.75rem;
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+}
+
+.admin-dashboard-shell .dashboard-main {
+  max-width: none !important;
+  padding: clamp(1rem, 2vw, 1.75rem) !important;
+  border-radius: 0;
+  line-height: 1.5;
+}
+
+.admin-dashboard-shell .dashboard-main > * + * {
+  margin-top: 1.5rem !important;
+}
+
+.admin-dashboard-shell .dashboard-main > .space-y-6 > * + * {
+  margin-top: 1.25rem;
+}
+
+.admin-dashboard-shell .dashboard-main :where(h1) {
+  font-size: clamp(1.25rem, 1.7vw, 1.65rem);
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.admin-dashboard-shell .dashboard-main :where(h2) {
+  line-height: 1.3;
+}
+
+.admin-dashboard-shell .dashboard-main [class*="rounded-3xl"] {
+  border-radius: 1rem;
+}
+
+.admin-dashboard-shell .dashboard-main :where(input, select, textarea) {
+  border-radius: 0.65rem;
+}
+
+.admin-dashboard-shell .dashboard-main :where(button, input, select, textarea):focus-visible {
+  outline: 2px solid rgb(16 185 129 / 0.85);
+  outline-offset: 2px;
+}
+
+.admin-dashboard-shell .dashboard-main table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Admin light theme: soft rice-paper surfaces with a grounded field-green accent. */
+html:not(.dark) .admin-dashboard-shell {
+  background-color: #edf2ed;
+  color: #192c23;
+  color-scheme: light;
+}
+
+html:not(.dark) .admin-dashboard-shell aside {
+  background-color: #f9fbf8;
+  border-color: #d8e2da;
+}
+
+html:not(.dark) .admin-dashboard-shell aside > div {
+  background-color: #eef4ef;
+  border-color: #d8e2da;
+}
+
+html:not(.dark) .admin-dashboard-shell .dashboard-main [class~="bg-white"],
+html:not(.dark) .admin-dashboard-shell .dashboard-main [class*="bg-white/"] {
+  background-color: #fbfcfa;
+}
+
+html:not(.dark) .admin-dashboard-shell .dashboard-main [class~="bg-slate-50"] {
+  background-color: #f2f6f2;
+}
+
+html:not(.dark) .admin-dashboard-shell .dashboard-main [class~="bg-slate-100"] {
+  background-color: #e8efea;
+}
+
+html:not(.dark) .admin-dashboard-shell .dashboard-main [class*="border-slate-200"],
+html:not(.dark) .admin-dashboard-shell .dashboard-main [class*="border-slate-150"],
+html:not(.dark) .admin-dashboard-shell .dashboard-main [class*="border-slate-100"] {
+  border-color: #d9e3dc;
+}
+
+html:not(.dark) .admin-dashboard-shell .dashboard-main [class*="text-slate-900"],
+html:not(.dark) .admin-dashboard-shell .dashboard-main [class*="text-slate-800"] {
+  color: #192c23;
+}
+
+html:not(.dark) .admin-dashboard-shell .dashboard-main [class*="text-slate-700"],
+html:not(.dark) .admin-dashboard-shell .dashboard-main [class*="text-slate-600"] {
+  color: #3c5146;
+}
+
+html:not(.dark) .admin-dashboard-shell .dashboard-main [class*="text-slate-500"],
+html:not(.dark) .admin-dashboard-shell .dashboard-main [class*="text-slate-400"] {
+  color: #607168;
+}
+
+html:not(.dark) .admin-dashboard-shell .dashboard-main [class*="bg-emerald-600"] {
+  background-color: #087d59;
+}
+
+html:not(.dark) .admin-dashboard-shell .dashboard-main [class*="text-emerald-600"] {
+  color: #08734f;
+}
+
+html:not(.dark) .admin-dashboard-shell .dashboard-main [class*="border-emerald-200"] {
+  border-color: #b8d9c6;
+}
+
+html:not(.dark) .admin-dashboard-shell .dashboard-main :where(input, select, textarea) {
+  background-color: #f8faf7;
+  border-color: #cddbd1;
+  color: #192c23;
+  caret-color: #087d59;
+}
+
+html:not(.dark) .admin-dashboard-shell .dashboard-main ::selection {
+  background: #cce9d8;
+  color: #163b2b;
+}
+
 @media (max-width: 640px) {
   .dashboard-main {
     padding: 1.25rem 1rem 2rem !important;
@@ -925,6 +1067,31 @@ html:not(.dark) .sidebar-content > .flex-1 > .sidebar-expanded-only button.bg-em
 
   .dashboard-main > * + * {
     margin-top: 1.5rem !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .admin-dashboard-shell {
+    overflow-y: auto;
+  }
+
+  .admin-dashboard-shell > div {
+    overflow: visible;
+  }
+
+  .admin-dashboard-shell aside {
+    position: sticky;
+    top: 0;
+    border-radius: 0 0 0.9rem 0.9rem;
+    box-shadow: 0 8px 18px rgb(15 23 42 / 0.08);
+  }
+
+  .admin-dashboard-shell aside nav > span {
+    display: none;
+  }
+
+  .admin-dashboard-shell .dashboard-main {
+    padding: 1rem 0.75rem 1.5rem !important;
   }
 }
 

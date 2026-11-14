@@ -1,10 +1,9 @@
 import { useApp } from '../../context/AppContext';
 import React from 'react';
 import { Link2, Sprout, Truck, Users, AlertTriangle } from 'lucide-react';
+import type { Harvest, Offer, ServiceRequest, UserAccount } from '../../types';
 import {
   ResponsiveContainer,
-  AreaChart,
-  Area,
   BarChart,
   Bar,
   XAxis,
@@ -16,28 +15,32 @@ import {
 
 interface ReportsTabProps {
   lang: 'en' | 'tl';
+  harvestsList: Harvest[];
+  servicesList: ServiceRequest[];
+  offersList: Offer[];
+  usersList: UserAccount[];
 }
 
-export default function ReportsTab({ lang }: ReportsTabProps) {
+export default function ReportsTab({ lang, harvestsList, servicesList, offersList, usersList }: ReportsTabProps) {
   const { theme } = useApp();
   const tooltipStyle = { backgroundColor: theme === 'dark' ? '#0f172a' : '#fff', color: theme === 'dark' ? '#f8fafc' : '#0f172a', border: `1px solid ${theme === 'dark' ? '#334155' : '#e2e8f0'}` };
 
-  // Chart and statistical mocks
-  const cropPriceDistribution = [
-    { name: 'Palay (Wet)', avgPrice: 16.5, prevPrice: 15.2 },
-    { name: 'Palay (Dry)', avgPrice: 21.0, prevPrice: 19.4 },
-    { name: 'Palay (RC 160)', avgPrice: 23.5, prevPrice: 22.0 },
-    { name: 'Palay (RC 218)', avgPrice: 24.0, prevPrice: 23.0 },
-    { name: 'Palay (Regular)', avgPrice: 20.0, prevPrice: 18.5 }
-  ];
-
-  const serviceCompletionMins = [
-    { name: 'Transport Dispatch', durationMins: 45 },
-    { name: 'Cold Allocation', durationMins: 20 },
-    { name: 'Mechanical Drying', durationMins: 120 },
-    { name: 'Milling Service', durationMins: 90 },
-    { name: 'Buyer Matching Lock', durationMins: 35 }
-  ];
+  const pricedHarvests = harvestsList.filter(harvest => Number.isFinite(Number(harvest.targetPrice)) && Number(harvest.targetPrice) > 0);
+  const cropPriceDistribution = [...pricedHarvests.reduce((groups, harvest) => {
+    const group = groups.get(harvest.cropType) ?? { name: harvest.cropType, total: 0, count: 0 };
+    group.total += Number(harvest.targetPrice);
+    group.count += 1;
+    groups.set(harvest.cropType, group);
+    return groups;
+  }, new Map<string, { name: string; total: number; count: number }>()).values()].map(group => ({ name: group.name, avgPrice: Number((group.total / group.count).toFixed(2)) }));
+  const serviceRequestsByType = ['transport', 'storage', 'drying', 'milling', 'buyer'].map(type => ({
+    name: type,
+    requests: servicesList.filter(service => service.type === type).length,
+  })).filter(group => group.requests > 0);
+  const activeUsers = usersList.filter(user => user.role !== 'admin').length;
+  const acceptedConnections = offersList.filter(offer => offer.status === 'accepted').length;
+  const highRiskHarvests = harvestsList.filter(harvest => harvest.spoilageRisk === 'high').length;
+  const completedServices = servicesList.filter(service => service.status === 'completed').length;
 
   return (
     <div className="space-y-6">
@@ -53,66 +56,66 @@ export default function ReportsTab({ lang }: ReportsTabProps) {
 
       {/* 5 Specialized Report Categorizations */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        
+
         {/* Category 1: Crop Statistics */}
         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-150 dark:border-slate-800 shadow-sm">
           <div className="flex justify-between items-center text-slate-400 mb-2">
-            <span className="text-[9px] uppercase font-bold tracking-wider">Crop Statistics</span>
+            <span className="text-[9px] uppercase font-bold tracking-wider">{lang === 'en' ? 'Crop Statistics' : 'Datos ng mga Ani'}</span>
             <Sprout className="w-4 h-4 text-emerald-600" />
           </div>
-          <h3 className="text-md font-extrabold text-slate-900 dark:text-white font-display">64.5 Tons</h3>
-          <p className="text-[10px] text-slate-500 mt-1">Total listed volume this month. Average price index: ₱61.7/kg.</p>
+          <h3 className="text-md font-extrabold text-slate-900 dark:text-white font-display">{harvestsList.length}</h3>
+          <p className="text-[10px] text-slate-500 mt-1">{lang === 'en' ? 'Harvest listings in the database' : 'Mga post ng ani sa database'}</p>
         </div>
 
         {/* Category 2: Service Utilization */}
         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-150 dark:border-slate-800 shadow-sm">
           <div className="flex justify-between items-center text-slate-400 mb-2">
-            <span className="text-[9px] uppercase font-bold tracking-wider">Service Utilization</span>
+            <span className="text-[9px] uppercase font-bold tracking-wider">{lang === 'en' ? 'Service Utilization' : 'Paggamit ng Serbisyo'}</span>
             <Truck className="w-4 h-4 text-blue-600" />
           </div>
-          <h3 className="text-md font-extrabold text-slate-900 dark:text-white font-display">94.8% Rate</h3>
-          <p className="text-[10px] text-slate-500 mt-1">Fulfillment index. Average transport routing dispatch: 45 minutes.</p>
+          <h3 className="text-md font-extrabold text-slate-900 dark:text-white font-display">{servicesList.length}</h3>
+          <p className="text-[10px] text-slate-500 mt-1">{lang === 'en' ? `${completedServices} completed service requests` : `${completedServices} kahilingan sa serbisyo ang nakumpleto`}</p>
         </div>
 
         {/* Category 3: Transactional Analytics */}
         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-150 dark:border-slate-800 shadow-sm">
           <div className="flex justify-between items-center text-slate-400 mb-2">
-            <span className="text-[9px] uppercase font-bold tracking-wider">Direct Connections</span>
+            <span className="text-[9px] uppercase font-bold tracking-wider">{lang === 'en' ? 'Direct Connections' : 'Mga Direktang Koneksyon'}</span>
             <Link2 className="w-4 h-4 text-amber-500" />
           </div>
-          <h3 className="text-md font-extrabold text-slate-900 dark:text-white font-display">482 Matches</h3>
-          <p className="text-[10px] text-slate-500 mt-1">Total farmer-buyer contact matches. Matching success rate: 84%.</p>
+          <h3 className="text-md font-extrabold text-slate-900 dark:text-white font-display">{acceptedConnections}</h3>
+          <p className="text-[10px] text-slate-500 mt-1">{lang === 'en' ? 'Accepted buyer offers' : 'Mga tinanggap na alok ng buyer'}</p>
         </div>
 
         {/* Category 4: User Growth */}
         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-150 dark:border-slate-800 shadow-sm">
           <div className="flex justify-between items-center text-slate-400 mb-2">
-            <span className="text-[9px] uppercase font-bold tracking-wider">User Statistics</span>
+            <span className="text-[9px] uppercase font-bold tracking-wider">{lang === 'en' ? 'User Statistics' : 'Datos ng mga Gumagamit'}</span>
             <Users className="w-4 h-4 text-violet-600" />
           </div>
-          <h3 className="text-md font-extrabold text-slate-900 dark:text-white font-display">+32% Growth</h3>
-          <p className="text-[10px] text-slate-500 mt-1">Daily Active Users: 86. Registration approval success rate: 91.2%.</p>
+          <h3 className="text-md font-extrabold text-slate-900 dark:text-white font-display">{activeUsers}</h3>
+          <p className="text-[10px] text-slate-500 mt-1">{lang === 'en' ? 'Registered farmer and business accounts' : 'Mga rehistradong farmer at business account'}</p>
         </div>
 
         {/* Category 5: Spoilage Prevented */}
         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-150 dark:border-slate-800 shadow-sm">
           <div className="flex justify-between items-center text-slate-400 mb-2">
-            <span className="text-[9px] uppercase font-bold tracking-wider">Spoilage Risk prevented</span>
+            <span className="text-[9px] uppercase font-bold tracking-wider">{lang === 'en' ? 'Spoilage Risk Prevented' : 'Naiwasang Pagkasira ng Ani'}</span>
             <AlertTriangle className="w-4 h-4 text-red-500" />
           </div>
-          <h3 className="text-md font-extrabold text-emerald-600 font-display">42.5 Tons Saved</h3>
-          <p className="text-[10px] text-slate-500 mt-1">Prevents post-harvest spoilage. Equivalent savings: ₱184k to farmers.</p>
+          <h3 className="text-md font-extrabold text-emerald-600 font-display">{highRiskHarvests}</h3>
+          <p className="text-[10px] text-slate-500 mt-1">{lang === 'en' ? 'Harvest posts marked high spoilage risk' : 'Mga post ng ani na may mataas na panganib ng pagkasira'}</p>
         </div>
       </div>
 
       {/* Reports Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
+
         {/* Chart 1: Average Market Price and Previous Month (Bar Chart) */}
         <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-150 dark:border-slate-800 shadow-sm">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
-            {lang === 'en' ? 'Average Farmgate Price Index comparison (₱/kg)' : 'Paghahambing ng Presyo sa Farmgate (₱/kg)'}
+            {lang === 'en' ? 'Average Asking Price by Crop' : 'Karaniwang Presyo ng Ani'}
           </h3>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -122,8 +125,7 @@ export default function ReportsTab({ lang }: ReportsTabProps) {
                 <YAxis stroke={theme === 'dark' ? '#94a3b8' : '#64748b'} fontSize={11} tickLine={false} />
                 <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: tooltipStyle.color }} itemStyle={{ color: tooltipStyle.color }} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="avgPrice" name="This Month" fill="#10b981" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="prevPrice" name="Last Month" fill="#94a3b8" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="avgPrice" name={lang === 'en' ? 'Average asking price' : 'Karaniwang presyo'} fill="#10b981" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -133,23 +135,18 @@ export default function ReportsTab({ lang }: ReportsTabProps) {
         <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-150 dark:border-slate-800 shadow-sm">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />
-            {lang === 'en' ? 'Average Post-Harvest Service Fulfillment Speed' : 'Bilis ng Pagtupad sa mga Serbisyo (Minuto)'}
+            {lang === 'en' ? 'Service Requests by Type' : 'Mga Kahilingan sa Serbisyo'}
           </h3>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={serviceCompletionMins} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorDuration" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
+              <BarChart data={serviceRequestsByType} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === 'dark' ? '#334155' : '#f1f5f9'} />
                 <XAxis dataKey="name" stroke={theme === 'dark' ? '#94a3b8' : '#64748b'} fontSize={10} tickLine={false} />
                 <YAxis stroke={theme === 'dark' ? '#94a3b8' : '#64748b'} fontSize={11} tickLine={false} />
                 <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: tooltipStyle.color }} itemStyle={{ color: tooltipStyle.color }} />
-                <Area type="monotone" dataKey="durationMins" name="Minutes" stroke="#3b82f6" fillOpacity={1} fill="url(#colorDuration)" strokeWidth={3} />
-              </AreaChart>
+                <Bar dataKey="requests" name="Requests" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>

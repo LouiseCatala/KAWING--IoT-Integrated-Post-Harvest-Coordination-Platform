@@ -6,7 +6,7 @@
 @media(min-width:801px){.landing-footer-grid{grid-template-columns:1.5fr 1fr 1fr}}
 
 /* Landing-only typography: geometric body copy with the reference display face. */
-.landing-theme-toggle{position:absolute;z-index:20;top:24px;right:28px;display:flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;border:1px solid rgba(74,222,128,.35);border-radius:999px;color:#d1fae5;background:rgba(15,23,42,.72);backdrop-filter:blur(12px);cursor:pointer}.landing-theme-toggle svg{width:18px;height:18px;color:var(--green)}.landing-theme-toggle:focus-visible{outline:2px solid var(--green);outline-offset:3px}@media(max-width:560px){.landing-theme-toggle{top:15px;right:15px}}
+.landing-theme-toggle{position:absolute;z-index:20;top:24px;right:28px;display:flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;border:1px solid rgba(74,222,128,.35);border-radius:999px;color:#d1fae5;background:rgba(15,23,42,.72);backdrop-filter:blur(12px);cursor:pointer}.landing-theme-toggle svg{width:16px;height:16px;color:var(--green)}.landing-theme-toggle:focus-visible{outline:2px solid var(--green);outline-offset:3px}@media(max-width:560px){.landing-theme-toggle{top:15px;right:15px}}
 .kawing-landing{font-family:'Inter',system-ui,-apple-system,sans-serif}
 .landing-wordmark span{font-family:'Orbitron-Medium','Arial Narrow',sans-serif;font-weight:900;letter-spacing:-.035em}
 .landing-info-header>span,.landing-info-header h2,.landing-benefit-card h3,.landing-card-label,.landing-card-count,.landing-footer h3{font-family:'Orbitron','Orbitron-Medium','Arial Narrow',sans-serif}
@@ -563,6 +563,18 @@ html:not(.dark) .landing-overdrive .landing-image-base {
 
 html:not(.dark) .landing-hero-vignette {
   background: rgba(247, 252, 248, 0.06);
+}
+
+@media (orientation: landscape) and (max-height: 820px) {
+  .landing-overdrive .landing-wordmark {
+    top: clamp(6rem, 18vh, 10rem);
+  }
+
+  .landing-overdrive .landing-wordmark span {
+    font-size: clamp(4rem, 13vw, 12rem);
+    line-height: 1.12;
+    padding-top: 0.08em;
+  }
 }
 
 @media (max-width: 800px) and (prefers-reduced-motion: reduce) {

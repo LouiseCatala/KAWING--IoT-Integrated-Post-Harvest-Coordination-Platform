@@ -8,6 +8,7 @@ import {
 import { useApp } from '../context/AppContext';
 import UserProfileModal from './UserProfileModal';
 import ThemeToggle from './ThemeToggle';
+import { notificationDestination } from '../lib/notificationRouting';
 
 export interface SidebarTabItem {
   id: string;
@@ -39,7 +40,6 @@ export default function Sidebar({
   onCloseMobile,
   unreadCount = 0,
   notifications = [],
-  onMarkNotificationRead,
   onUpdateUser,
   onLogout,
 }: SidebarProps) {
@@ -176,67 +176,15 @@ export default function Sidebar({
           : ['available', 'settings']
   );
 
-  const notificationTab = (notification: AppNotification): string => {
-    const explicitTab = notification.emailDetails?.Page;
-    if (explicitTab && navItems.flatMap(item => [item, ...(item.children || [])]).some(item => item.id === explicitTab)) return explicitTab;
-    const title = notification.title.toLowerCase();
-    const text = `${notification.title} ${notification.message}`.toLowerCase();
-    const isAnnouncement = Boolean(notification.emailDetails?.Announcement) || /announcement|anunsyo/.test(text);
-    if (isAnnouncement) return 'announcements';
-
-    if (user.role === 'admin') {
-      if (/account registration|verification|logistics service approval|applicant|provider/.test(text)) return 'users';
-      if (/harvest|ani/.test(text)) return 'harvests';
-      if (/service|serbisyo|logistics|transport|storage|drying|milling/.test(text)) return 'services';
-      if (/offer|alok|transaction/.test(text)) return 'offers';
-      return 'analytics';
-    }
-
-    if (user.role === 'farmer') {
-      if (/loan|pautang/.test(text)) return 'loans';
-      if (/service|serbisyo|kahilingan|logistics/.test(title)) return 'directory';
-      if (/ani na-post|harvest posted/.test(title)) return 'harvests';
-      if (/offer|alok|buyer|mamimili/.test(text)) return 'interests';
-      if (/service|serbisyo|kahilingan|transport|storage|drying|milling/.test(text)) return 'directory';
-      return 'harvests';
-    }
-
-    if (user.role === 'buyer' || user.role === 'agricultural_business') {
-      if (notification.emailDetails?.Status === 'New Booking Request' || /booking request directly|new .*service request/.test(text)) return 'services';
-      if (/logistics job/.test(text)) return 'logistics_jobs';
-      if (/serbisyo na-post|service posted/.test(text)) return 'posted_services';
-      if (/loan|pautang/.test(text)) return 'loans';
-      if (/offer|alok|tinanggihan ang impormasyon/.test(title) && !/new harvest/.test(title)) return 'offers';
-      if (/harvest|ani|palay/.test(text) && !/offer accepted|offer update|tinanggap|tinanggihan/.test(text)) return 'marketplace';
-      if (/offer|alok/.test(text)) return 'offers';
-      if (/new .*service request|logistics job/.test(text)) return 'logistics_jobs';
-      if (/service|serbisyo|kahilingan/.test(text)) return 'services';
-      return 'marketplace';
-    }
-
-    if (user.role === 'logistics') {
-      if (/approval|approved|manage/.test(text)) return 'services_settings';
-      if (/storage|imbakan/.test(text)) return 'service_storage';
-      if (/drying|dryer|patuy/.test(text)) return 'service_drying';
-      if (/milling|mill|giling/.test(text)) return 'service_milling';
-      return 'service_transport';
-    }
-
-    if (/active|accepted|tinanggap/.test(text)) return 'active';
-    if (/complete|completed|nakumpleto|history/.test(text)) return 'history';
-    return 'available';
-  };
+  const availableTabIds = navItems.flatMap(item => [item, ...(item.children || [])]).map(item => item.id);
 
   const unreadForUser = notifications.filter(notification =>
     notification.userEmail.toLowerCase() === (user.email || '').toLowerCase() && !notification.isRead
   );
 
-  const badgeCountFor = (tabId: string) => unreadForUser.filter(notification => notificationTab(notification) === tabId).length;
+  const badgeCountFor = (tabId: string) => unreadForUser.filter(notification => notificationDestination(notification, user.role, availableTabIds) === tabId).length;
 
   const handleNavClick = (id: string) => {
-    unreadForUser
-      .filter(notification => notificationTab(notification) === id)
-      .forEach(notification => onMarkNotificationRead?.(notification.id));
     onSelectTab(id);
     if (onCloseMobile) onCloseMobile();
   };

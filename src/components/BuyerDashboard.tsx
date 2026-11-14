@@ -18,6 +18,8 @@ import buyerBackground from '../assets/images/buyer_background.jpg';
 import { hasApprovedBusinessCapability } from '../lib/businessCapabilities';
 import { isAvailableServiceRequestFor } from '../lib/serviceRequestVisibility';
 import { alertDialog, askConfirmation, confirmDialog } from '../lib/appDialog';
+import { NotificationBadge, notificationDestination } from '../lib/notificationRouting';
+import { getContactNumbers } from '../lib/contactDetails';
 
 gsap.registerPlugin(useGSAP);
 
@@ -83,7 +85,7 @@ export default function BuyerDashboard({
   const { t, lang } = useApp();
   const canBuy = hasApprovedBusinessCapability(user, 'buyer');
   const approvedServices = (['transport', 'storage', 'drying', 'milling'] as const).filter(capability => hasApprovedBusinessCapability(user, capability));
-  const [activeTab, setActiveTab] = useState<'announcements' | 'browse' | 'farmer_offers' | 'offers' | 'logistics_jobs' | 'posted_services' | 'services' | 'requests' | 'palay' | 'loans'>(canBuy ? 'browse' : 'announcements');
+  const [activeTab, setActiveTab] = useState<'announcements' | 'browse' | 'farmer_offers' | 'offers' | 'logistics_jobs' | 'posted_services' | 'services' | 'loans'>(canBuy ? 'browse' : 'announcements');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showOfferModal, setShowOfferModal] = useState(false);
@@ -215,6 +217,28 @@ export default function BuyerDashboard({
   const myServiceBookings = serviceRequests.filter(
     request => request.type !== 'buyer' && request.operatorEmail === user.email
   );
+  const buyerTabs = ['marketplace', 'offers', 'announcements', 'loans', 'posted_services', 'logistics_jobs', 'services'];
+  const unreadForPage = (page: string) => notifications.filter(notification =>
+    notification.userEmail.toLowerCase() === (user.email || '').toLowerCase()
+    && !notification.isRead
+    && notificationDestination(notification, user.role, buyerTabs) === page
+  );
+  const unreadJobNotifications = unreadForPage('logistics_jobs');
+  const jobFilterUnread = (type: typeof jobTypeFilter) => unreadJobNotifications.filter(notification => {
+    if (type === 'all') return true;
+    const text = `${notification.title} ${notification.message}`.toLowerCase();
+    return text.includes(type);
+  });
+  const unreadBookingNotifications = unreadForPage('services');
+  const bookingFilterUnread = (status: 'all' | ServiceRequest['status']) => unreadBookingNotifications.filter(notification => {
+    if (status === 'all') return true;
+    const text = `${notification.title} ${notification.message}`.toLowerCase();
+    if (status === 'pending') return /new booking request|new .*service request|pending/.test(text);
+    if (status === 'matched') return /accepted|matched|tinanggap/.test(text);
+    if (status === 'completed') return /completed|fulfilled|nakumpleto/.test(text);
+    if (status === 'rejected') return /declined|rejected|cancelled|tinanggihan/.test(text);
+    return false;
+  });
   const visibleServiceBookings = bookingFilter === 'all'
     ? myServiceBookings
     : myServiceBookings.filter(request => request.status === bookingFilter);
@@ -583,17 +607,19 @@ export default function BuyerDashboard({
                   .map((o) => (
                   <div
                     key={o.id}
-                    className={`bg-white dark:bg-slate-900 p-5 rounded-2xl border shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5 transition-all duration-300 ${
-                      o.status === 'accepted' ? 'border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/20 dark:bg-emerald-950/10' : o.status === 'declined' || o.status === 'cancelled' ? 'border-red-100 dark:border-red-900/40 bg-red-50/10 dark:bg-red-950/5' : 'border-slate-100 dark:border-slate-800'
+                    className={`rounded-2xl border bg-white p-5 shadow-sm transition-all duration-300 dark:bg-slate-900 ${
+                      o.status === 'accepted'
+                        ? 'grid gap-5 border-emerald-200 dark:border-emerald-800/80 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]'
+                        : `flex flex-col justify-between gap-5 md:flex-row md:items-center ${o.status === 'declined' || o.status === 'cancelled' ? 'border-red-100 dark:border-red-900/40' : 'border-slate-100 dark:border-slate-800'}`
                     }`}
                   >
-                  <div className="flex items-start gap-4">
+                  <div className="flex min-w-0 items-start gap-4">
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0 ${
                       o.status === 'accepted' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400' : o.status === 'declined' || o.status === 'cancelled' ? 'bg-red-100 text-red-700 dark:bg-red-950/20 dark:text-red-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400'
                     }`}>
                       {o.status === 'accepted' ? <Check className="w-6 h-6" /> : o.status === 'declined' || o.status === 'cancelled' ? <Ban className="w-6 h-6" /> : <Clock className="w-6 h-6 animate-pulse" />}
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h4 className="font-extrabold text-slate-900 dark:text-white text-base font-display">{o.cropType}</h4>
                         <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase ${
@@ -607,8 +633,8 @@ export default function BuyerDashboard({
                       </p>
                       
                       {/* Submited info description */}
-                      <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-950/20 rounded-xl text-xs space-y-1 text-slate-500 dark:text-slate-400 max-w-md">
-                        <div className="font-semibold text-[10px] uppercase text-slate-400">{lang === 'en' ? 'Submitted Info' : 'Ipinadalang Impormasyon'}</div>
+                      <div className="mt-3 max-w-md space-y-1 rounded-xl bg-slate-50 p-3 text-xs text-slate-500 dark:bg-slate-950/20 dark:text-slate-400">
+                        <div className="font-semibold text-[10px] uppercase text-slate-400 sm:col-span-2">{lang === 'en' ? 'Submitted Info' : 'Ipinadalang Impormasyon'}</div>
                         <div>Name: <span className="font-medium text-slate-700 dark:text-slate-300">{o.buyerName}</span></div>
                         <div>Phone: <span className="font-medium text-slate-700 dark:text-slate-300">{o.buyerPhone}</span></div>
                         {o.govIdData && (
@@ -618,24 +644,25 @@ export default function BuyerDashboard({
                     </div>
                   </div>
 
-                  <div className="flex w-full min-w-0 flex-col justify-center md:w-auto md:min-w-[200px] md:items-end">
+                  <div className={`flex w-full min-w-0 flex-col ${o.status === 'accepted' ? 'justify-start gap-3' : 'justify-center md:w-auto md:min-w-[200px] md:items-end'}`}>
                     {o.status === 'accepted' ? (
-                      <div className="space-y-2.5 w-full">
-                        <div className="p-2.5 bg-emerald-600 text-white rounded-xl font-bold text-xs text-center shadow-xs"><span className="inline-flex items-center gap-1.5 align-middle"><IconConfetti size={16} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Congratulations! Your offer has been accepted. Continue tracking the transaction in KAWING."}</span></div>
-                        <div className="rounded-xl border-2 border-emerald-300 bg-emerald-50 p-4 dark:border-emerald-700 dark:bg-emerald-950/30">
-                          <p className="text-center text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300">{lang === 'en' ? 'Farmer contact' : 'Kontak ng farmer'}</p>
-                          <p className="mt-1 text-center text-sm font-extrabold text-slate-900 dark:text-white">{o.farmerName}</p>
-                          <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-emerald-200 pt-3 dark:border-emerald-800">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-                              <Phone className="h-5 w-5" />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{lang === 'en' ? 'Contact number' : 'Numero ng kontak'}</p>
-                              <p className="text-xl font-black tracking-wide text-slate-900 dark:text-white">{o.farmerPhone || (lang === 'en' ? 'No phone provided' : 'Walang numero')}</p>
-                            </div>
-                            <TransactionRating offerId={o.id} />
+                      <div className="w-full space-y-4">
+                        <p className="flex items-center gap-2 text-xs font-bold text-emerald-800 dark:text-emerald-300"><IconConfetti size={17} stroke={2} aria-hidden="true" />{lang === 'en' ? 'Offer accepted — coordinate directly with the farmer.' : 'Tinanggap ang alok — direktang makipag-ugnayan sa farmer.'}</p>
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-300">{lang === 'en' ? 'Farmer contact' : 'Kontak ng farmer'}</p>
+                            <p className="mt-1 text-lg font-extrabold text-slate-900 dark:text-white">{o.farmerName}</p>
                           </div>
-                          <div className="mt-3"><CoordinatedContactCard user={registeredUsers.find(account => account.email?.toLowerCase() === o.farmerEmail?.toLowerCase())} email={o.farmerEmail} primaryNumber={o.farmerPhone} title={lang === 'en' ? 'Farmer Coordination Contact' : 'Contact ng Farmer'} /></div>
+                          <TransactionRating offerId={o.id} />
+                        </div>
+                        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-emerald-200 pt-3 dark:border-emerald-900">
+                          {getContactNumbers(registeredUsers.find(account => account.email?.toLowerCase() === o.farmerEmail?.toLowerCase()) || { contactNumber: o.farmerPhone }).map((number, index) => (
+                            <span key={number} className="flex min-w-0 items-center gap-2 text-lg font-extrabold tracking-wide text-slate-900 dark:text-white">
+                              <Phone className="h-5 w-5 shrink-0 text-emerald-700 dark:text-emerald-300" />
+                              <span><span className="sr-only">{index === 0 ? 'Phone: ' : 'Additional phone: '}</span>{number}</span>
+                            </span>
+                          ))}
+                          {o.farmerEmail && <span className="flex min-w-0 items-center gap-2 break-all border-l border-emerald-200 pl-4 text-sm font-bold text-slate-700 dark:border-emerald-900 dark:text-slate-200"><IconMail size={20} stroke={2} aria-hidden="true" className="shrink-0 text-emerald-700 dark:text-emerald-300" />{o.farmerEmail}</span>}
                         </div>
                       </div>
                     ) : o.status === 'pending' ? (
@@ -683,9 +710,10 @@ export default function BuyerDashboard({
                   const count = type === 'all' ? visibleServiceJobs.length : visibleServiceJobs.filter(request => request.type === type).length;
                   const selected = jobTypeFilter === type;
                   return (
-                    <button key={type} type="button" onClick={() => setJobTypeFilter(type)} className={`flex min-h-12 items-center justify-between gap-2 rounded-xl border px-3 py-2 text-left text-xs font-bold transition-colors ${selected ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-emerald-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
+                    <button key={type} type="button" onClick={() => { setJobTypeFilter(type); jobFilterUnread(type).forEach(notification => onMarkNotificationRead(notification.id)); }} className={`flex min-h-12 items-center justify-between gap-2 rounded-xl border px-3 py-2 text-left text-xs font-bold transition-colors ${selected ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-emerald-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
                       <span className="flex min-w-0 items-center gap-2">{icon}<span className="truncate">{label}</span></span>
                       <span className={`tabular-nums ${selected ? 'text-emerald-50' : 'text-slate-500 dark:text-slate-400'}`}>{count}</span>
+                      <NotificationBadge count={jobFilterUnread(type).length} />
                     </button>
                   );
                 })}
@@ -704,6 +732,7 @@ export default function BuyerDashboard({
                       ? 'New farmer service requests will appear here for you to accept.'
                       : 'Lalabas dito ang mga bagong hiling ng farmer para sa serbisyo.'}
                   </p>
+                  {jobFilterUnread(jobTypeFilter).length > 0 && <p className="mx-auto mt-3 flex w-fit items-center gap-2 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 dark:bg-red-950/30 dark:text-red-300"><NotificationBadge count={jobFilterUnread(jobTypeFilter).length} />{lang === 'en' ? 'New request notice for this section' : 'May bagong abiso para sa bahaging ito'}</p>}
                 </div>
               ) : (
                 <div ref={availableRequestsRef} className="space-y-3">
@@ -757,7 +786,7 @@ export default function BuyerDashboard({
                   <button
                     key={status}
                     type="button"
-                    onClick={() => setBookingFilter(status)}
+                    onClick={() => { setBookingFilter(status); bookingFilterUnread(status).forEach(notification => onMarkNotificationRead(notification.id)); }}
                     className={`flex shrink-0 items-center gap-2 rounded-lg px-4 py-2 text-xs font-extrabold transition-colors ${
                       bookingFilter === status
                         ? 'bg-cyan-600 text-white'
@@ -768,6 +797,7 @@ export default function BuyerDashboard({
                     <span className={`rounded-full px-2 py-0.5 text-[10px] ${bookingFilter === status ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-800'}`}>
                       {count}
                     </span>
+                    <NotificationBadge count={bookingFilterUnread(status).length} />
                   </button>
                 );
               })}
@@ -786,6 +816,7 @@ export default function BuyerDashboard({
                     ? 'Requests sent directly to your posted transportation, storage, drying, or milling services will appear here.'
                     : 'Dito lalabas ang mga request na direktang ipinadala sa iyong transportasyon, imbakan, patuyuan, o gilingan.'}
                 </p>
+                {bookingFilterUnread(bookingFilter).length > 0 && <p className="mx-auto mt-3 flex w-fit items-center gap-2 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 dark:bg-red-950/30 dark:text-red-300"><NotificationBadge count={bookingFilterUnread(bookingFilter).length} />{lang === 'en' ? 'New booking notice for this section' : 'May bagong abiso sa booking para sa bahaging ito'}</p>}
               </div>
             ) : (
               <div ref={bookingListRef} className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
@@ -1750,12 +1781,12 @@ export default function BuyerDashboard({
       {cancelOfferTarget && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm">
           <div role="dialog" aria-modal="true" className="w-full max-w-md rounded-3xl border border-red-900 bg-white dark:bg-slate-900 p-6 text-slate-900 dark:text-white shadow-2xl">
-            <h2 className="text-xl font-black">Cancel Price Offer</h2>
+            <h2 className="text-xl font-black">{lang === 'en' ? 'Cancel Price Offer' : 'Kanselahin ang Alok na Presyo'}</h2>
             <div className="mt-4 rounded-xl bg-slate-100 dark:bg-slate-800 p-4 text-sm"><b>{cancelOfferTarget.cropType}</b><p className="mt-1 text-slate-400">₱{cancelOfferTarget.offerPrice.toFixed(2)}/kg • {(cancelOfferTarget.quantityWanted || cancelOfferTarget.quantity).toLocaleString()} kg</p></div>
-            <label className="mt-4 block text-xs font-bold text-slate-700 dark:text-slate-300">Reason for cancellation <span className="text-red-500">*</span></label>
-            <textarea autoFocus required value={cancelOfferReason} onChange={(e) => setCancelOfferReason(e.target.value)} placeholder="Tell the farmer why you are cancelling…" className="mt-2 min-h-24 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-3 text-sm outline-none focus:border-red-500" />
-            <p className="mt-2 text-xs text-amber-300">The farmer will be notified and this pending offer cannot be restored.</p>
-            <div className="mt-5 flex gap-3"><button type="button" onClick={() => setCancelOfferTarget(null)} className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 py-3 text-sm font-bold">Keep Offer</button><button type="button" disabled={!cancelOfferReason.trim()} onClick={() => { onCancelOffer(cancelOfferTarget.id, cancelOfferReason.trim()); setCancelOfferTarget(null); }} className="flex-1 rounded-xl bg-red-600 py-3 text-sm font-black disabled:opacity-50">Cancel Offer</button></div>
+            <label className="mt-4 block text-xs font-bold text-slate-700 dark:text-slate-300">{lang === 'en' ? 'Reason for cancellation' : 'Dahilan ng pagkansela'} <span className="text-red-500">*</span></label>
+            <textarea autoFocus required value={cancelOfferReason} onChange={(e) => setCancelOfferReason(e.target.value)} placeholder={lang === 'en' ? 'Tell the farmer why you are cancelling…' : 'Sabihin sa magsasaka kung bakit mo kinakansela…'} className="mt-2 min-h-24 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-3 text-sm outline-none focus:border-red-500" />
+            <p className="mt-2 text-xs text-amber-300">{lang === 'en' ? 'The farmer will be notified and this pending offer cannot be restored.' : 'Aabisuhan ang magsasaka at hindi na maibabalik ang nakabinbing alok na ito.'}</p>
+            <div className="mt-5 flex gap-3"><button type="button" onClick={() => setCancelOfferTarget(null)} className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 py-3 text-sm font-bold">{lang === 'en' ? 'Keep Offer' : 'Panatilihin ang Alok'}</button><button type="button" disabled={!cancelOfferReason.trim()} onClick={() => { onCancelOffer(cancelOfferTarget.id, cancelOfferReason.trim()); setCancelOfferTarget(null); }} className="flex-1 rounded-xl bg-red-600 py-3 text-sm font-black disabled:opacity-50">{lang === 'en' ? 'Cancel Offer' : 'Kanselahin ang Alok'}</button></div>
           </div>
         </div>
       )}

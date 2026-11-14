@@ -180,7 +180,7 @@ export default function UserProfileModal({
                     {lang === 'en' ? 'Phone Number' : 'Numero ng Telepono'}
                   </span>
                   <div className="space-y-1 font-mono text-sm font-bold text-slate-800 dark:text-slate-200">
-                    {getContactNumbers({ contactNumber, additionalContactNumbers }).map(number => <a key={number} href={`tel:${number}`} className="block hover:text-emerald-600">{number}</a>)}
+                    {getContactNumbers({ contactNumber, additionalContactNumbers }).map(number => <span key={number} className="block">{number}</span>)}
                   </div>
                 </div>
 

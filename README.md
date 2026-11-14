@@ -94,7 +94,9 @@ See `deploy/cpanel/README.md` for the complete checklist and ESP32 payload.
 
 ### Database tables
 
-The application uses dedicated tables for `users`, `harvests`, `service_requests`, `offered_services`, `offers`, `production_loans`, `notifications`, `iot_devices`, and `moisture_readings`.
+The application uses dedicated tables for `users`, `harvests`, `service_requests`, `offered_services`, `offers`, `production_loans`, `notifications`, `system_settings`, ratings, and email delivery records. PalaySense readings are relayed temporarily and are not stored in MySQL.
+
+The API runs operational-data cleanup once per day: write receipts expire after 7 days, login-attempt buckets after 1 day, read notifications after 90 days, unread notifications after 180 days, and email-delivery records after 90 days. Core account, harvest, offer, service, loan, and rating records are not removed by this cleanup.
 
 ### PalaySense API
 
@@ -111,7 +113,7 @@ PalaySense sends readings to `POST /api/moisture-readings` with the `x-api-key` 
 }
 ```
 
-Read recent history from `GET /api/moisture-readings`. Results can be filtered by `harvestId`, `farmerEmail`, `deviceId`, and `since`, with an optional `limit` from 1 to 500.
+The farmer form reads the latest paired device reading from `GET /api/moisture-readings?since=<form-start-time>`. The reading is held briefly for input and is not saved as a database record.
 
 ## Project checks
 

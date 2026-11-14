@@ -27,9 +27,7 @@ function publishLiveResponse(PDO $pdo, string $path): void {
         'registrations', 'auth/profile', 'auth/provider-settings', 'auth/email-notifications' => ['users'],
         'announcements' => ['announcements'],
         'faqs' => ['faqs'],
-        'moisture-readings' => ['moisture'],
         'harvests.php' => ['harvests'],
-        'db/clear-demo' => LIVE_COLLECTIONS,
         default => [],
     };
     if ($topics) publishLiveChanges($pdo, $topics);
@@ -45,6 +43,11 @@ function liveEqual(mixed $a, mixed $b): bool {
 }
 
 function liveEmail(mixed $value): string { return strtolower(trim((string) $value)); }
+function liveTableExists(PDO $pdo, string $table): bool {
+    $query = $pdo->prepare('SELECT 1 FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name=?');
+    $query->execute([$table]);
+    return $query->fetchColumn() !== false;
+}
 function liveParticipant(array $row, string $email): bool {
     foreach (['farmerEmail', 'buyerEmail', 'operatorEmail', 'providerEmail', 'userEmail'] as $field) {
         if (liveEmail($row[$field] ?? '') === $email) return true;
@@ -211,6 +214,39 @@ function liveMergeRecord(?array $current, ?array $before, ?array $after): ?array
     return $merged;
 }
 
+function liveMergeAdminUserDeletion(?array $current, ?array $before, ?array $after, array $identity): ?array {
+    if (($identity['role'] ?? '') !== 'admin' || $after !== null) throw new LiveForbidden('Administrator access required.');
+    if (($current['role'] ?? '') === 'admin') throw new LiveForbidden('Administrator identities are server-managed.');
+    return null;
+}
+
+function deleteAdminUserRecords(PDO $pdo, string $email): array {
+    $email = liveEmail($email);
+    $harvests = $pdo->prepare('SELECT id FROM harvests WHERE LOWER(farmer_email)=? FOR UPDATE');
+    $harvests->execute([$email]);
+    $harvestIds = $harvests->fetchAll(PDO::FETCH_COLUMN);
+    $harvestFilter = $harvestIds ? ' OR harvest_id IN (' . implode(',', array_fill(0, count($harvestIds), '?')) . ')' : '';
+    $harvestParams = $harvestIds;
+
+    $offers = $pdo->prepare('DELETE FROM offers WHERE LOWER(farmer_email)=? OR LOWER(buyer_email)=?' . $harvestFilter);
+    $offers->execute([$email, $email, ...$harvestParams]);
+    $services = $pdo->prepare('DELETE FROM service_requests WHERE LOWER(farmer_email)=?' . $harvestFilter);
+    $services->execute([$email, ...$harvestParams]);
+    $unassign = $pdo->prepare("UPDATE service_requests SET status='pending', data=JSON_REMOVE(JSON_SET(data, '$.status', 'pending'), '$.operatorEmail', '$.operatorName', '$.acceptedAt', '$.completedAt', '$.serviceCancelledAt') WHERE LOWER(JSON_UNQUOTE(JSON_EXTRACT(data, '$.operatorEmail')))=? AND LOWER(farmer_email)<>?");
+    $unassign->execute([$email, $email]);
+    $pdo->prepare('DELETE FROM offered_services WHERE LOWER(provider_email)=?')->execute([$email]);
+    $pdo->prepare('DELETE FROM production_loans WHERE LOWER(farmer_email)=? OR LOWER(buyer_email)=?')->execute([$email, $email]);
+    $pdo->prepare('DELETE FROM notifications WHERE LOWER(user_email)=?')->execute([$email]);
+    $pdo->prepare('DELETE FROM harvests WHERE LOWER(farmer_email)=?')->execute([$email]);
+    foreach (['transaction_ratings', 'service_ratings'] as $table) {
+        if (liveTableExists($pdo, $table)) $pdo->prepare("DELETE FROM {$table} WHERE LOWER(reviewer_email)=? OR LOWER(recipient_email)=?")->execute([$email, $email]);
+    }
+    if (liveTableExists($pdo, 'email_deliveries')) $pdo->prepare('DELETE FROM email_deliveries WHERE LOWER(recipient_email)=?')->execute([$email]);
+    if (liveTableExists($pdo, 'ai_daily_usage')) $pdo->prepare('DELETE FROM ai_daily_usage WHERE LOWER(user_email)=?')->execute([$email]);
+
+    return ['users', 'harvests', 'services', 'offers', 'offeredServices', 'productionLoans', 'notifications'];
+}
+
 function authorizeLiveChange(string $collection, ?array $current, ?array $next, array $identity): void {
     if ($identity['role'] === 'admin') {
         if ($collection === 'users' && (($current['role'] ?? '') === 'admin' || ($next['role'] ?? '') === 'admin')) throw new LiveForbidden('Administrator identities are server-managed.');
@@ -298,12 +334,21 @@ function applyLiveChanges(PDO $pdo, array $changes, array $identity, ?string $re
                 if ($current) unset($current['password'], $current['password_hash'], $current['passwordHash']);
                 if ($after !== null && (string) ($after[$key] ?? '') !== $id) throw new InvalidArgumentException('Record identifier does not match.');
                 if ($collection === 'services' && ($before['status'] ?? '') === 'pending' && $current && ($current['status'] ?? '') !== 'pending' && !liveEqual($current, $after)) throw new LiveConflict('This service request has already been handled. Refresh the list.');
-                $alreadyApplied = $current !== null && $after !== null && liveEqual($current, $after);
-                if (!$alreadyApplied) authorizeLiveChange($collection, $current, $after, $identity);
-                $merged = liveMergeRecord($current, $before, $after);
+                $adminUserDeletion = $collection === 'users' && $after === null && ($identity['role'] ?? '') === 'admin';
+                $alreadyApplied = $current === null && $after === null;
+                if ($adminUserDeletion) {
+                    $merged = liveMergeAdminUserDeletion($current, $before, $after, $identity);
+                } else {
+                    $alreadyApplied = $current !== null && $after !== null && liveEqual($current, $after);
+                    if (!$alreadyApplied) authorizeLiveChange($collection, $current, $after, $identity);
+                    $merged = liveMergeRecord($current, $before, $after);
+                }
                 if (!$alreadyApplied) validateBusinessWrite($pdo, $collection, $current, $merged, $identity, $topics);
                 if ($merged === null) {
                     $pdo->prepare("DELETE FROM {$table} WHERE {$key} = ?")->execute([$id]);
+                    if ($collection === 'users' && $adminUserDeletion) {
+                        $topics = [...$topics, ...deleteAdminUserRecords($pdo, $id)];
+                    }
                 } else {
                     $columns = match ($collection) {
                         'users' => ['email' => $id, 'name' => $merged['name'] ?? '', 'role' => $merged['role'] ?? '', 'is_approved' => !empty($merged['isApproved']) ? 1 : 0],

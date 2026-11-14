@@ -62,6 +62,8 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
   const [successMsg, setSuccessMsg] = useState<string>('');
   const [showRegistrationSummary, setShowRegistrationSummary] = useState(false);
   const [isSubmittingRegistration, setIsSubmittingRegistration] = useState(false);
+  const [kioskRegistrationMode, setKioskRegistrationMode] = useState(false);
+  const [kioskDeviceId] = useState(() => new URLSearchParams(window.location.hash.replace(/^#/, '')).get('kiosk') || '');
 
   // Google Auth State
   const [showGoogleModal, setShowGoogleModal] = useState(false);
@@ -83,10 +85,26 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
     return () => window.clearInterval(timer);
   }, [loginRetrySeconds > 0]);
 
+  useEffect(() => {
+    fetch('/api/kiosk/status', {
+      credentials: 'include',
+      headers: kioskDeviceId ? { 'X-Kawing-Kiosk-Id': kioskDeviceId } : undefined,
+    })
+      .then(response => response.ok ? response.json() : { enabled: false })
+      .then(result => setKioskRegistrationMode(result.enabled === true))
+      .catch(() => setKioskRegistrationMode(false));
+  }, [kioskDeviceId]);
+
   const refreshCaptcha = () => {
     setCaptchaVerified(false);
     setCaptchaError('');
     setCaptchaColorIndex(current => (current + 1) % CAPTCHA_COLORS.length);
+  };
+
+  const clearLoginCredentials = () => {
+    setName('');
+    setPassword('');
+    setConfirmPassword('');
   };
 
   // Listen for OAuth popup response message
@@ -139,6 +157,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
 
     if (existingUser) {
       if (existingUser.isApproved === false) {
+        clearLoginCredentials();
         setErrorMsg(
           lang === 'en'
             ? `This Google account (${selectedEmail}) is registered and waiting for approval. You can sign in after an administrator approves it.`
@@ -206,6 +225,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
   }>>({});
 
   const { lang, theme, toggleLanguage, toggleTheme, t } = useApp();
+  const isKioskRegistration = kioskRegistrationMode && (role === 'farmer' || role === 'agricultural_business');
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -323,6 +343,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
         if (response.status === 403) {
           const data = await response.json().catch(() => ({})) as { code?: string; error?: string };
           if (data.code === 'ACCOUNT_PENDING_APPROVAL') {
+            clearLoginCredentials();
             setErrorMsg(
               lang === 'en'
                 ? 'Your account is awaiting admin approval. Log in once approved.'
@@ -349,6 +370,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
 
       if (user) {
         if (user.isApproved === false) {
+          clearLoginCredentials();
           setErrorMsg(
             lang === 'en'
               ? 'Your account is waiting for approval. You can sign in after an administrator approves it.'
@@ -357,12 +379,11 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
         } else {
           // Credentials are used only for this request. Do not retain them in
           // component state when the dashboard is opened.
-          setName('');
-          setPassword('');
-          setConfirmPassword('');
+          clearLoginCredentials();
           onAuthSuccess(user);
         }
       } else {
+        clearLoginCredentials();
         setErrorMsg(
           lang === 'en'
             ? 'Incorrect name or password.'
@@ -370,7 +391,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
         );
       }
     } else {
-      const newUser: UserAccount = {
+      const newUser: UserAccount & { kioskId?: string } = {
         name: name.trim(),
         fullName: role === 'farmer' || role === 'buyer' ? fullName.trim() : undefined,
         email: email.trim(),
@@ -380,6 +401,11 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
         contactNumber,
         address,
         rsbsaNumber: role === 'farmer' ? rsbsaNumber.trim() : undefined,
+        kioskId: kioskRegistrationMode ? kioskDeviceId : undefined,
+        ...(role === 'farmer' && kioskRegistrationMode && !uploadedDocs.govId ? {
+          registrationSource: 'kiosk' as const,
+          rsbsaDocumentStatus: 'pending_physical_verification' as const,
+        } : {}),
         contactPersonName: role === 'agricultural_business' ? contactPersonName.trim() : undefined,
         legalCompanyName: role === 'agricultural_business' ? legalCompanyName.trim() : undefined,
         businessName: role === 'agricultural_business' ? legalCompanyName.trim() : undefined,
@@ -428,8 +454,12 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
 
       setSuccessMsg(
         lang === 'en'
-          ? 'Application sent! An administrator will review it. You can sign in after it is approved.'
-          : 'Naipadala ang aplikasyon. Susuriin ng admin ang mga dokumento. Hintayin ang approval bago mag-login.'
+          ? (isKioskRegistration
+            ? 'Application sent. Please proceed to the office for verification of your ID. You can sign in after approval.'
+            : 'Application sent! An administrator will review it. You can sign in after it is approved.')
+          : (isKioskRegistration
+            ? 'Naipadala ang aplikasyon. Mangyaring pumunta sa opisina para sa beripikasyon ng iyong ID. Makakapag-login ka kapag naaprubahan na.'
+            : 'Naipadala ang aplikasyon. Susuriin ito ng admin. Hintayin ang approval bago mag-login.')
       );
       // Never carry registration credentials into the login form.
       setName('');
@@ -516,11 +546,11 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
 
       // Check required documents depending on role
       if (role === 'farmer') {
-        if (!fullName.trim() || !rsbsaNumber.trim() || !uploadedDocs.govId) {
+        if (!fullName.trim() || !rsbsaNumber.trim() || (!uploadedDocs.govId && !kioskRegistrationMode)) {
           setErrorMsg(
             lang === 'en'
-              ? 'Farmer requires a full name, RSBSA number, and uploaded RSBSA Registration ID.'
-              : 'Kailangan ng Farmer ang Pangalan, Contact Number, Address, at RSBSA Registration ID.'
+              ? (kioskRegistrationMode ? 'Farmer requires a full name and RSBSA number.' : 'Farmer requires a full name, RSBSA number, and uploaded RSBSA Registration ID.')
+              : (kioskRegistrationMode ? 'Kailangan ang buong pangalan at RSBSA number.' : 'Kailangan ng Farmer ang buong pangalan, RSBSA number, at uploaded RSBSA Registration ID.')
           );
           return;
         }
@@ -552,7 +582,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
           return;
         }
       } else if (role === 'agricultural_business') {
-        if (!contactPersonName.trim() || !legalCompanyName.trim() || !operatingAddress.trim() || !uploadedDocs.govId) {
+        if (!contactPersonName.trim() || !legalCompanyName.trim() || !operatingAddress.trim() || (!uploadedDocs.govId && !kioskRegistrationMode)) {
           setErrorMsg(
             lang === 'en'
               ? 'Logistics provider requires a contact person, legal company name, operating address, and company registration ID.'
@@ -836,7 +866,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   name={isLogin ? 'manual-secret-entry' : 'new-password'}
-                  autoComplete="new-password"
+                  autoComplete={isLogin ? 'off' : 'new-password'}
                   data-lpignore={isLogin ? 'true' : undefined}
                   data-1p-ignore={isLogin ? 'true' : undefined}
                   placeholder="••••••••"
@@ -980,7 +1010,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
 
                 {role === 'farmer' && (
                   <div className="space-y-1">
-                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-400">RSBSA Number <span className="text-red-500">*</span></label>
+                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-400">{lang === 'en' ? 'RSBSA Number' : 'Numero ng RSBSA'} <span className="text-red-500">*</span></label>
                     <input required value={rsbsaNumber} onChange={(e) => setRsbsaNumber(e.target.value)} placeholder="e.g. 03-01-02-123456" className="block w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs" />
                   </div>
                 )}
@@ -998,7 +1028,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                       placeholder="e.g. Juan Dela Cruz"
                       className="block w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs"
                     />
-                    <p className="text-[10px] text-slate-500">Use the same full name shown on your submitted identification.</p>
+                    <p className="text-[10px] text-slate-500">{lang === 'en' ? 'Use the same full name shown on your submitted identification.' : 'Gamitin ang buong pangalang nakasaad sa iyong isinumiteng ID.'}</p>
                   </div>
                 )}
 
@@ -1087,7 +1117,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                   <div className="rounded-2xl border border-cyan-500/30 bg-cyan-950/15 p-4 space-y-3">
                     <h5 className="text-sm font-extrabold text-cyan-800 dark:text-cyan-300"><span className="inline-flex items-center gap-1.5 align-middle"><IconTruck size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Trucking Requirements"}</span></h5>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      {[['Vehicle Type', vehicleType, setVehicleType, 'e.g. 6-wheel truck'], ['Plate Number', plateNumber, setPlateNumber, 'e.g. ABC 1234'], ['Carrying Capacity', carryingCapacity, setCarryingCapacity, 'e.g. 8,000 kg']].map(([label, value, setter, placeholder]) => <div className="space-y-1" key={label as string}><label className="text-xs font-bold text-slate-700 dark:text-slate-300">{label as string} <span className="text-red-500">*</span></label><input required value={value as string} onChange={(e) => (setter as React.Dispatch<React.SetStateAction<string>>)(e.target.value)} placeholder={placeholder as string} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-cyan-500 outline-none" /></div>)}
+                      {[[lang === 'en' ? 'Vehicle Type' : 'Uri ng Sasakyan', vehicleType, setVehicleType, 'e.g. 6-wheel truck'], [lang === 'en' ? 'Plate Number' : 'Plaka ng Sasakyan', plateNumber, setPlateNumber, 'e.g. ABC 1234'], [lang === 'en' ? 'Carrying Capacity' : 'Kakayahang Magdala', carryingCapacity, setCarryingCapacity, 'e.g. 8,000 kg']].map(([label, value, setter, placeholder]) => <div className="space-y-1" key={label as string}><label className="text-xs font-bold text-slate-700 dark:text-slate-300">{label as string} <span className="text-red-500">*</span></label><input required value={value as string} onChange={(e) => (setter as React.Dispatch<React.SetStateAction<string>>)(e.target.value)} placeholder={placeholder as string} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-cyan-500 outline-none" /></div>)}
                     </div>
                     <input id="transport-orcr" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" required={!uploadedDocs.transportOrCr} onChange={(e) => handleFileChange(e, 'transportOrCr')} className="hidden" />
                     <label htmlFor="transport-orcr" className="flex justify-center px-3 py-2 rounded-xl border border-dashed border-cyan-500/50 text-xs font-bold text-cyan-800 dark:text-cyan-300 cursor-pointer"><Upload className="w-4 h-4 mr-2" />{uploadedDocs.transportOrCr ? `OR/CR uploaded: ${uploadedDocs.transportOrCr}` : 'Upload OR/CR image *'}</label>
@@ -1134,6 +1164,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                 {/* FILE UPLOADS GRID */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-2">
 
+                  {!isKioskRegistration && <>
                   {/* Profile Photo (Optional for All Roles) */}
                   <div className="p-3 border border-slate-150 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/30">
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
@@ -1159,7 +1190,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                         className="flex items-center justify-center gap-1.5 px-3 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-emerald-50/30 cursor-pointer transition-all"
                       >
                         <Upload className="w-3.5 h-3.5" />
-                        <span>{uploadedDocs.avatar ? <span className="inline-flex items-center gap-1.5 align-middle">{"Uploaded"}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span> : (lang === 'en' ? 'Choose photo' : 'Pumili ng larawan')}</span>
+                        <span>{uploadedDocs.avatar ? <span className="inline-flex items-center gap-1.5 align-middle">{lang === 'en' ? 'Uploaded' : 'Na-upload'}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span> : (lang === 'en' ? 'Choose photo' : 'Pumili ng larawan')}</span>
                       </label>
                     </div>
                     {uploadedDocs.avatar && (
@@ -1167,18 +1198,24 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                       </span>
                     )}
                   </div>
+                  </>}
                   
                   {/* Required identity document changes with the selected role. */}
+                  {isKioskRegistration ? (
+                    <p className="sm:col-span-2 text-sm font-semibold text-slate-700 dark:text-slate-200">{lang === 'en' ? 'Please proceed to the admin office for ID verification.' : 'Mangyaring pumunta sa tanggapan ng admin para beripikahin ang iyong ID.'}</p>
+                  ) : (
                   <div className="p-3 border border-slate-150 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/30">
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
                       <span className="flex items-center gap-1">
                         <FileText className="w-3.5 h-3.5 text-emerald-500" />
                         <span>{role === 'farmer' ? 'RSBSA Registration ID' : role === 'agricultural_business' ? 'Company ID / Registration' : 'Government ID'}</span>
                       </span>
-                      <span className="text-[10px] text-red-500 font-bold">* required</span>
+                      <span className={`text-[10px] font-bold ${role === 'farmer' && kioskRegistrationMode ? 'text-amber-600 dark:text-amber-400' : 'text-red-500'}`}>{role === 'farmer' && kioskRegistrationMode ? 'Optional at kiosk' : '* required'}</span>
                     </label>
                     <p className="text-[10px] text-slate-600 dark:text-slate-500 mb-2">
-                      {role === 'farmer' ? 'Upload your valid Registry System for Basic Sectors in Agriculture (RSBSA) ID.' : role === 'agricultural_business' ? 'Upload a DTI, SEC, cooperative, or company registration ID.' : "UMID, Driver's License, Passport, Voter's ID, etc."}
+                      {role === 'farmer'
+                        ? (kioskRegistrationMode ? 'You may submit without an image here. Show your physical RSBSA ID to the administrator before approval.' : 'Upload your valid Registry System for Basic Sectors in Agriculture (RSBSA) ID.')
+                        : role === 'agricultural_business' ? 'Upload a DTI, SEC, cooperative, or company registration ID.' : "UMID, Driver's License, Passport, Voter's ID, etc."}
                     </p>
                     <div className="relative">
                       <input
@@ -1193,7 +1230,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                         className="flex items-center justify-center gap-1.5 px-3 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-emerald-50/30 cursor-pointer transition-all"
                       >
                         <Upload className="w-3.5 h-3.5" />
-                        <span>{uploadedDocs.govId ? <span className="inline-flex items-center gap-1.5 align-middle">{"Uploaded"}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span> : (role === 'farmer' ? 'Choose RSBSA ID' : role === 'agricultural_business' ? 'Choose Company ID' : 'Choose Government ID')}</span>
+                        <span>{uploadedDocs.govId ? <span className="inline-flex items-center gap-1.5 align-middle">{lang === 'en' ? 'Uploaded' : 'Na-upload'}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span> : (role === 'farmer' ? (lang === 'en' ? 'Choose RSBSA ID' : 'Piliin ang RSBSA ID') : role === 'agricultural_business' ? (lang === 'en' ? 'Choose Company ID' : 'Piliin ang ID ng kumpanya') : (lang === 'en' ? 'Choose Government ID' : 'Piliin ang ID mula sa pamahalaan'))}</span>
                       </label>
                     </div>
                     {uploadedDocs.govId && (
@@ -1232,16 +1269,17 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                       </div>
                     )}
                   </div>
+                  )}
 
                   {/* Driver's License (Truck only) */}
                   {role === 'truck' && (
                     <div className="p-3 border border-slate-150 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/30">
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
                         <FileText className="w-3.5 h-3.5 text-blue-500" />
-                        <span>Driver's License</span>
+                        <span>{lang === 'en' ? "Driver's License" : 'Lisensya sa Pagmamaneho'}</span>
                       </label>
                       <p className="text-[10px] text-slate-600 dark:text-slate-500 mb-2">
-                        Valid professional driver's license
+                        {lang === 'en' ? "Valid professional driver's license" : 'Balidong lisensyang propesyonal sa pagmamaneho'}
                       </p>
                       <div className="relative">
                         <input
@@ -1256,7 +1294,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                           className="flex items-center justify-center gap-1.5 px-3 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-emerald-50/30 cursor-pointer transition-all"
                         >
                           <Upload className="w-3.5 h-3.5" />
-                          <span>{uploadedDocs.license ? <span className="inline-flex items-center gap-1.5 align-middle">{"Uploaded"}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span> : 'Choose file'}</span>
+                          <span>{uploadedDocs.license ? <span className="inline-flex items-center gap-1.5 align-middle">{lang === 'en' ? 'Uploaded' : 'Na-upload'}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span> : (lang === 'en' ? 'Choose file' : 'Pumili ng file')}</span>
                         </label>
                       </div>
                       {uploadedDocs.license && (
@@ -1297,7 +1335,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                     <div className="p-3 border border-slate-150 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/30">
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
                         <FileText className="w-3.5 h-3.5 text-amber-500" />
-                        <span>OR/CR ng Sasakyan</span>
+                        <span>{lang === 'en' ? 'Vehicle OR/CR' : 'OR/CR ng Sasakyan'}</span>
                       </label>
                       <p className="text-[10px] text-slate-600 dark:text-slate-500 mb-2">
                         Official Receipt & Certificate of Registration
@@ -1315,7 +1353,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                           className="flex items-center justify-center gap-1.5 px-3 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-emerald-50/30 cursor-pointer transition-all"
                         >
                           <Upload className="w-3.5 h-3.5" />
-                          <span>{uploadedDocs.orCr ? <span className="inline-flex items-center gap-1.5 align-middle">{"Uploaded"}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span> : 'Choose file'}</span>
+                          <span>{uploadedDocs.orCr ? <span className="inline-flex items-center gap-1.5 align-middle">{lang === 'en' ? 'Uploaded' : 'Na-upload'}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span> : (lang === 'en' ? 'Choose file' : 'Pumili ng file')}</span>
                         </label>
                       </div>
                       {uploadedDocs.orCr && (
@@ -1356,7 +1394,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                     <div className="p-3 border border-slate-150 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/30">
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
                         <FileText className="w-3.5 h-3.5 text-purple-500" />
-                        <span>Proof of Ownership</span>
+                        <span>{lang === 'en' ? 'Proof of Ownership' : 'Katibayan ng Pagmamay-ari'}</span>
                       </label>
                       <p className="text-[10px] text-slate-600 dark:text-slate-500 mb-2">
                         DTI Permit, Land Title, Lease Contract
@@ -1374,7 +1412,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                           className="flex items-center justify-center gap-1.5 px-3 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-emerald-50/30 cursor-pointer transition-all"
                         >
                           <Upload className="w-3.5 h-3.5" />
-                          <span>{uploadedDocs.proofOwnership ? <span className="inline-flex items-center gap-1.5 align-middle">{"Uploaded"}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span> : 'Choose file'}</span>
+                          <span>{uploadedDocs.proofOwnership ? <span className="inline-flex items-center gap-1.5 align-middle">{lang === 'en' ? 'Uploaded' : 'Na-upload'}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span> : (lang === 'en' ? 'Choose file' : 'Pumili ng file')}</span>
                         </label>
                       </div>
                       {uploadedDocs.proofOwnership && (
@@ -1506,6 +1544,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
             </div>}
 
           </form>
+          {kioskRegistrationMode && <div className="mt-3 flex justify-center"><span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-bold text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300">{lang === 'en' ? 'Kiosk registration enabled' : 'Naka-enable ang pagpaparehistro sa kiosk'}</span></div>}
         </motion.div>
       </div>
       </div>
@@ -1525,8 +1564,8 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
             className="my-auto max-h-[calc(100dvh-1.5rem)] w-full max-w-xl overflow-y-auto rounded-2xl md:rounded-3xl border border-emerald-500/30 bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xl"
           >
             <div className="bg-gradient-to-r from-emerald-700 to-teal-600 px-6 py-5">
-              <button type="button" aria-label="Close popup" onClick={() => setShowRegistrationSummary(false)} className="float-right relative z-10 flex h-9 w-9 items-center justify-center rounded-full text-xl hover:bg-slate-500/20">&times;</button>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-100">Final Review</p>
+              <button type="button" aria-label={lang === 'en' ? 'Close popup' : 'Isara ang popup'} onClick={() => setShowRegistrationSummary(false)} className="float-right relative z-10 flex h-9 w-9 items-center justify-center rounded-full text-xl hover:bg-slate-500/20">&times;</button>
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-100">{lang === 'en' ? 'Final Review' : 'Panghuling Pagsusuri'}</p>
               <h2 id="registration-summary-title" className="mt-1 text-xl font-black">
                 {lang === 'en' ? 'Registration Summary' : 'Buod ng Rehistrasyon'}
               </h2>
@@ -1537,22 +1576,22 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
 
             <div className="max-h-[60vh] space-y-4 overflow-y-auto p-4 md:p-6">
               <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-                <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">Account category</span><strong>{lang === 'en' ? roleLabels[role].titleEN : roleLabels[role].titleTL}</strong></div>
-                <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">Username / company</span><strong className="break-words">{name.trim()}</strong></div>
-                {(fullName.trim() || contactPersonName.trim()) && <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">Full name / contact person</span><strong className="break-words">{fullName.trim() || contactPersonName.trim()}</strong></div>}
+                <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">{lang === 'en' ? 'Account category' : 'Uri ng account'}</span><strong>{lang === 'en' ? roleLabels[role].titleEN : roleLabels[role].titleTL}</strong></div>
+                <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">{lang === 'en' ? 'Username / company' : 'Username / kumpanya'}</span><strong className="break-words">{name.trim()}</strong></div>
+                {(fullName.trim() || contactPersonName.trim()) && <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">{lang === 'en' ? 'Full name / contact person' : 'Buong pangalan / taong kokontakin'}</span><strong className="break-words">{fullName.trim() || contactPersonName.trim()}</strong></div>}
                 <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">Email</span><strong className="break-all">{email.trim()}</strong></div>
-                <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">Contact number</span><strong>{contactNumber.trim()}</strong></div>
-                <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">Complete address</span><strong className="break-words">{address.trim()}</strong></div>
+                <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">{lang === 'en' ? 'Contact number' : 'Numero ng telepono'}</span><strong>{contactNumber.trim()}</strong></div>
+                <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">{lang === 'en' ? 'Complete address' : 'Kumpletong address'}</span><strong className="break-words">{address.trim()}</strong></div>
               </div>
 
-              {role === 'farmer' && <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-sm"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">RSBSA number</span><strong>{rsbsaNumber.trim()}</strong></div>}
+              {role === 'farmer' && <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-sm"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">{lang === 'en' ? 'RSBSA number' : 'Numero ng RSBSA'}</span><strong>{rsbsaNumber.trim()}</strong></div>}
               {role === 'agricultural_business' && (
                 <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4">
-                  <span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">Selected business functions</span>
-                  <p className="mt-2 text-sm font-semibold text-slate-800 dark:text-slate-200">{selectedLogisticsServices.length ? selectedLogisticsServices.map(service => service.replace('_', ' ')).join(', ') : 'None — enable later from your account'}</p>
+                  <span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">{lang === 'en' ? 'Selected business functions' : 'Mga napiling serbisyo ng negosyo'}</span>
+                  <p className="mt-2 text-sm font-semibold text-slate-800 dark:text-slate-200">{selectedLogisticsServices.length ? selectedLogisticsServices.map(service => service.replace('_', ' ')).join(', ') : (lang === 'en' ? 'None — enable later from your account' : 'Wala — maaari itong i-enable sa iyong account sa susunod')}</p>
                 </div>
               )}
-              <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-sm"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">Uploaded documents</span><strong>{Object.keys(uploadedDocs).filter(key => !key.endsWith('Data')).length} file(s)</strong></div>
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-sm"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">{lang === 'en' ? 'Uploaded documents' : 'Mga na-upload na dokumento'}</span><strong>{Object.keys(uploadedDocs).filter(key => !key.endsWith('Data')).length} {lang === 'en' ? 'file(s)' : 'file'}</strong></div>
             </div>
 
             <div className="grid grid-cols-1 gap-3 border-t border-slate-200 dark:border-slate-800 p-4 min-[390px]:grid-cols-2 md:grid-cols-2 md:p-5">
@@ -1604,79 +1643,6 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                   ? 'Choose an account to proceed to KAWING Platform' 
                   : 'Pumili ng account para magpatuloy sa KAWING Platform'}
               </p>
-            </div>
-
-            {/* Quick Select Accounts */}
-            <div className="space-y-2.5">
-              <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-500 tracking-wider block">
-                {lang === 'en' ? 'Saved Google Accounts' : 'Mga Naka-save na Google Accounts'}
-              </span>
-
-              {/* Account 1: Approved Farmer */}
-              <button
-                type="button"
-                onClick={() => handleGoogleAccountSelect('Mang Juan Dela Cruz', 'magsasaka@kawing.com')}
-                className="w-full flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 dark:hover:border-emerald-500 rounded-2xl bg-slate-50/60 dark:bg-slate-800/50 hover:bg-emerald-50/30 dark:hover:bg-slate-800 text-left transition-all cursor-pointer group"
-              >
-                <div className="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-sm shrink-0">
-                  MJ
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 truncate">
-                    Mang Juan Dela Cruz
-                  </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate font-mono">
-                    magsasaka@kawing.com
-                  </p>
-                </div>
-                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-400 px-2 py-0.5 rounded-md shrink-0">
-                  Approved
-                </span>
-              </button>
-
-              {/* Account 2: Approved Buyer */}
-              <button
-                type="button"
-                onClick={() => handleGoogleAccountSelect('Aling Maria Santos', 'mamimili@kawing.com')}
-                className="w-full flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 dark:hover:border-emerald-500 rounded-2xl bg-slate-50/60 dark:bg-slate-800/50 hover:bg-emerald-50/30 dark:hover:bg-slate-800 text-left transition-all cursor-pointer group"
-              >
-                <div className="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-sm shrink-0">
-                  AM
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 truncate">
-                    Aling Maria Santos
-                  </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate font-mono">
-                    mamimili@kawing.com
-                  </p>
-                </div>
-                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-400 px-2 py-0.5 rounded-md shrink-0">
-                  Approved
-                </span>
-              </button>
-
-              {/* Account 3: Pending Approval Farmer */}
-              <button
-                type="button"
-                onClick={() => handleGoogleAccountSelect('Tatay Pedring Ramos', 'pedring.ramos@gmail.com')}
-                className="w-full flex items-center gap-3 p-3 border border-amber-200 dark:border-amber-900/60 hover:border-amber-500 rounded-2xl bg-amber-50/40 dark:bg-amber-950/20 hover:bg-amber-50/80 text-left transition-all cursor-pointer group"
-              >
-                <div className="w-10 h-10 rounded-full bg-amber-600 text-white font-bold flex items-center justify-center text-sm shrink-0">
-                  TP
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 truncate">
-                    Tatay Pedring Ramos
-                  </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate font-mono">
-                    pedring.ramos@gmail.com
-                  </p>
-                </div>
-                <span className="text-[10px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/80 dark:text-amber-400 px-2 py-0.5 rounded-md shrink-0">
-                  Pending Admin
-                </span>
-              </button>
             </div>
 
             {/* Custom Google Account Input */}

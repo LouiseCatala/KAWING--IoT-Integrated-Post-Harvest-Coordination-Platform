@@ -24,6 +24,7 @@ $collections = [
 $pdo->exec("UPDATE service_requests
     SET status = 'expired', data = JSON_SET(data, '$.status', 'expired'), updated_at = CURRENT_TIMESTAMP
     WHERE status = 'pending' AND created_at < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 3 MONTH)");
+cleanupExpiredOperationalRecords($pdo);
 
 $sessionIdentity = static function () use ($pdo): array {
     $email = strtolower(trim((string) ($_SESSION['kawing_user_email'] ?? '')));
@@ -151,6 +152,11 @@ $saveDatabase = static function (array $data) use ($pdo, $replaceRows): void {
 
 try {
     if (($path === '' || $path === 'health') && $method === 'GET') respond(['status' => 'ok', 'runtime' => 'php-mysql', 'timestamp' => gmdate(DATE_ATOM)]);
+    if ($path === 'kiosk/status' && $method === 'GET') {
+        $providedKioskId = requestHeader('x-kawing-kiosk-id');
+        $enabled = $kioskDeviceId !== '' && $providedKioskId !== '' && hash_equals($kioskDeviceId, $providedKioskId);
+        respond(['enabled' => $enabled]);
+    }
     if ($path === 'ratings' && in_array($method, ['GET', 'POST'], true)) handleRatings($pdo, $method, $sessionIdentity());
     if ($path === 'registrations' && $method === 'POST') {
         $body = jsonBody();
@@ -164,16 +170,31 @@ try {
         if (strlen($password) < 8 || !preg_match('/[A-Za-z]/', $password) || !preg_match('/\d/', $password) || !preg_match('/[^A-Za-z0-9]/', $password)) {
             respond(['error' => 'Password requirements were not met.'], 422);
         }
+        $providedKioskId = trim((string) ($body['kioskId'] ?? ''));
+        $kioskRegistration = $kioskDeviceId !== '' && $providedKioskId !== '' && hash_equals($kioskDeviceId, $providedKioskId);
+        $hasRegistrationId = !empty($body['documents']['govIdData']);
+        $requiresRegistrationId = in_array($role, ['farmer', 'agricultural_business'], true);
+        if ($requiresRegistrationId && !$hasRegistrationId && !$kioskRegistration) {
+            respond(['error' => 'Upload the required registration ID, or submit from an enabled KAWING kiosk.'], 422);
+        }
         beginEndpointWrite($pdo, ['users-directory', 'users:' . $email]);
         $duplicate = $pdo->prepare('SELECT COUNT(*) FROM users WHERE LOWER(email) = ? OR LOWER(name) = LOWER(?)');
         $duplicate->execute([$email, $name]);
         if ((int) $duplicate->fetchColumn() > 0) respond(['error' => 'That email address or account name is already registered.'], 409);
         $account = $body;
         unset($account['password'], $account['password_hash'], $account['passwordHash']);
+        unset($account['kioskId']);
         $account['name'] = $name;
         $account['email'] = $email;
         $account['role'] = $role;
         $account['isApproved'] = false;
+        if ($requiresRegistrationId && $kioskRegistration && !$hasRegistrationId) {
+            $account['registrationSource'] = 'kiosk';
+            $account['registrationDocumentStatus'] = 'pending_physical_verification';
+            if ($role === 'farmer') $account['rsbsaDocumentStatus'] = 'pending_physical_verification';
+        } else {
+            unset($account['registrationSource'], $account['registrationDocumentStatus'], $account['rsbsaDocumentStatus']);
+        }
         $statement = $pdo->prepare('INSERT INTO users (email,name,password_hash,role,is_approved,data) VALUES (?,?,?,?,0,?)');
         $statement->execute([$email, $name, password_hash($password, PASSWORD_DEFAULT), $role, json_encode($account)]);
         respond(['success' => true, 'user' => $account], 201);
@@ -472,64 +493,46 @@ try {
         // Older cached clients must not overwrite collections maintained by live clients.
         respond(['error' => 'Please reload KAWING to use the updated synchronization protocol.'], 409);
     }
-    if ($path === 'db/clear-demo' && $method === 'POST') {
-        $requireAdmin();
-        $environment = strtolower((string) ($_ENV['APP_ENV'] ?? getenv('APP_ENV') ?: 'production'));
-        if (!in_array($environment, ['development', 'local', 'demo'], true)) respond(['error' => 'Demo cleanup is disabled in this environment.'], 403);
-        $pdo->beginTransaction();
-        try {
-            foreach (['notifications', 'production_loans', 'offers', 'offered_services', 'service_requests', 'harvests'] as $table) $pdo->exec("DELETE FROM {$table}");
-            $pdo->exec("DELETE FROM users WHERE role <> 'admin'");
-            $pdo->commit();
-        } catch (Throwable $error) {
-            if ($pdo->inTransaction()) $pdo->rollBack();
-            throw $error;
+    if ($path === 'moisture-pair' && in_array($method, ['POST', 'DELETE'], true)) {
+        require_once __DIR__ . '/palaysense.php';
+        $identity = $sessionIdentity();
+        if ($identity['role'] !== 'farmer') respond(['error' => 'Farmer account required.'], 403);
+        $body = jsonBody();
+        $deviceId = trim((string) ($body['deviceId'] ?? ''));
+        if ($deviceId !== 'ESP32-GRAIN-01') respond(['error' => 'Unknown PalaySense device.'], 422);
+        if ($method === 'POST') {
+            $query = $pdo->prepare("SELECT 1 FROM users WHERE LOWER(email)=? AND role='farmer' AND is_approved=1");
+            $query->execute([$identity['email']]);
+            if (!$query->fetchColumn()) respond(['error' => 'Farmer account is not available.'], 403);
+            palaySensePair($identity['email'], $deviceId);
+            respond(['paired' => true, 'expiresInSeconds' => 600]);
         }
-        respond(['success' => true, 'message' => 'Demo data cleared. Existing server-managed administrators were preserved.']);
+        palaySenseUnpair($identity['email'], $deviceId);
+        respond(['paired' => false]);
     }
 
-    if ($path === 'moisture-readings' && $method === 'POST') {
-        if ($iotApiKey !== '' && !hash_equals($iotApiKey, requestHeader('x-api-key'))) respond(['error' => 'Invalid IoT API key.'], 401);
-        $body = jsonBody();
-        $moisture = $body['moisturePercentage'] ?? $body['moisture_percentage'] ?? null;
-        if (!is_numeric($moisture) || (float) $moisture < 0 || (float) $moisture > 100) respond(['error' => 'moisturePercentage must be between 0 and 100.'], 400);
-        $moisture = (float) $moisture;
-        $classification = $moisture >= 17
-            ? 'Wet (17% MC and above)'
-            : ($moisture >= 15
-                ? 'Moderate (15-16.9% MC)'
-                : ($moisture >= 12 ? 'Dry (12-14.9% MC)' : 'Risk of Grain Breakage (Below 12% MC)'));
-        $deviceId = $body['deviceId'] ?? $body['device_id'] ?? 'ESP32-GRAIN-01';
-        $gatewayId = $body['gatewayId'] ?? $body['gateway_id'] ?? null;
-        // Keep the same reading ID when a gateway retries a sample.
-        $readingId = requestHeader('idempotency-key') ?: (string) ($body['readingId'] ?? $body['reading_id'] ?? '');
-        $receiptKey = '__sensor_' . hash('sha256', $deviceId . ':' . $readingId);
-        beginEndpointWrite($pdo, ['sensor:' . $deviceId, $receiptKey]);
-        $sampleHash = hash('sha256', json_encode($body, JSON_THROW_ON_ERROR));
-        if ($readingId !== '') {
-            $receiptQuery = $pdo->prepare('SELECT setting_value FROM system_settings WHERE setting_key=? FOR UPDATE');
-            $receiptQuery->execute([$receiptKey]);
-            $receipt = json_decode((string) ($receiptQuery->fetchColumn() ?: 'null'), true);
-            if ($receipt) {
-                if ($receipt['hash'] !== $sampleHash) throw new LiveConflict('This reading ID was already used for a different sample.');
-                respond($receipt['response'], 201);
-            }
+    if ($path === 'moisture-readings') {
+        require_once __DIR__ . '/palaysense.php';
+        if ($method === 'POST') {
+            if ($iotApiKey === '') respond(['error' => 'Configure the IoT API key before connecting PalaySense.'], 503);
+            if (!hash_equals($iotApiKey, requestHeader('x-api-key'))) respond(['error' => 'Invalid IoT API key.'], 401);
+            $body = jsonBody();
+            $value = $body['moisturePercentage'] ?? $body['moisture_percentage'] ?? null;
+            if (!is_numeric($value) || !is_finite((float) $value) || (float) $value < 0 || (float) $value > 100) respond(['error' => 'moisturePercentage must be between 0 and 100.'], 422);
+            $deviceId = substr((string) ($body['deviceId'] ?? $body['device_id'] ?? 'ESP32-GRAIN-01'), 0, 100);
+            $reading = palaySenseSubmit($deviceId, (float) $value);
+            respond(['moisturePercentage' => $reading['moisture_percentage'], 'deviceId' => $reading['device_id'], 'temporary' => true], 201);
         }
-        $pdo->prepare('INSERT INTO iot_devices (device_id,gateway_id,last_seen_at) VALUES (?,?,NOW()) ON DUPLICATE KEY UPDATE gateway_id=VALUES(gateway_id),last_seen_at=NOW(),is_active=1')->execute([$deviceId, $gatewayId]);
-        $statement = $pdo->prepare('INSERT INTO moisture_readings (harvest_id,batch_id,farmer_email,farmer_name,raw_value,moisture_percentage,quality_classification,device_id,gateway_id) VALUES (?,?,?,?,?,?,?,?,?)');
-        $statement->execute([$body['harvestId'] ?? $body['harvest_id'] ?? null, $body['batchId'] ?? $body['batch_id'] ?? ('BATCH-' . time()), $body['farmerEmail'] ?? $body['farmer_email'] ?? null, $body['farmerName'] ?? $body['farmer_name'] ?? null, $body['rawValue'] ?? $body['raw_value'] ?? null, $moisture, $classification, $deviceId, $gatewayId]);
-        $response = ['id' => (int) $pdo->lastInsertId(), 'moisturePercentage' => $moisture, 'qualityClassification' => $classification, 'deviceId' => $deviceId];
-        if ($readingId !== '') $pdo->prepare('INSERT INTO system_settings (setting_key,setting_value) VALUES (?,?)')->execute([$receiptKey, json_encode(['hash' => $sampleHash, 'response' => $response], JSON_THROW_ON_ERROR)]);
-        respond($response, 201);
-    }
-    if ($path === 'moisture-readings' && $method === 'GET') {
-        $conditions = []; $values = [];
-        foreach (['harvestId' => 'harvest_id', 'deviceId' => 'device_id'] as $query => $column) if (!empty($_GET[$query])) { $conditions[] = "{$column} = ?"; $values[] = $_GET[$query]; }
-        if (!empty($_GET['farmerEmail'])) { $conditions[] = ($_GET['includeUnassigned'] ?? '') === 'true' ? '(farmer_email = ? OR farmer_email IS NULL)' : 'farmer_email = ?'; $values[] = $_GET['farmerEmail']; }
-        if (!empty($_GET['since'])) { $conditions[] = 'recorded_at >= ?'; $values[] = date('Y-m-d H:i:s', strtotime($_GET['since'])); }
-        $limit = min(max((int) ($_GET['limit'] ?? 50), 1), 500);
-        $statement = $pdo->prepare('SELECT * FROM moisture_readings' . ($conditions ? ' WHERE ' . implode(' AND ', $conditions) : '') . " ORDER BY recorded_at DESC LIMIT {$limit}");
-        $statement->execute($values); respond(['data' => $statement->fetchAll()]);
+        if ($method === 'GET') {
+            $identity = $sessionIdentity();
+            if ($identity['role'] !== 'farmer') respond(['error' => 'Farmer account required.'], 403);
+            $reading = palaySenseLatest($identity['email'], 'ESP32-GRAIN-01');
+            $since = isset($_GET['since']) ? strtotime((string) $_GET['since']) : false;
+            if ($since === false) respond(['error' => 'A form start time is required.'], 422);
+            if ($reading && strtotime($reading['recorded_at']) < $since) $reading = null;
+            respond(['data' => $reading ? [$reading] : []]);
+        }
+        respond(['error' => 'Method not allowed.'], 405);
     }
 
     if ($path === 'auth/google/url' && $method === 'GET') {
