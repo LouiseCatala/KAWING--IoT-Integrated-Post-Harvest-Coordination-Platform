@@ -54,7 +54,7 @@ $privateConfig = $privateRoot . '/kawing-config.php';
 $settings = is_file($privateConfig) ? require $privateConfig : [];
 $readSetting = static function (string $key, string $env, mixed $fallback = null) use ($settings): mixed {
     $value = $_ENV[$env] ?? $_SERVER[$env] ?? getenv($env);
-    return ($value !== false && $value !== '') ? $value : ($settings[$key] ?? $fallback);
+    return ($value !== false && $value !== '') ? $value : ($settings[$key] ?? $settings[$env] ?? $fallback);
 };
 
 $dbHost = (string) $readSetting('db_host', 'DB_HOST', 'localhost');
@@ -70,6 +70,8 @@ $sseEnabled = filter_var($readSetting('sse_enabled', 'KAWING_SSE_ENABLED', PHP_S
 $adminApiKey = (string) $readSetting('admin_api_key', 'ADMIN_API_KEY', '');
 $kioskDeviceId = (string) $readSetting('kiosk_device_id', 'KAWING_KIOSK_ID', '');
 $geminiApiKey = (string) $readSetting('gemini_api_key', 'GEMINI_API_KEY', '');
+$cloudflareAccountId = (string) $readSetting('cloudflare_account_id', 'CLOUDFLARE_ACCOUNT_ID', '');
+$cloudflareAiToken = (string) $readSetting('cloudflare_ai_token', 'CLOUDFLARE_AI_TOKEN', '');
 $fishAudioApiKey = (string) $readSetting('fish_audio_api_key', 'FISH_AUDIO_API_KEY', '');
 $fishAudioReferenceId = (string) $readSetting('fish_audio_reference_id', 'FISH_AUDIO_REFERENCE_ID', '');
 $caBundle = is_file($privateRoot . '/certs/cacert.pem') ? $privateRoot . '/certs/cacert.pem' : '';

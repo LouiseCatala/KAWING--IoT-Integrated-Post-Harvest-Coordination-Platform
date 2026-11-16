@@ -242,7 +242,6 @@ function deleteAdminUserRecords(PDO $pdo, string $email): array {
         if (liveTableExists($pdo, $table)) $pdo->prepare("DELETE FROM {$table} WHERE LOWER(reviewer_email)=? OR LOWER(recipient_email)=?")->execute([$email, $email]);
     }
     if (liveTableExists($pdo, 'email_deliveries')) $pdo->prepare('DELETE FROM email_deliveries WHERE LOWER(recipient_email)=?')->execute([$email]);
-    if (liveTableExists($pdo, 'ai_daily_usage')) $pdo->prepare('DELETE FROM ai_daily_usage WHERE LOWER(user_email)=?')->execute([$email]);
 
     return ['users', 'harvests', 'services', 'offers', 'offeredServices', 'productionLoans', 'notifications'];
 }

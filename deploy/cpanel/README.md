@@ -10,7 +10,7 @@
 
 1. In **MySQL Databases**, create a database and user, then grant the user **All Privileges**.
 2. Select that database in phpMyAdmin and import `deploy/cpanel/schema.sql`.
-3. Copy `deploy/cpanel/kawing-config.example.php` to `/home/CPANEL_USERNAME/kawing-config.php`. Replace the database credentials, domain, and IoT key. Do not put this file inside `public_html`.
+3. Copy `deploy/cpanel/kawing-config.example.php` to `/home/CPANEL_USERNAME/kawing-config.php`. Replace the database credentials, domain, and IoT key. Configure Grainy's `gemini_api_key`, `cloudflare_account_id`, and `cloudflare_ai_token` there too. Keep the config outside `public_html` and never commit it.
 4. On your development computer run `npm install`, install PHP dependencies with `php composer.phar install --no-dev --optimize-autoloader`, then run `npm run build:cpanel`.
 5. Upload the **contents** of `dist/` into `public_html/`. Include hidden `.htaccess` files and the `api/` directory.
 6. Open `https://YOUR_DOMAIN/api/health`. It should report `"runtime":"php-mysql"`.
@@ -39,6 +39,14 @@ curl -X POST "https://YOUR_DOMAIN/api/email/test" \
 
 Users receive email only after choosing **Allow Email Updates** in KAWING. Each notification ID is recorded in `email_deliveries`, preventing duplicate emails when the frontend synchronizes repeatedly. SMTP failures are recorded in that table and the cPanel PHP error log without interrupting normal app use.
 
+## Grainy AI provider limits
+
+- Local development reads `GEMINI_API_KEY`, `CLOUDFLARE_ACCOUNT_ID`, and `CLOUDFLARE_AI_TOKEN` from the project-root `.env` file (or matching values in the project-root `kawing-config.php`). Restart `npm run dev` after changing these values.
+- Hostinger reads the same three settings from `/home/CPANEL_USERNAME/kawing-config.php`; `.env` is not part of the uploaded `dist/` files.
+- KAWING routes at most 120 questions per Philippine calendar day to Gemini, then at most 50 questions to Cloudflare Workers AI. If a provider errors or either provider's limit is reached, Grainy uses saved local help.
+- To avoid provider charges, keep the Gemini project on Google's Free tier and the Cloudflare account on Workers Free. KAWING's request caps do not replace those provider account settings.
+- Create a Cloudflare API token with Account → Workers AI → Read permission. Never place provider tokens in frontend code or `public_html`.
+
 ## ESP32 / PalaySense
 
 Keep the ESP32 configured with the app's `IOT_API_KEY` and `deviceId` (`ESP32-GRAIN-01`). It posts `deviceId`, `rawValue`, and `moisturePercentage` to `/api/moisture-readings`. It does not need a farmer email or any database credentials.
@@ -50,5 +58,5 @@ The sketch currently targets a local IP address. For deployment, change `KAWING_
 
 - Docker, Node.js, and Composer are not needed on cPanel after the locally built `dist/` folder is uploaded.
 - `/api/db`, `/api/db/sync`, `/api/db/clear-demo`, and PalaySense use PHP/PDO.
-- Grainy and ID analysis keep their existing browser fallbacks; their server-side Gemini implementation is optional and not enabled by this PHP migration.
+- Grainy uses server-side Gemini first, then Cloudflare Workers AI within the daily caps above, and saved local help as a fallback.
 - Google sign-in falls back to the app's account chooser until the PHP OAuth callback is configured.

@@ -13,6 +13,8 @@ return [
     'admin_api_key' => 'REPLACE_WITH_A_DIFFERENT_LONG_RANDOM_KEY',
     'kiosk_device_id' => '',
     'gemini_api_key' => 'REPLACE_WITH_GEMINI_API_KEY',
+    'cloudflare_account_id' => 'REPLACE_WITH_CLOUDFLARE_ACCOUNT_ID',
+    'cloudflare_ai_token' => 'REPLACE_WITH_CLOUDFLARE_AI_TOKEN',
     'fish_audio_api_key' => 'REPLACE_WITH_FISH_AUDIO_API_KEY',
     'fish_audio_reference_id' => 'ad5685d84b4d4e9d8fd74ff3b12b30b2',
     'smtp_enabled' => true,

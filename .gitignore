@@ -11,5 +11,6 @@ coverage/
 .env*
 !.env.example
 kawing-config.php
+deploy/cpanel/kawing-config.private.php
 database/before-*.sql
 database/*backup*.sql

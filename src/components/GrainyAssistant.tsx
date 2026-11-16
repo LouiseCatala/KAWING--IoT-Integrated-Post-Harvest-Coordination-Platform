@@ -191,20 +191,22 @@ export default function GrainyAssistant({ user }: { user: UserAccount }) {
     setLoading(true);
     let reply = '';
     let fallbackReason = lang === 'en' ? 'The AI connection could not be verified. Showing saved help.' : 'Hindi ma-verify ang AI connection. Naka-save na tulong ang ipinapakita.';
-    type GrainyModel = 'gemini-3.5-flash-lite' | 'gemini-3.1-flash-lite' | 'gemini-3.6-flash' | 'gemini-3-flash-preview' | 'local';
+    type GrainyModel = 'gemini-3.5-flash-lite' | 'gemini-3.1-flash-lite' | 'gemini-3.6-flash' | 'gemini-3-flash-preview' | '@cf/google/gemma-4-26b-a4b-it' | '@cf/aisingapore/gemma-sea-lion-v4-27b-it' | 'local';
     let selectedModel: GrainyModel = 'local';
+    let reservation = '';
     try {
       const usageResponse = await fetch('/api/grainy/usage', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, question }),
+        body: JSON.stringify({ email: user.email, question, lang }),
       });
       if (usageResponse.ok) {
-        const usage = await usageResponse.json() as { model?: string };
-        const supportedModels: GrainyModel[] = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.6-flash', 'gemini-3-flash-preview', 'local'];
+        const usage = await usageResponse.json() as { model?: string; reservation?: string };
+        const supportedModels: GrainyModel[] = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.6-flash', 'gemini-3-flash-preview', '@cf/google/gemma-4-26b-a4b-it', '@cf/aisingapore/gemma-sea-lion-v4-27b-it', 'local'];
         if (supportedModels.includes(usage.model as GrainyModel)) {
           selectedModel = usage.model as GrainyModel;
-          if (usage.model === 'local') fallbackReason = lang === 'en' ? 'Your daily AI allowance has been reached. Showing saved help.' : 'Naabot na ang daily AI allowance. Naka-save na tulong ang ipinapakita.';
+          reservation = usage.reservation || '';
+          if (usage.model === 'local') fallbackReason = lang === 'en' ? 'The daily AI limit has been reached. Showing saved help.' : 'Naabot na ang daily AI limit. Naka-save na tulong ang ipinapakita.';
         }
       }
     } catch {
@@ -224,12 +226,33 @@ export default function GrainyAssistant({ user }: { user: UserAccount }) {
         })),
         { role: 'user', content: question },
       ];
-      const aiResponse = await fetch('/api/grainy/chat', {
+      let aiResponse = await fetch('/api/grainy/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
-        body: JSON.stringify({ email: user.email, conversation, model: selectedModel }),
+        body: JSON.stringify({ email: user.email, conversation, model: selectedModel, reservation, lang }),
       });
+      if (!aiResponse.ok && selectedModel.startsWith('gemini-')) {
+        const fallbackUsageResponse = await fetch('/api/grainy/usage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ email: user.email, question, lang, forceCloudflare: true }),
+        });
+        if (fallbackUsageResponse.ok) {
+          const fallbackUsage = await fallbackUsageResponse.json() as { model?: string; reservation?: string };
+          if (fallbackUsage.model?.startsWith('@cf/')) {
+            selectedModel = fallbackUsage.model as GrainyModel;
+            reservation = fallbackUsage.reservation || '';
+            aiResponse = await fetch('/api/grainy/chat', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'same-origin',
+              body: JSON.stringify({ email: user.email, conversation, model: selectedModel, reservation, lang }),
+            });
+          }
+        }
+      }
       if (!aiResponse.ok) throw new Error('KAWING AI is unavailable');
       const response = await aiResponse.json() as { message?: { content?: unknown }; text?: unknown } | string;
       const content = typeof response === 'string' ? response : response?.message?.content ?? response?.text;
