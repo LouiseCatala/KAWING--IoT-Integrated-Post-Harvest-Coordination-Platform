@@ -1,7 +1,7 @@
 import { useLiveRevision } from '../../lib/useLiveRevision';
 import React, { useEffect, useRef, useState } from 'react';
 import { Trash2, Pencil, PlusCircle, X, Save, Calendar, CheckCircle } from 'lucide-react';
-import WeatherWidget from '../WeatherWidget';
+import WeatherWidget from '../../components/WeatherWidget';
 import AdminConfirmationModal from './AdminConfirmationModal';
 
 interface AnnouncementsTabProps {

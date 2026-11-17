@@ -3,9 +3,9 @@ USE kawing;
 
 CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(191) PRIMARY KEY, name VARCHAR(191) NOT NULL, password_hash VARCHAR(255) NULL, role VARCHAR(32) NOT NULL,
-  is_approved BOOLEAN NOT NULL DEFAULT FALSE, data JSON NOT NULL,
+  is_approved BOOLEAN NOT NULL DEFAULT FALSE, palaysense_id VARCHAR(64) NULL, data JSON NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_users_role_approved (role, is_approved)
+  INDEX idx_users_role_approved (role, is_approved), UNIQUE KEY uq_users_palaysense_id (palaysense_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 

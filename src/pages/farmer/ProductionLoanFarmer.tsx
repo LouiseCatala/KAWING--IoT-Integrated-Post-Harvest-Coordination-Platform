@@ -1,12 +1,12 @@
 import { IconWheat } from '@tabler/icons-react';
 import React, { useEffect, useRef, useState } from 'react';
-import { UserAccount, ProductionLoanRequest, ProductionLoanPurpose, ProductionLoanStatus } from '../types';
+import { UserAccount, ProductionLoanRequest, ProductionLoanPurpose, ProductionLoanStatus } from '../../types';
 import { Landmark, AlertCircle, CheckCircle2, Clock, XCircle, FileText, ChevronRight, Filter, ShieldAlert, Sparkles, Send, Ban, Info } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useApp } from '../context/AppContext';
-import AnimatedButton from './AnimatedButton';
-import { hasApprovedBusinessCapability } from '../lib/businessCapabilities';
-import CoordinatedContactCard from './CoordinatedContactCard';
+import { useApp } from '../../context/AppContext';
+import AnimatedButton from '../../components/AnimatedButton';
+import { hasApprovedBusinessCapability } from '../../lib/businessCapabilities';
+import CoordinatedContactCard from '../../components/CoordinatedContactCard';
 
 interface ProductionLoanFarmerProps {
   user: UserAccount;

@@ -8,7 +8,7 @@
 
 **Tech Stack:** React 19, TypeScript, PHP, MySQL
 
-**Spec:** `docs/superpowers/specs/2026-11-13-service-fulfillment-workflow-design.md`
+**Spec:** `docs/specs/2026-11-13-service-fulfillment-workflow-design.md`
 
 ## Global Constraints
 

@@ -1,13 +1,13 @@
 import { IconCash, IconPackage, IconWheat } from '@tabler/icons-react';
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { UserAccount, BuyerLoanConfig, ProductionLoanRequest, ProductionLoanStatus } from '../types';
+import { UserAccount, BuyerLoanConfig, ProductionLoanRequest, ProductionLoanStatus } from '../../types';
 import { Landmark, AlertTriangle, CheckCircle2, Clock, XCircle, FileText, Settings, Sparkles, DollarSign, Power, Edit3, ShieldAlert, Check, X, Info, UserCheck, Lock, Unlock, PlusCircle, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useApp } from '../context/AppContext';
-import AnimatedButton from './AnimatedButton';
-import { alertDialog, askConfirmation } from '../lib/appDialog';
-import CoordinatedContactCard from './CoordinatedContactCard';
+import { useApp } from '../../context/AppContext';
+import AnimatedButton from '../../components/AnimatedButton';
+import { alertDialog, askConfirmation } from '../../lib/appDialog';
+import CoordinatedContactCard from '../../components/CoordinatedContactCard';
 
 const alert = (message: string) => { void alertDialog(message, { tone: 'info' }); };
 

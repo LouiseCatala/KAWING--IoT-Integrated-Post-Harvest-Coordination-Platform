@@ -1,13 +1,13 @@
 import { IconArrowLeft, IconArrowRight, IconCheck, IconCoin, IconFileText, IconHeartHandshake, IconPackage, IconPhoto, IconTruck, IconWheat, IconWind } from '@tabler/icons-react';
 import React, { useState, useEffect } from 'react';
-import riceFieldBackground from '../assets/images/rice_field_bg_1783944116925.jpg';
-import kawingLogo from '../assets/images/kawing_logo_new_1784129186773.jpg';
+import riceFieldBackground from '../../assets/images/rice_field_bg_1783944116925.jpg';
+import kawingLogo from '../../assets/images/kawing_logo_new_1784129186773.jpg';
 import { motion } from 'motion/react';
-import { BusinessCapability, LogisticsServiceType, UserAccount, UserRole } from '../types';
-import { Leaf, ShieldAlert, Globe, User, Lock, Phone, MapPin, Mail, Upload, CheckCircle, RefreshCw, Briefcase, Eye, EyeOff, Check, Circle, AlertCircle, FileText, ArrowLeft, X } from 'lucide-react';
-import { useApp } from '../context/AppContext';
-import AnimatedButton from './AnimatedButton';
-import ThemeToggle from './ThemeToggle';
+import { BusinessCapability, LogisticsServiceType, UserAccount, UserRole } from '../../types';
+import { Leaf, ShieldAlert, Globe, User, Lock, Phone, MapPin, Mail, Upload, CheckCircle, Briefcase, Eye, EyeOff, Check, Circle, AlertCircle, FileText, ArrowLeft, X } from 'lucide-react';
+import { useApp } from '../../context/AppContext';
+import AnimatedButton from '../../components/AnimatedButton';
+import ThemeToggle from '../../components/ThemeToggle';
 
 const CAPTCHA_COLORS = [
   { id: 'red', labelEn: 'Red', labelTl: 'Pula', className: 'bg-red-500' },
@@ -41,6 +41,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
   const [address, setAddress] = useState('');
   const [fullName, setFullName] = useState('');
   const [rsbsaNumber, setRsbsaNumber] = useState('');
+  const [palaySenseId, setPalaySenseId] = useState('');
   const [contactPersonName, setContactPersonName] = useState('');
   const [legalCompanyName, setLegalCompanyName] = useState('');
   const [serviceCoverageArea, setServiceCoverageArea] = useState('');
@@ -132,7 +133,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
         window.open(
           data.url,
           'google_oauth_popup',
-          `width=${width},height=${height},top=${top},left=${left},status=no,menubar=no,toolbar=no`
+          `width=${width},height=${height},top=${top},left=${left},status=no,menubar=no,toolbar=no
         );
       } else {
         setErrorMsg(data.error || 'Google authentication is not configured. Please use your username and password.');
@@ -160,14 +161,14 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
         clearLoginCredentials();
         setErrorMsg(
           lang === 'en'
-            ? `This Google account (${selectedEmail}) is registered and waiting for approval. You can sign in after an administrator approves it.`
-            : `Ang Google account (${selectedEmail}) ay nakarehistro na, ngunit naghihintay pa ng approval mula sa Admin. Mangyaring maghintay ng beripikasyon.`
+            ? `This Google account (${selectedEmail}) is registered and waiting for approval. You can sign in after an administrator approves it.
+            : `Ang Google account (${selectedEmail}) ay nakarehistro na, ngunit naghihintay pa ng approval mula sa Admin. Mangyaring maghintay ng beripikasyon.
         );
       } else {
         setSuccessMsg(
           lang === 'en'
-            ? `Google Authentication Successful! Logging in as ${existingUser.name}...`
-            : `Matagumpay ang Google Authentication! Naglo-login bilang ${existingUser.name}...`
+            ? `Google Authentication Successful! Logging in as ${existingUser.name}...
+            : `Matagumpay ang Google Authentication! Naglo-login bilang ${existingUser.name}...
         );
         setTimeout(() => {
           void fetch('/api/auth/me', { credentials: 'include' })
@@ -187,8 +188,8 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
       setEmail(selectedEmail);
       setSuccessMsg(
         lang === 'en'
-          ? `Google Account (${selectedEmail}) connected! Please choose your role and complete the required details below to submit for Admin approval.`
-          : `Naka-connect na ang Google Account (${selectedEmail})! Pakipili ang iyong kategorya at kumpletuhin ang mga detalye sa ibaba upang maisumite sa Admin approval.`
+          ? `Google Account (${selectedEmail}) connected! Please choose your role and complete the required details below to submit for Admin approval.
+          : `Naka-connect na ang Google Account (${selectedEmail})! Pakipili ang iyong kategorya at kumpletuhin ang mga detalye sa ibaba upang maisumite sa Admin approval.
       );
     }
   };
@@ -214,15 +215,6 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
     millingProof?: string;
     millingProofData?: string;
   }>({});
-
-  // AI ID Scanning states
-  const [scanningStatus, setScanningStatus] = useState<Record<string, 'idle' | 'scanning' | 'success' | 'failed'>>({});
-  const [scanResults, setScanResults] = useState<Record<string, {
-    verified: boolean;
-    reason: string;
-    extractedName: string;
-    extractedDetails: string;
-  }>>({});
 
   const { lang, theme, toggleLanguage, toggleTheme, t } = useApp();
   const isKioskRegistration = kioskRegistrationMode && (role === 'farmer' || role === 'agricultural_business');
@@ -255,7 +247,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
 
     // To prevent exceeding localStorage 5MB quota, read as a compressed thumbnail or metadata
     const reader = new FileReader();
-    reader.onloadend = async () => {
+    reader.onloadend = () => {
       const base64Data = reader.result as string;
       setUploadedDocs(prev => ({
         ...prev,
@@ -263,47 +255,6 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
         [`${type}Data`]: base64Data,
       }));
 
-      // Profile photos are not identity documents and must never be sent to the checker.
-      if (type === 'avatar') return;
-
-      setScanningStatus(prev => ({ ...prev, [type]: 'scanning' }));
-      try {
-        const response = await fetch('/api/analyze-id', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            base64Data,
-            role,
-            filename: file.name,
-            documentType: type,
-            applicantName: role === 'agricultural_business' ? contactPersonName.trim() : fullName.trim(),
-          }),
-        });
-        if (!response.ok) throw new Error('The server-side document checker is unavailable');
-        const parsed = await response.json() as Partial<{ verified: boolean; reason: string; extractedName: string; extractedDetails: string }>;
-        const result = {
-          verified: parsed.verified === true,
-          reason: String(parsed.reason || 'The document could not be confidently checked. Final review is required.'),
-          extractedName: String(parsed.extractedName || 'Unknown'),
-          extractedDetails: String(parsed.extractedDetails || 'No safe details extracted'),
-        };
-        setScanResults(prev => ({ ...prev, [type]: result }));
-        setScanningStatus(prev => ({ ...prev, [type]: result.verified ? 'success' : 'failed' }));
-      } catch (err: unknown) {
-        console.error('Scan error:', err);
-        setScanningStatus(prev => ({ ...prev, [type]: 'failed' }));
-        setScanResults(prev => ({
-          ...prev,
-          [type]: {
-            verified: false,
-            reason: lang === 'en' 
-              ? 'File saved. Automatic checking is unavailable; an admin must review it.' 
-              : 'Nai-save ang file. Walang automatic check; kailangan itong suriin ng admin.',
-            extractedName: 'Manual Review Required',
-            extractedDetails: 'Automatic verification not completed'
-          }
-        }));
-      }
     };
     reader.readAsDataURL(file);
   };
@@ -401,6 +352,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
         contactNumber,
         address,
         rsbsaNumber: role === 'farmer' ? rsbsaNumber.trim() : undefined,
+        palaySenseId: role === 'farmer' ? palaySenseId.trim().toUpperCase() || undefined : undefined,
         kioskId: kioskRegistrationMode ? kioskDeviceId : undefined,
         ...(role === 'farmer' && kioskRegistrationMode && !uploadedDocs.govId ? {
           registrationSource: 'kiosk' as const,
@@ -546,11 +498,11 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
 
       // Check required documents depending on role
       if (role === 'farmer') {
-        if (!fullName.trim() || !rsbsaNumber.trim() || (!uploadedDocs.govId && !kioskRegistrationMode)) {
+        if (!fullName.trim() || !rsbsaNumber.trim() || !palaySenseId.trim() || (!uploadedDocs.govId && !kioskRegistrationMode)) {
           setErrorMsg(
             lang === 'en'
-              ? (kioskRegistrationMode ? 'Farmer requires a full name and RSBSA number.' : 'Farmer requires a full name, RSBSA number, and uploaded RSBSA Registration ID.')
-              : (kioskRegistrationMode ? 'Kailangan ang buong pangalan at RSBSA number.' : 'Kailangan ng Farmer ang buong pangalan, RSBSA number, at uploaded RSBSA Registration ID.')
+              ? (kioskRegistrationMode ? 'Farmer requires a full name, RSBSA number, and PalaySense ID.' : 'Farmer requires a full name, RSBSA number, PalaySense ID, and uploaded RSBSA Registration ID.')
+              : (kioskRegistrationMode ? 'Kailangan ang buong pangalan, RSBSA number, at PalaySense ID.' : 'Kailangan ng Farmer ang buong pangalan, RSBSA number, PalaySense ID, at uploaded RSBSA Registration ID.')
           );
           return;
         }
@@ -687,7 +639,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
 
   return (
     <div id="auth-page" className={`auth-screen relative text-slate-900 dark:text-slate-100 flex flex-col justify-center px-3 md:px-4 sm:px-6 lg:px-8 font-sans transition-colors duration-300 overflow-x-hidden ${isLogin ? 'h-dvh overflow-y-hidden py-3 sm:py-4' : 'min-h-screen overflow-y-auto py-6 md:py-12'}`}>
-      
+
       {/* Mount Arayat Background Image Overlay */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <img
@@ -741,8 +693,8 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
           {isLogin ? (lang === 'en' ? 'Log in to Kawing' : 'Mag-login sa Kawing') : (lang === 'en' ? 'Create your Account' : 'Gumawa ng Account')}
         </h2>
         <p className={`${isLogin ? 'mt-1' : 'mt-2'} text-center text-sm text-slate-300 font-medium`}>
-          {isLogin 
-            ? (lang === 'en' ? "Don't have an account?" : 'Wala pang account?') 
+          {isLogin
+            ? (lang === 'en' ? "Don't have an account?" : 'Wala pang account?')
             : (lang === 'en' ? 'Already have an account?' : 'Mayroon nang account?')}
           {' '}
           <button
@@ -761,8 +713,8 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
             }}
             className="font-bold text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer underline underline-offset-2"
           >
-            {isLogin 
-              ? (lang === 'en' ? 'Sign up here' : 'Magrehistro dito') 
+            {isLogin
+              ? (lang === 'en' ? 'Sign up here' : 'Magrehistro dito')
               : (lang === 'en' ? 'Log in here' : 'Mag-login dito')}
           </button>
         </p>
@@ -770,7 +722,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
 
       <div className={`${isLogin ? 'mt-4' : 'mt-8'} sm:mx-auto sm:w-full sm:max-w-xl`}>
         <motion.div
-          layout
+          layou
           className={`auth-panel bg-white/90 dark:bg-slate-900/95 text-slate-900 dark:text-slate-100 px-4 shadow-2xl rounded-2xl md:rounded-3xl sm:px-10 border border-slate-200 dark:border-slate-800 backdrop-blur-xl ${isLogin ? 'py-4 sm:py-5' : 'py-6 md:py-8'}`}
         >
           {errorMsg && (
@@ -819,7 +771,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                 ))}
               </div>
             )}
-            
+
             {/* NAME FIELD */}
             <div className={`space-y-1 ${!isLogin && registrationStep !== 2 ? 'hidden' : ''}`}>
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300" htmlFor="manual-account-entry">
@@ -834,7 +786,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <User className="h-5 w-5 text-slate-600 dark:text-slate-500" />
                 </div>
-                <input
+                <inpu
                   id="manual-account-entry"
                   type="text"
                   required
@@ -859,7 +811,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Lock className="h-5 w-5 text-slate-600 dark:text-slate-500" />
                 </div>
-                <input
+                <inpu
                   id="manual-secret-entry"
                   type={showPassword ? 'text' : 'password'}
                   required
@@ -907,7 +859,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Lock className="h-5 w-5 text-slate-600 dark:text-slate-500" />
                   </div>
-                  <input
+                  <inpu
                     id="auth-confirm-password"
                     type={showPassword ? 'text' : 'password'}
                     required
@@ -1009,9 +961,15 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                 )}
 
                 {role === 'farmer' && (
-                  <div className="space-y-1">
+                  <div className="space-y-3">
+                    <div className="space-y-1">
                     <label className="block text-xs font-bold text-slate-600 dark:text-slate-400">{lang === 'en' ? 'RSBSA Number' : 'Numero ng RSBSA'} <span className="text-red-500">*</span></label>
                     <input required value={rsbsaNumber} onChange={(e) => setRsbsaNumber(e.target.value)} placeholder="e.g. 03-01-02-123456" className="block w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs" />
+                    </div>
+                    <div className="space-y-1">
+                      <label htmlFor="registration-palaysense-id" className="block text-xs font-bold text-slate-600 dark:text-slate-400">PalaySense ID <span className="text-red-500">*</span></label>
+                      <input id="registration-palaysense-id" required value={palaySenseId} onChange={(event) => setPalaySenseId(event.target.value.toUpperCase())} maxLength={64} pattern="[A-Za-z0-9][A-Za-z0-9_-]{2,63}" spellCheck={false} autoComplete="off" placeholder={lang === 'en' ? 'ID printed on your PalaySense' : 'ID na nakalagay sa iyong PalaySense'} className="block w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs" />
+                    </div>
                   </div>
                 )}
 
@@ -1020,7 +978,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                     <label className="block text-xs font-bold text-slate-600 dark:text-slate-400">
                       {lang === 'en' ? 'Full Name' : 'Buong Pangalan'} <span className="text-red-500">*</span>
                     </label>
-                    <input
+                    <inpu
                       required
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
@@ -1057,7 +1015,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <Mail className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                     </div>
-                    <input
+                    <inpu
                       id="auth-email"
                       type="email"
                       required
@@ -1079,7 +1037,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <Phone className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                       </div>
-                      <input
+                      <inpu
                         type="text"
                         required
                         value={contactNumber}
@@ -1101,7 +1059,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <MapPin className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                       </div>
-                      <input
+                      <inpu
                         type="text"
                         required
                         value={address}
@@ -1178,7 +1136,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                       {lang === 'en' ? 'Clear photo or business icon' : 'Larawan ng mukha o logo'}
                     </p>
                     <div className="relative">
-                      <input
+                      <inpu
                         type="file"
                         accept=".jpg,.jpeg,.png,image/jpeg,image/png"
                         onChange={(e) => handleFileChange(e, 'avatar')}
@@ -1199,254 +1157,18 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                     )}
                   </div>
                   </>}
-                  
-                  {/* Required identity document changes with the selected role. */}
-                  {isKioskRegistration ? (
-                    <p className="sm:col-span-2 text-sm font-semibold text-slate-700 dark:text-slate-200">{lang === 'en' ? 'Please proceed to the admin office for ID verification.' : 'Mangyaring pumunta sa tanggapan ng admin para beripikahin ang iyong ID.'}</p>
-                  ) : (
-                  <div className="p-3 border border-slate-150 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/30">
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
-                      <span className="flex items-center gap-1">
-                        <FileText className="w-3.5 h-3.5 text-emerald-500" />
-                        <span>{role === 'farmer' ? 'RSBSA Registration ID' : role === 'agricultural_business' ? 'Company ID / Registration' : 'Government ID'}</span>
-                      </span>
-                      <span className={`text-[10px] font-bold ${role === 'farmer' && kioskRegistrationMode ? 'text-amber-600 dark:text-amber-400' : 'text-red-500'}`}>{role === 'farmer' && kioskRegistrationMode ? 'Optional at kiosk' : '* required'}</span>
-                    </label>
-                    <p className="text-[10px] text-slate-600 dark:text-slate-500 mb-2">
-                      {role === 'farmer'
-                        ? (kioskRegistrationMode ? 'You may submit without an image here. Show your physical RSBSA ID to the administrator before approval.' : 'Upload your valid Registry System for Basic Sectors in Agriculture (RSBSA) ID.')
-                        : role === 'agricultural_business' ? 'Upload a DTI, SEC, cooperative, or company registration ID.' : "UMID, Driver's License, Passport, Voter's ID, etc."}
-                    </p>
-                    <div className="relative">
-                      <input
-                        type="file"
-                        accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-                        onChange={(e) => handleFileChange(e, 'govId')}
-                        className="hidden"
-                        id="upload-gov-id"
-                      />
-                      <label
-                        htmlFor="upload-gov-id"
-                        className="flex items-center justify-center gap-1.5 px-3 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-emerald-50/30 cursor-pointer transition-all"
-                      >
-                        <Upload className="w-3.5 h-3.5" />
-                        <span>{uploadedDocs.govId ? <span className="inline-flex items-center gap-1.5 align-middle">{lang === 'en' ? 'Uploaded' : 'Na-upload'}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span> : (role === 'farmer' ? (lang === 'en' ? 'Choose RSBSA ID' : 'Piliin ang RSBSA ID') : role === 'agricultural_business' ? (lang === 'en' ? 'Choose Company ID' : 'Piliin ang ID ng kumpanya') : (lang === 'en' ? 'Choose Government ID' : 'Piliin ang ID mula sa pamahalaan'))}</span>
-                      </label>
-                    </div>
-                    {uploadedDocs.govId && (
-                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1.5 block truncate font-mono"><span className="inline-flex items-center gap-1.5 align-middle mr-1.5"><IconFileText size={16} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>{uploadedDocs.govId}
-                      </span>
-                    )}
 
-                    {/* AI Scanning Government ID Feedback */}
-                    {scanningStatus['govId'] === 'scanning' && (
-                      <div className="mt-2.5 flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-750 text-[10px] text-slate-500 font-semibold animate-pulse">
-                        <RefreshCw className="w-3 h-3 animate-spin text-emerald-500" />
-                        <span>{lang === 'en' ? 'AI Scanning Document...' : 'Sinusuri ng AI ang ID...'}</span>
-                      </div>
-                    )}
-                    {scanningStatus['govId'] === 'success' && scanResults['govId'] && (
-                      <div className="mt-2.5 p-2 bg-emerald-50/55 dark:bg-emerald-950/20 rounded-lg border border-emerald-100/50 dark:border-emerald-900/40 text-[10px]">
-                        <div className="flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 mb-1">
-                          <Check className="w-3 h-3 text-emerald-500 stroke-[3]" />
-                          <span>{lang === 'en' ? <span className="inline-flex items-center gap-1.5 align-middle">{"AI Verified"}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span> : <span className="inline-flex items-center gap-1.5 align-middle">{"Na-verify ng AI"}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span>}</span>
-                        </div>
-                        <p className="text-slate-600 dark:text-slate-350 leading-relaxed font-sans">{scanResults['govId'].reason}</p>
-                        {scanResults['govId'].extractedName && scanResults['govId'].extractedName !== 'Unknown' && (
-                          <p className="text-slate-500 dark:text-slate-400 mt-1 font-semibold text-[9px]">
-                            {lang === 'en' ? 'Name on ID:' : 'Pangalan sa ID:'} <span className="text-slate-800 dark:text-slate-200">{scanResults['govId'].extractedName}</span>
-                          </p>
-                        )}
-                      </div>
-                    )}
-                    {scanningStatus['govId'] === 'failed' && scanResults['govId'] && (
-                      <div className="mt-2.5 p-2 bg-amber-50/55 dark:bg-amber-950/20 rounded-lg border border-amber-100/50 dark:border-amber-900/40 text-[10px]">
-                        <div className="flex items-center gap-1 font-bold text-amber-600 dark:text-amber-500 mb-1">
-                          <AlertCircle className="w-3 h-3 text-amber-500" />
-                          <span>{lang === 'en' ? 'AI Checked' : 'Pagsusuri ng AI'}</span>
-                        </div>
-                        <p className="text-slate-600 dark:text-slate-350 leading-relaxed font-sans">{scanResults['govId'].reason}</p>
-                      </div>
-                    )}
-                  </div>
-                  )}
+                  {/* Required identity document changes with the selected role. */}
+
 
                   {/* Driver's License (Truck only) */}
-                  {role === 'truck' && (
-                    <div className="p-3 border border-slate-150 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/30">
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
-                        <FileText className="w-3.5 h-3.5 text-blue-500" />
-                        <span>{lang === 'en' ? "Driver's License" : 'Lisensya sa Pagmamaneho'}</span>
-                      </label>
-                      <p className="text-[10px] text-slate-600 dark:text-slate-500 mb-2">
-                        {lang === 'en' ? "Valid professional driver's license" : 'Balidong lisensyang propesyonal sa pagmamaneho'}
-                      </p>
-                      <div className="relative">
-                        <input
-                          type="file"
-                          accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-                          onChange={(e) => handleFileChange(e, 'license')}
-                          className="hidden"
-                          id="upload-license"
-                        />
-                        <label
-                          htmlFor="upload-license"
-                          className="flex items-center justify-center gap-1.5 px-3 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-emerald-50/30 cursor-pointer transition-all"
-                        >
-                          <Upload className="w-3.5 h-3.5" />
-                          <span>{uploadedDocs.license ? <span className="inline-flex items-center gap-1.5 align-middle">{lang === 'en' ? 'Uploaded' : 'Na-upload'}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span> : (lang === 'en' ? 'Choose file' : 'Pumili ng file')}</span>
-                        </label>
-                      </div>
-                      {uploadedDocs.license && (
-                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1.5 block truncate font-mono"><span className="inline-flex items-center gap-1.5 align-middle mr-1.5"><IconFileText size={16} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>{uploadedDocs.license}
-                        </span>
-                      )}
 
-                      {/* AI Scanning License Feedback */}
-                      {scanningStatus['license'] === 'scanning' && (
-                        <div className="mt-2.5 flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-750 text-[10px] text-slate-500 font-semibold animate-pulse">
-                          <RefreshCw className="w-3 h-3 animate-spin text-emerald-500" />
-                          <span>{lang === 'en' ? 'AI Scanning License...' : 'Sinusuri ng AI ang Lisensya...'}</span>
-                        </div>
-                      )}
-                      {scanningStatus['license'] === 'success' && scanResults['license'] && (
-                        <div className="mt-2.5 p-2 bg-emerald-50/55 dark:bg-emerald-950/20 rounded-lg border border-emerald-100/50 dark:border-emerald-900/40 text-[10px]">
-                          <div className="flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 mb-1">
-                            <Check className="w-3 h-3 text-emerald-500 stroke-[3]" />
-                            <span>{lang === 'en' ? <span className="inline-flex items-center gap-1.5 align-middle">{"AI Verified"}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span> : <span className="inline-flex items-center gap-1.5 align-middle">{"Na-verify ng AI"}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span>}</span>
-                          </div>
-                          <p className="text-slate-600 dark:text-slate-350 leading-relaxed font-sans">{scanResults['license'].reason}</p>
-                        </div>
-                      )}
-                      {scanningStatus['license'] === 'failed' && scanResults['license'] && (
-                        <div className="mt-2.5 p-2 bg-amber-50/55 dark:bg-amber-950/20 rounded-lg border border-amber-100/50 dark:border-amber-900/40 text-[10px]">
-                          <div className="flex items-center gap-1 font-bold text-amber-600 dark:text-amber-500 mb-1">
-                            <AlertCircle className="w-3 h-3 text-amber-500" />
-                            <span>{lang === 'en' ? 'AI Checked' : 'Pagsusuri ng AI'}</span>
-                          </div>
-                          <p className="text-slate-600 dark:text-slate-350 leading-relaxed font-sans">{scanResults['license'].reason}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
 
                   {/* OR/CR ng sasakyan (Truck only) */}
-                  {role === 'truck' && (
-                    <div className="p-3 border border-slate-150 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/30">
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
-                        <FileText className="w-3.5 h-3.5 text-amber-500" />
-                        <span>{lang === 'en' ? 'Vehicle OR/CR' : 'OR/CR ng Sasakyan'}</span>
-                      </label>
-                      <p className="text-[10px] text-slate-600 dark:text-slate-500 mb-2">
-                        Official Receipt & Certificate of Registration
-                      </p>
-                      <div className="relative">
-                        <input
-                          type="file"
-                          accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-                          onChange={(e) => handleFileChange(e, 'orCr')}
-                          className="hidden"
-                          id="upload-orcr"
-                        />
-                        <label
-                          htmlFor="upload-orcr"
-                          className="flex items-center justify-center gap-1.5 px-3 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-emerald-50/30 cursor-pointer transition-all"
-                        >
-                          <Upload className="w-3.5 h-3.5" />
-                          <span>{uploadedDocs.orCr ? <span className="inline-flex items-center gap-1.5 align-middle">{lang === 'en' ? 'Uploaded' : 'Na-upload'}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span> : (lang === 'en' ? 'Choose file' : 'Pumili ng file')}</span>
-                        </label>
-                      </div>
-                      {uploadedDocs.orCr && (
-                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1.5 block truncate font-mono"><span className="inline-flex items-center gap-1.5 align-middle mr-1.5"><IconFileText size={16} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>{uploadedDocs.orCr}
-                        </span>
-                      )}
 
-                      {/* AI Scanning OR/CR Feedback */}
-                      {scanningStatus['orCr'] === 'scanning' && (
-                        <div className="mt-2.5 flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-750 text-[10px] text-slate-500 font-semibold animate-pulse">
-                          <RefreshCw className="w-3 h-3 animate-spin text-emerald-500" />
-                          <span>{lang === 'en' ? 'AI Scanning OR/CR...' : 'Sinusuri ng AI ang OR/CR...'}</span>
-                        </div>
-                      )}
-                      {scanningStatus['orCr'] === 'success' && scanResults['orCr'] && (
-                        <div className="mt-2.5 p-2 bg-emerald-50/55 dark:bg-emerald-950/20 rounded-lg border border-emerald-100/50 dark:border-emerald-900/40 text-[10px]">
-                          <div className="flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 mb-1">
-                            <Check className="w-3 h-3 text-emerald-500 stroke-[3]" />
-                            <span>{lang === 'en' ? <span className="inline-flex items-center gap-1.5 align-middle">{"AI Verified"}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span> : <span className="inline-flex items-center gap-1.5 align-middle">{"Na-verify ng AI"}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span>}</span>
-                          </div>
-                          <p className="text-slate-600 dark:text-slate-350 leading-relaxed font-sans">{scanResults['orCr'].reason}</p>
-                        </div>
-                      )}
-                      {scanningStatus['orCr'] === 'failed' && scanResults['orCr'] && (
-                        <div className="mt-2.5 p-2 bg-amber-50/55 dark:bg-amber-950/20 rounded-lg border border-amber-100/50 dark:border-amber-900/40 text-[10px]">
-                          <div className="flex items-center gap-1 font-bold text-amber-600 dark:text-amber-500 mb-1">
-                            <AlertCircle className="w-3 h-3 text-amber-500" />
-                            <span>{lang === 'en' ? 'AI Checked' : 'Pagsusuri ng AI'}</span>
-                          </div>
-                          <p className="text-slate-600 dark:text-slate-350 leading-relaxed font-sans">{scanResults['orCr'].reason}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
 
                   {/* Proof of Ownership (Storage & Dryer & Miller only) */}
-                  {(role === 'storage' || role === 'dryer' || role === 'miller') && (
-                    <div className="p-3 border border-slate-150 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/30">
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
-                        <FileText className="w-3.5 h-3.5 text-purple-500" />
-                        <span>{lang === 'en' ? 'Proof of Ownership' : 'Katibayan ng Pagmamay-ari'}</span>
-                      </label>
-                      <p className="text-[10px] text-slate-600 dark:text-slate-500 mb-2">
-                        DTI Permit, Land Title, Lease Contract
-                      </p>
-                      <div className="relative">
-                        <input
-                          type="file"
-                          accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-                          onChange={(e) => handleFileChange(e, 'proofOwnership')}
-                          className="hidden"
-                          id="upload-proof"
-                        />
-                        <label
-                          htmlFor="upload-proof"
-                          className="flex items-center justify-center gap-1.5 px-3 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-emerald-50/30 cursor-pointer transition-all"
-                        >
-                          <Upload className="w-3.5 h-3.5" />
-                          <span>{uploadedDocs.proofOwnership ? <span className="inline-flex items-center gap-1.5 align-middle">{lang === 'en' ? 'Uploaded' : 'Na-upload'}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span> : (lang === 'en' ? 'Choose file' : 'Pumili ng file')}</span>
-                        </label>
-                      </div>
-                      {uploadedDocs.proofOwnership && (
-                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1.5 block truncate font-mono"><span className="inline-flex items-center gap-1.5 align-middle mr-1.5"><IconFileText size={16} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>{uploadedDocs.proofOwnership}
-                        </span>
-                      )}
 
-                      {/* AI Scanning Proof of Ownership Feedback */}
-                      {scanningStatus['proofOwnership'] === 'scanning' && (
-                        <div className="mt-2.5 flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-750 text-[10px] text-slate-500 font-semibold animate-pulse">
-                          <RefreshCw className="w-3 h-3 animate-spin text-emerald-500" />
-                          <span>{lang === 'en' ? 'AI Scanning Document...' : 'Sinusuri ng AI ang Patunay...'}</span>
-                        </div>
-                      )}
-                      {scanningStatus['proofOwnership'] === 'success' && scanResults['proofOwnership'] && (
-                        <div className="mt-2.5 p-2 bg-emerald-50/55 dark:bg-emerald-950/20 rounded-lg border border-emerald-100/50 dark:border-emerald-900/40 text-[10px]">
-                          <div className="flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 mb-1">
-                            <Check className="w-3 h-3 text-emerald-500 stroke-[3]" />
-                            <span>{lang === 'en' ? <span className="inline-flex items-center gap-1.5 align-middle">{"AI Verified"}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span> : <span className="inline-flex items-center gap-1.5 align-middle">{"Na-verify ng AI"}<IconCheck size={14} stroke={2} aria-hidden="true" className="inline-block shrink-0 text-emerald-500" /></span>}</span>
-                          </div>
-                          <p className="text-slate-600 dark:text-slate-350 leading-relaxed font-sans">{scanResults['proofOwnership'].reason}</p>
-                        </div>
-                      )}
-                      {scanningStatus['proofOwnership'] === 'failed' && scanResults['proofOwnership'] && (
-                        <div className="mt-2.5 p-2 bg-amber-50/55 dark:bg-amber-950/20 rounded-lg border border-amber-100/50 dark:border-amber-900/40 text-[10px]">
-                          <div className="flex items-center gap-1 font-bold text-amber-600 dark:text-amber-500 mb-1">
-                            <AlertCircle className="w-3 h-3 text-amber-500" />
-                            <span>{lang === 'en' ? 'AI Checked' : 'Pagsusuri ng AI'}</span>
-                          </div>
-                          <p className="text-slate-600 dark:text-slate-350 leading-relaxed font-sans">{scanResults['proofOwnership'].reason}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
 
                 </div>
               </motion.div>
@@ -1458,7 +1180,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
                   {lang === 'en' ? 'Choose your Registration Category' : 'Pumili ng iyong Kategorya sa Pagpaparehistro'}
                 </label>
-                
+
                 <div className="auth-role-grid grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-72 overflow-y-auto p-1 border border-slate-100 dark:border-slate-800/80 rounded-xl bg-slate-50/30 dark:bg-slate-900/10">
                   {allowedRoles.map((r) => (
                     <button
@@ -1535,9 +1257,9 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                 disabled={isLogin && (!captchaVerified || loginRetrySeconds > 0)}
                 className={`w-full text-sm tracking-wide ${isLogin ? 'py-3' : 'py-4'}`}
               >
-                {isLogin 
+                {isLogin
                   ? loginRetrySeconds > 0
-                    ? `${lang === 'en' ? 'Try again in' : 'Maghintay'} ${Math.floor(loginRetrySeconds / 60)}:${String(loginRetrySeconds % 60).padStart(2, '0')}`
+                    ? `${lang === 'en' ? 'Try again in' : 'Maghintay'} ${Math.floor(loginRetrySeconds / 60)}:${String(loginRetrySeconds % 60).padStart(2, '0')}
                     : (lang === 'en' ? 'Login' : 'Mag-login')
                   : (lang === 'en' ? 'Submit Registration for Approval' : 'Isumite ang Rehistrasyon')}
               </AnimatedButton>
@@ -1639,8 +1361,8 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                 {lang === 'en' ? 'Sign in with Google' : 'Mag-sign in sa Google'}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                {lang === 'en' 
-                  ? 'Choose an account to proceed to KAWING Platform' 
+                {lang === 'en'
+                  ? 'Choose an account to proceed to KAWING Platform'
                   : 'Pumili ng account para magpatuloy sa KAWING Platform'}
               </p>
             </div>
@@ -1652,14 +1374,14 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
               </span>
 
               <div className="space-y-2">
-                <input
+                <inpu
                   type="text"
                   placeholder={lang === 'en' ? 'Google Account Name (e.g., Juan Cruz)' : 'Pangalan sa Google (e.g., Juan Cruz)'}
                   value={customGoogleName}
                   onChange={(e) => setCustomGoogleName(e.target.value)}
                   className="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 />
-                <input
+                <inpu
                   type="email"
                   placeholder={lang === 'en' ? 'Google Email (e.g., juan@gmail.com)' : 'Google Email (e.g., juan@gmail.com)'}
                   value={customGoogleEmail}

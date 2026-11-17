@@ -23,6 +23,7 @@ export default function UserProfileModal({
 }: UserProfileModalProps) {
   const { lang } = useApp();
   const [isEditing, setIsEditing] = useState(false);
+  const [pendingSave, setPendingSave] = useState<UserAccount | null>(null);
   const formBaseline = useRef(user);
   // Form states
   const [name, setName] = useState(user.name || '');
@@ -31,6 +32,7 @@ export default function UserProfileModal({
   const [address, setAddress] = useState(user.address || '');
   const [businessName, setBusinessName] = useState(user.businessName || user.legalCompanyName || '');
   const [rsbsaNumber, setRsbsaNumber] = useState(user.rsbsaNumber || '');
+  const [palaySenseId, setPalaySenseId] = useState(user.palaySenseId || '');
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl || '');
   const [avatarFailed, setAvatarFailed] = useState(false);
   useEffect(() => setAvatarFailed(false), [avatarUrl]);
@@ -50,6 +52,7 @@ export default function UserProfileModal({
       address: address.trim(),
       businessName: businessName.trim(),
       rsbsaNumber: rsbsaNumber.trim(),
+      palaySenseId: user.role === 'farmer' ? palaySenseId.trim().toUpperCase() : undefined,
       avatarUrl: avatarUrl,
       bio: bio.trim(),
       emailNotificationsEnabled,
@@ -57,10 +60,14 @@ export default function UserProfileModal({
       emailNotificationConsentAt: new Date().toISOString(),
     };
 
-    if (onUpdateUser) {
-      onUpdateUser(user.name, updatedUser, formBaseline.current);
-    }
+    setPendingSave(updatedUser);
+  };
 
+  const confirmSave = () => {
+    if (!pendingSave) return;
+    onUpdateUser?.(user.name, pendingSave, formBaseline.current);
+    formBaseline.current = pendingSave;
+    setPendingSave(null);
     setIsEditing(false);
   };
 
@@ -92,6 +99,19 @@ export default function UserProfileModal({
       default: return role;
     }
   };
+
+  const saveSummary = pendingSave ? ([
+    { label: lang === 'en' ? 'Name' : 'Pangalan', value: pendingSave.name, before: user.name },
+    { label: lang === 'en' ? 'Contact phone' : 'Numero ng telepono', value: pendingSave.contactNumber, before: user.contactNumber || '' },
+    { label: lang === 'en' ? 'Additional contact' : 'Karagdagang contact', value: (pendingSave.additionalContactNumbers || []).join(', '), before: (user.additionalContactNumbers || []).join(', ') },
+    { label: lang === 'en' ? 'Address' : 'Tirahan', value: pendingSave.address, before: user.address || '' },
+    { label: lang === 'en' ? 'Business name' : 'Pangalan ng negosyo', value: pendingSave.businessName || '', before: user.businessName || user.legalCompanyName || '' },
+    { label: 'RSBSA', value: pendingSave.rsbsaNumber || '', before: user.rsbsaNumber || '' },
+    { label: 'PalaySense ID', value: pendingSave.palaySenseId || '', before: user.palaySenseId || '' },
+    { label: lang === 'en' ? 'Profile photo' : 'Larawan sa profile', value: pendingSave.avatarUrl ? (lang === 'en' ? 'Updated' : 'Na-update') : '', before: user.avatarUrl ? (lang === 'en' ? 'Set' : 'May larawan') : '' },
+    { label: lang === 'en' ? 'Short bio / remarks' : 'Karagdagang impormasyon', value: pendingSave.bio || '', before: user.bio || '' },
+    { label: lang === 'en' ? 'Email updates' : 'Mga update sa email', value: pendingSave.emailNotificationsEnabled ? (lang === 'en' ? 'Enabled' : 'Naka-enable') : (lang === 'en' ? 'Disabled' : 'Naka-disable'), before: user.emailNotificationsEnabled ? (lang === 'en' ? 'Enabled' : 'Naka-enable') : (lang === 'en' ? 'Disabled' : 'Naka-disable') },
+  ] as Array<{ label: string; value: string; before: string }>).filter((item) => item.value !== item.before) : [];
 
   return createPortal(
     <div className="fixed inset-0 z-[2000] overflow-y-auto bg-black/60 p-3 backdrop-blur-xs md:flex md:items-center md:justify-center md:p-4">
@@ -127,7 +147,7 @@ export default function UserProfileModal({
 
         <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain p-4 md:p-6">
           {/* User Header Badge & Avatar */}
-          <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+          <div className="flex flex-wrap items-center gap-4 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
             <div className="relative shrink-0">
               {avatarUrl && !avatarFailed ? <img
                 src={avatarUrl}
@@ -169,6 +189,12 @@ export default function UserProfileModal({
                 </span>
               </div>
             </div>
+            {user.role === 'farmer' && (
+              <div className="w-full min-w-0 rounded-xl border border-emerald-200 bg-white/80 px-4 py-3 text-left dark:border-emerald-900/60 dark:bg-slate-900/60 sm:ml-auto sm:w-auto sm:min-w-40 sm:max-w-52 sm:shrink-0 sm:text-right">
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">PalaySense ID</span>
+                <span className="mt-0.5 block truncate font-mono text-base font-extrabold text-emerald-700 dark:text-emerald-300">{user.palaySenseId || (lang === 'en' ? 'Not registered' : 'Hindi nakarehistro')}</span>
+              </div>
+            )}
           </div>
 
           {!isEditing ? (
@@ -344,7 +370,8 @@ export default function UserProfileModal({
               </div>
 
               {user.role === 'farmer' ? (
-                <div className="space-y-1">
+                <div className="space-y-3">
+                  <div className="space-y-1">
                   <label className="font-bold text-slate-700 dark:text-slate-300 block uppercase text-xs">
                     {lang === 'en' ? 'RSBSA Number (Farmer Registry ID)' : 'Numero ng Magsasaka sa RSBSA'}
                   </label>
@@ -355,6 +382,12 @@ export default function UserProfileModal({
                     placeholder="e.g. RSBSA-03-4912-8821"
                     className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold text-sm"
                   />
+                  </div>
+                  <div className="space-y-1">
+                    <label htmlFor="profile-palaysense-id" className="block text-xs font-bold uppercase text-slate-700 dark:text-slate-300">PalaySense ID</label>
+                    <input id="profile-palaysense-id" type="text" value={palaySenseId} onChange={(event) => setPalaySenseId(event.target.value.toUpperCase())} maxLength={64} pattern="[A-Za-z0-9][A-Za-z0-9_-]{2,63}" spellCheck={false} autoComplete="off" placeholder={lang === 'en' ? 'ID printed on your PalaySense' : 'ID na nakalagay sa iyong PalaySense'} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400">{lang === 'en' ? 'This ID connects your PalaySense to your harvest form.' : 'Ikokonekta ng ID na ito ang PalaySense sa form ng ani mo.'}</p>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-1">
@@ -457,6 +490,55 @@ export default function UserProfileModal({
 
         </div>
       </motion.div>
+      {pendingSave && (
+        <div className="fixed inset-0 z-[2100] flex items-center justify-center bg-black/55 p-4" role="presentation">
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="profile-save-confirm-title"
+            className="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+          >
+            <div className="bg-emerald-700 px-5 py-4 text-white">
+              <h4 id="profile-save-confirm-title" className="text-base font-extrabold">
+                {lang === 'en' ? 'Review profile changes' : 'Suriin ang mga pagbabago sa profile'}
+              </h4>
+              <p className="mt-1 text-sm text-emerald-100">
+                {lang === 'en' ? 'Check these details before saving.' : 'Tingnan muna ang mga detalyeng ito bago i-save.'}
+              </p>
+            </div>
+            <div className="max-h-[55dvh] space-y-3 overflow-y-auto p-5">
+              {saveSummary.length ? saveSummary.map((item) => (
+                <div key={item.label} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-slate-700 dark:bg-slate-800">
+                  <div className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">{item.label}</div>
+                  <div className="mt-1 break-words text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    {item.value || (lang === 'en' ? 'Cleared' : 'Inalis')}
+                  </div>
+                </div>
+              )) : (
+                <p className="text-sm text-slate-600 dark:text-slate-300">
+                  {lang === 'en' ? 'No profile details changed.' : 'Walang binagong detalye sa profile.'}
+                </p>
+              )}
+            </div>
+            <div className="flex gap-3 border-t border-slate-200 p-4 dark:border-slate-700">
+              <button
+                type="button"
+                onClick={() => setPendingSave(null)}
+                className="flex-1 rounded-xl border border-slate-300 px-4 py-2.5 font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                {lang === 'en' ? 'Back to editing' : 'Bumalik sa pag-edit'}
+              </button>
+              <button
+                type="button"
+                onClick={confirmSave}
+                className="flex-1 rounded-xl bg-emerald-600 px-4 py-2.5 font-extrabold text-white hover:bg-emerald-500"
+              >
+                {lang === 'en' ? 'Confirm & Save' : 'Kumpirmahin at I-save'}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </div>,
     document.body,
   );

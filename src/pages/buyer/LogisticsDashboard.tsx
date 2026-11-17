@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { AppNotification, LogisticsServiceProfile, LogisticsServiceType, OfferedService, ServiceRequest, UserAccount } from '../types';
+import { AppNotification, LogisticsServiceProfile, LogisticsServiceType, OfferedService, ServiceRequest, UserAccount } from '../../types';
 import { CheckCircle2, Clock, HardDrive, MapPin, Package, Plus, Settings, Truck, Wheat, Wind, XCircle } from 'lucide-react';
-import Sidebar from './Sidebar';
-import AnnouncementsBoard from './AnnouncementsBoard';
-import { useApp } from '../context/AppContext';
-import { askConfirmation, confirmDialog } from '../lib/appDialog';
+import Sidebar from '../../components/Sidebar';
+import AnnouncementsBoard from '../../components/AnnouncementsBoard';
+import { useApp } from '../../context/AppContext';
+import { askConfirmation, confirmDialog } from '../../lib/appDialog';
 
 interface Props {
   user: UserAccount;

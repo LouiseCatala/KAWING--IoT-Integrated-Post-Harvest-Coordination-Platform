@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AppNotification, UserAccount, Harvest, ServiceRequest, Offer } from '../types';
+import { AppNotification, UserAccount, Harvest, ServiceRequest, Offer } from '../../types';
 import {
   Shield,
   Users,
@@ -20,20 +20,20 @@ import {
   Phone,
   ShieldAlert
 } from 'lucide-react';
-import { useApp } from '../context/AppContext';
-import ThemeToggle from './ThemeToggle';
+import { useApp } from '../../context/AppContext';
+import ThemeToggle from '../../components/ThemeToggle';
 
 // Import our modular sub-components
-import UsersTab from './admin/UsersTab';
-import VerificationTab from './admin/VerificationTab';
-import HarvestsTab from './admin/HarvestsTab';
-import ServicesTab from './admin/ServicesTab';
-import TransactionsTab from './admin/TransactionsTab';
-import ReportsTab from './admin/ReportsTab';
-import SpoilageTab from './admin/SpoilageTab';
-import AnnouncementsTab from './admin/AnnouncementsTab';
-import SettingsTab from './admin/SettingsTab';
-import GrainyFaqTab from './admin/GrainyFaqTab';
+import UsersTab from './UsersTab';
+import VerificationTab from './VerificationTab';
+import HarvestsTab from './HarvestsTab';
+import ServicesTab from './ServicesTab';
+import TransactionsTab from './TransactionsTab';
+import ReportsTab from './ReportsTab';
+import SpoilageTab from './SpoilageTab';
+import AnnouncementsTab from './AnnouncementsTab';
+import SettingsTab from './SettingsTab';
+import GrainyFaqTab from './GrainyFaqTab';
 
 interface AdminDashboardProps {
   user: UserAccount;

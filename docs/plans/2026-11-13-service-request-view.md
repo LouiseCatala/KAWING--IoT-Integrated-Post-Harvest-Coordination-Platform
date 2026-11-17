@@ -8,7 +8,7 @@
 
 **Tech Stack:** React 19, TypeScript, Tailwind CSS
 
-**Spec:** `docs/superpowers/specs/2026-11-13-service-request-view-design.md`
+**Spec:** `docs/specs/2026-11-13-service-request-view-design.md`
 
 ## Global Constraints
 
@@ -29,7 +29,7 @@
 ### Task 1: Add the request view switcher
 
 **Files:**
-- Modify: `src/components/FarmerDashboard.tsx`
+- Modify: `src/pages/farmer/FarmerDashboard.tsx`
 
 **Interfaces:**
 - Consumes: `myServices: ServiceRequest[]`

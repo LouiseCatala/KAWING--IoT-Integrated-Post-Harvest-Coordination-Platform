@@ -1,11 +1,11 @@
 import { IconCompass, IconTruck } from '@tabler/icons-react';
 import React, { useState } from 'react';
-import { ServiceRequest, UserAccount, AppNotification } from '../types';
+import { ServiceRequest, UserAccount, AppNotification } from '../../types';
 import { Truck, MapPin, Calendar, CheckCircle2, Navigation, Play } from 'lucide-react';
-import { useApp } from '../context/AppContext';
-import Sidebar from './Sidebar';
-import AnnouncementsBoard from './AnnouncementsBoard';
-import { askConfirmation } from '../lib/appDialog';
+import { useApp } from '../../context/AppContext';
+import Sidebar from '../../components/Sidebar';
+import AnnouncementsBoard from '../../components/AnnouncementsBoard';
+import { askConfirmation } from '../../lib/appDialog';
 
 interface TruckDashboardProps {
   user: UserAccount;

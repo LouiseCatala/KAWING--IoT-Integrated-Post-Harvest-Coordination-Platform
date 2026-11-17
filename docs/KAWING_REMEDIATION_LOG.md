@@ -9,12 +9,12 @@ This log intentionally excludes credentials, API keys, passwords, and personal u
 - Production build: passed with `npm.cmd run build`.
 - Existing warning: the main JavaScript bundle exceeds Vite's 500 kB warning threshold.
 - PHP requirement: PHP 8.1 or newer.
-- Database: MySQL; canonical schema is `database/schema.sql`, with a deployment copy in `deploy/cpanel/schema.sql`.
-- Configuration: `.env.example`, ignored local `kawing-config.php`, and `deploy/cpanel/kawing-config.example.php`.
+- Database: MySQL; canonical schema is `database/schema.sql`, with a deployment copy in `deploy/schema.sql`.
+- Configuration: `.env.example`, ignored local `kawing-config.php`, and `deploy/kawing-config.example.php`.
 
 ## KAW-SEC-003 — simulated Google authentication fallback
 
-- Files modified: `src/components/Auth.tsx`
+- Files modified: `src/pages/auth/Auth.tsx`
 - Reason: OAuth failure must not permit manual identity selection or accept cross-origin popup messages.
 - Old behavior: failed/unconfigured OAuth opened a simulated account selector; popup messages were not origin-filtered.
 - New behavior: failed OAuth displays an error and password login remains available; OAuth messages are accepted only from the current origin.
@@ -44,7 +44,7 @@ This log intentionally excludes credentials, API keys, passwords, and personal u
 
 ## KAW-DEPLOY-014 — Vite asset references
 
-- Files modified: `src/components/Auth.tsx`, `src/components/Splash.tsx`
+- Files modified: `src/pages/auth/Auth.tsx`, `src/pages/landing/Splash.tsx`
 - Reason: literal `/src/assets/...` URLs are unreliable in production output.
 - Old behavior: source-directory URLs were emitted literally.
 - New behavior: Vite imports and fingerprints the same existing images.
@@ -54,7 +54,7 @@ This log intentionally excludes credentials, API keys, passwords, and personal u
 
 ## Step 1 — authenticated user restoration
 
-- Files modified: `src/App.tsx`, `src/components/Auth.tsx`, `public/api/index.php`.
+- Files modified: `src/App.tsx`, `src/pages/auth/Auth.tsx`, `public/api/index.php`.
 - Reason: make the PHP session the preferred authentication source while retaining localStorage as a temporary network-failure compatibility fallback.
 - Old behavior: startup trusted the complete localStorage user object; password login used its first response directly; logout did not invalidate the PHP session.
 - New behavior: startup prefers `/api/auth/me`; an authoritative 401 clears the stale compatibility session; password and approved Google login restore the sanitized account through `/api/auth/me`; logout calls `/api/auth/logout` before clearing local state.
@@ -66,7 +66,7 @@ This log intentionally excludes credentials, API keys, passwords, and personal u
 
 ## Login throttle countdown and CAPTCHA refresh
 
-- Files modified: `public/api/index.php`, `src/components/Auth.tsx`.
+- Files modified: `public/api/index.php`, `src/pages/auth/Auth.tsx`.
 - Reason: users need to see the actual remaining lockout time, and a failed password must require a fresh CAPTCHA challenge.
 - Old behavior: HTTP 429 returned a fixed retry header with no visible countdown; a correct CAPTCHA stayed accepted after an incorrect password.
 - New behavior: the backend reports the calculated remaining seconds; the login card and button display a live `minutes:seconds` countdown; incorrect credentials and throttling reset and rotate the CAPTCHA.
@@ -76,7 +76,7 @@ This log intentionally excludes credentials, API keys, passwords, and personal u
 
 ## Login throttle duration adjustment
 
-- Files modified: `public/api/index.php`, `src/components/Auth.tsx`.
+- Files modified: `public/api/index.php`, `src/pages/auth/Auth.tsx`.
 - Reason: reduce unnecessary waiting while retaining basic protection against repeated password guessing.
 - Old behavior: eight failures within 15 minutes triggered a lockout lasting up to 15 minutes.
 - New behavior: five failures within five minutes trigger a lockout lasting up to five minutes.
@@ -86,7 +86,7 @@ This log intentionally excludes credentials, API keys, passwords, and personal u
 
 ## Step 1 correction — reject stale browser authentication
 
-- Files modified: `src/App.tsx`, `src/components/Auth.tsx`.
+- Files modified: `src/App.tsx`, `src/pages/auth/Auth.tsx`.
 - Reason: manual testing showed that an HTTP 401 from `/api/auth/me` could coexist with a dashboard restored from `kawing_active_session`.
 - Root cause: the network-error compatibility branch trusted the complete cached user object, including the Admin role, and the dashboard route had no final login-screen redirect when its user was cleared.
 - New behavior: only a successful `/api/auth/me` response restores identity; HTTP 401/403 clears only `kawing_active_session` and forces the login screen; auth network/server failures fail closed; and the dashboard route independently requires an authenticated user.
@@ -114,7 +114,7 @@ This log intentionally excludes credentials, API keys, passwords, and personal u
 
 ## Embedded Administrator credentials removed
 
-- Files modified: `public/api/index.php`, `database/schema.sql`, `deploy/cpanel/schema.sql`, and `src/components/admin/SettingsTab.tsx`.
+- Files modified: `public/api/index.php`, `database/schema.sql`, `deploy/schema.sql`, and `src/pages/admin/SettingsTab.tsx`.
 - Removed hard-coded Administrator usernames, emails, password/hash seeds, demo-reset credentials, and the visible default password in Admin settings.
 - Existing Administrator database records were not modified or deleted.
 - Bulk synchronization and demo cleanup now preserve server-managed Administrator rows dynamically rather than recreating a known account.

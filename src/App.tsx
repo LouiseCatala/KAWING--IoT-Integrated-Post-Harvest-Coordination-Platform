@@ -1,16 +1,16 @@
 import { IconAlertTriangle, IconLoader2, IconLogout } from '@tabler/icons-react';
 import React, { useState, useEffect, useRef } from 'react';
-import Splash from './components/Splash';
+import Splash from './pages/landing/Splash';
 import StartupSkeleton from './components/StartupSkeleton';
-import Auth from './components/Auth';
-import FarmerDashboard from './components/FarmerDashboard';
-import BuyerDashboard from './components/BuyerDashboard';
-import TruckDashboard from './components/TruckDashboard';
-import StorageDashboard from './components/StorageDashboard';
-import DryerDashboard from './components/DryerDashboard';
-import MillerDashboard from './components/MillerDashboard';
-import LogisticsDashboard from './components/LogisticsDashboard';
-import AdminDashboard from './components/AdminDashboard';
+import Auth from './pages/auth/Auth';
+import FarmerDashboard from './pages/farmer/FarmerDashboard';
+import BuyerDashboard from './pages/buyer/BuyerDashboard';
+import TruckDashboard from './pages/buyer/TruckDashboard';
+import StorageDashboard from './pages/buyer/StorageDashboard';
+import DryerDashboard from './pages/buyer/DryerDashboard';
+import MillerDashboard from './pages/buyer/MillerDashboard';
+import LogisticsDashboard from './pages/buyer/LogisticsDashboard';
+import AdminDashboard from './pages/admin/AdminDashboard';
 import { UserAccount, Harvest, ServiceRequest, Offer, AppNotification, OfferedService, ProductionLoanRequest, ProductionLoanStatus, AppSettings, LogisticsServiceProfile, LogisticsServiceType } from './types';
 import GrainyAssistant from './components/GrainyAssistant';
 import { useLiveDatabase } from './lib/useLiveDatabase';
@@ -18,6 +18,7 @@ import { equal, type DatabaseSnapshot } from './lib/databaseSync';
 import { hasApprovedBusinessCapability } from './lib/businessCapabilities';
 import { createSubmissionGuard, newRecordId } from './lib/submissionGuard';
 import { alertDialog } from './lib/appDialog';
+import { resetEmailConsentPrompt } from './lib/emailConsentPrompt';
 import { useApp } from './context/AppContext';
 
 const DEFAULT_SETTINGS: AppSettings = { daReferencePrice: 22.8 };
@@ -255,6 +256,7 @@ export default function App() {
         businessName: updated.businessName || '',
         legalCompanyName: updated.legalCompanyName || '',
         rsbsaNumber: updated.rsbsaNumber || '',
+        palaySenseId: updated.role === 'farmer' ? (updated.palaySenseId || '').trim().toUpperCase() : '',
         avatarUrl: updated.avatarUrl || '',
         bio: updated.bio || '',
         emailNotificationsEnabled: updated.emailNotificationsEnabled === true,
@@ -316,6 +318,7 @@ export default function App() {
   };
 
   const handleAuthSuccess = (user: UserAccount) => {
+    resetEmailConsentPrompt(user.email);
     setSyncError('');
     setActiveUser(user);
     localStorage.setItem('kawing_active_session', JSON.stringify(user));
@@ -454,7 +457,7 @@ export default function App() {
     );
     const profileChanged = isSelf && [
       'name', 'contactNumber', 'additionalContactNumbers', 'address', 'businessName', 'legalCompanyName',
-      'rsbsaNumber', 'avatarUrl', 'bio',
+      'rsbsaNumber', 'palaySenseId', 'avatarUrl', 'bio',
     ].some((field) => originalUser?.[field as keyof UserAccount] !== updated[field as keyof UserAccount]);
     const providerSettingsChanged = isSelf && (
       originalUser?.loanConfig !== updated.loanConfig ||

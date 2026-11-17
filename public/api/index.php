@@ -94,7 +94,8 @@ $saveDatabase = static function (array $data) use ($pdo, $replaceRows): void {
                 $reservedEmails[strtolower(trim((string) $administrator['email']))] = true;
             }
             $seenEmails = [];
-            foreach ($users as $record) {
+            $seenPalaySenseIds = [];
+            foreach ($users as $userIndex => $record) {
                 $email = strtolower(trim((string) ($record['email'] ?? '')));
                 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                     throw new InvalidArgumentException('Each account must have a valid email address. Check the user details before saving.');
@@ -103,12 +104,32 @@ $saveDatabase = static function (array $data) use ($pdo, $replaceRows): void {
                     throw new InvalidArgumentException('Two accounts cannot use the same email address. Enter a unique email address for each account, then save again.');
                 }
                 $seenEmails[$email] = true;
+                $palaySenseId = trim((string) ($record['palaySenseId'] ?? ''));
+                if (($record['role'] ?? '') !== 'farmer') {
+                    unset($record['palaySenseId']);
+                    $users[$userIndex] = $record;
+                    continue;
+                }
+                if ($palaySenseId !== '') {
+                    $palaySenseId = strtoupper($palaySenseId);
+                    if (!preg_match('/^[A-Z0-9][A-Z0-9_-]{2,63}$/', $palaySenseId)) {
+                        throw new InvalidArgumentException('Enter a valid PalaySense ID on each farmer profile.');
+                    }
+                    if (isset($seenPalaySenseIds[$palaySenseId])) {
+                        throw new InvalidArgumentException('Each PalaySense ID can belong to only one farmer.');
+                    }
+                    $seenPalaySenseIds[$palaySenseId] = true;
+                    $record['palaySenseId'] = $palaySenseId;
+                } else {
+                    unset($record['palaySenseId']);
+                }
+                $users[$userIndex] = $record;
             }
             foreach ($pdo->query("SELECT email,password_hash FROM users WHERE role <> 'admin'")->fetchAll() as $existingUser) {
                 $existingPasswordHashes[strtolower((string) $existingUser['email'])] = (string) $existingUser['password_hash'];
             }
             $pdo->exec("DELETE FROM users WHERE role <> 'admin'");
-            $statement = $pdo->prepare('INSERT INTO users (email,name,password_hash,role,is_approved,data) VALUES (?,?,?,?,?,?)');
+            $statement = $pdo->prepare('INSERT INTO users (email,name,password_hash,role,is_approved,palaysense_id,data) VALUES (?,?,?,?,?,?,?)');
             foreach ($users as $record) {
                 $email = strtolower(trim((string) $record['email']));
                 $plainPassword = (string) ($record['password'] ?? '');
@@ -123,6 +144,7 @@ $saveDatabase = static function (array $data) use ($pdo, $replaceRows): void {
                     $passwordHash,
                     $record['role'] ?? '',
                     !empty($record['isApproved']) ? 1 : 0,
+                    ($record['role'] ?? '') === 'farmer' ? ($record['palaySenseId'] ?? null) : null,
                     json_encode($record),
                 ]);
             }
@@ -171,6 +193,13 @@ try {
             respond(['error' => 'Password requirements were not met.'], 422);
         }
         $providedKioskId = trim((string) ($body['kioskId'] ?? ''));
+        $palaySenseId = $body['palaySenseId'] ?? '';
+        if (!is_string($palaySenseId)) respond(['error' => 'PalaySense ID must be text.'], 422);
+        $palaySenseId = strtoupper(trim($palaySenseId));
+        if ($role === 'farmer' && $palaySenseId === '') respond(['error' => 'A PalaySense ID is required for farmer registration.'], 422);
+        if ($palaySenseId !== '' && ($role !== 'farmer' || !preg_match('/^[A-Z0-9][A-Z0-9_-]{2,63}$/', $palaySenseId))) {
+            respond(['error' => 'Enter a valid PalaySense ID for a farmer account.'], 422);
+        }
         $kioskRegistration = $kioskDeviceId !== '' && $providedKioskId !== '' && hash_equals($kioskDeviceId, $providedKioskId);
         $hasRegistrationId = !empty($body['documents']['govIdData']);
         $requiresRegistrationId = in_array($role, ['farmer', 'agricultural_business'], true);
@@ -181,6 +210,11 @@ try {
         $duplicate = $pdo->prepare('SELECT COUNT(*) FROM users WHERE LOWER(email) = ? OR LOWER(name) = LOWER(?)');
         $duplicate->execute([$email, $name]);
         if ((int) $duplicate->fetchColumn() > 0) respond(['error' => 'That email address or account name is already registered.'], 409);
+        if ($palaySenseId !== '') {
+            $duplicateDevice = $pdo->prepare('SELECT COUNT(*) FROM users WHERE palaysense_id = ?');
+            $duplicateDevice->execute([$palaySenseId]);
+            if ((int) $duplicateDevice->fetchColumn() > 0) respond(['error' => 'That PalaySense ID is already registered to another farmer.'], 409);
+        }
         $account = $body;
         unset($account['password'], $account['password_hash'], $account['passwordHash']);
         unset($account['kioskId']);
@@ -188,6 +222,8 @@ try {
         $account['email'] = $email;
         $account['role'] = $role;
         $account['isApproved'] = false;
+        if ($role === 'farmer' && $palaySenseId !== '') $account['palaySenseId'] = $palaySenseId;
+        else unset($account['palaySenseId']);
         if ($requiresRegistrationId && $kioskRegistration && !$hasRegistrationId) {
             $account['registrationSource'] = 'kiosk';
             $account['registrationDocumentStatus'] = 'pending_physical_verification';
@@ -195,8 +231,8 @@ try {
         } else {
             unset($account['registrationSource'], $account['registrationDocumentStatus'], $account['rsbsaDocumentStatus']);
         }
-        $statement = $pdo->prepare('INSERT INTO users (email,name,password_hash,role,is_approved,data) VALUES (?,?,?,?,0,?)');
-        $statement->execute([$email, $name, password_hash($password, PASSWORD_DEFAULT), $role, json_encode($account)]);
+        $statement = $pdo->prepare('INSERT INTO users (email,name,password_hash,role,is_approved,palaysense_id,data) VALUES (?,?,?,?,0,?,?)');
+        $statement->execute([$email, $name, password_hash($password, PASSWORD_DEFAULT), $role, $role === 'farmer' && $palaySenseId !== '' ? $palaySenseId : null, json_encode($account)]);
         respond(['success' => true, 'user' => $account], 201);
     }
     if ($path === 'announcements' && $method === 'GET') {
@@ -332,7 +368,7 @@ try {
         $identity = $sessionIdentity();
         $body = jsonBody();
         beginEndpointWrite($pdo, ['users-directory', 'users:' . $identity['email']]);
-        $allowedFields = ['name', 'contactNumber', 'additionalContactNumbers', 'address', 'businessName', 'legalCompanyName', 'rsbsaNumber', 'avatarUrl', 'bio', 'emailNotificationsEnabled'];
+        $allowedFields = ['name', 'contactNumber', 'additionalContactNumbers', 'address', 'businessName', 'legalCompanyName', 'rsbsaNumber', 'palaySenseId', 'avatarUrl', 'bio', 'emailNotificationsEnabled'];
         $provided = array_values(array_intersect(array_keys($body), $allowedFields));
         if (!$provided) respond(['error' => 'No profile changes were supplied.'], 422);
 
@@ -360,6 +396,11 @@ try {
         if (array_key_exists('name', $body) && trim($body['name']) === '') respond(['error' => 'Your name is required.'], 422);
         if (array_key_exists('name', $body) && mb_strlen(trim($body['name'])) > 191) respond(['error' => 'Your name is too long.'], 422);
         if (array_key_exists('bio', $body) && mb_strlen($body['bio']) > 5000) respond(['error' => 'Your profile notes are too long.'], 422);
+        if (array_key_exists('palaySenseId', $body)) {
+            if ($identity['role'] !== 'farmer') respond(['error' => 'Only farmer accounts can set a PalaySense ID.'], 403);
+            $body['palaySenseId'] = strtoupper(trim($body['palaySenseId']));
+            if ($body['palaySenseId'] !== '' && !preg_match('/^[A-Z0-9][A-Z0-9_-]{2,63}$/', $body['palaySenseId'])) respond(['error' => 'Enter a valid PalaySense ID.'], 422);
+        }
 
         $statement = $pdo->prepare('SELECT name,email,role,is_approved,data FROM users WHERE LOWER(email) = ? LIMIT 1');
         $statement->execute([$identity['email']]);
@@ -377,8 +418,15 @@ try {
         $account['email'] = $row['email'];
         $account['role'] = $row['role'];
         $account['isApproved'] = (bool) $row['is_approved'];
-        $update = $pdo->prepare('UPDATE users SET name = ?, data = ? WHERE LOWER(email) = ?');
-        $update->execute([$account['name'], json_encode($account, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), $identity['email']]);
+        if ($row['role'] !== 'farmer') unset($account['palaySenseId']);
+        $palaySenseId = $row['role'] === 'farmer' ? (trim((string) ($account['palaySenseId'] ?? '')) ?: null) : null;
+        if ($palaySenseId !== null) {
+            $duplicateDevice = $pdo->prepare('SELECT COUNT(*) FROM users WHERE palaysense_id = ? AND LOWER(email) <> ?');
+            $duplicateDevice->execute([$palaySenseId, $identity['email']]);
+            if ((int) $duplicateDevice->fetchColumn() > 0) respond(['error' => 'That PalaySense ID is already registered to another farmer.'], 409);
+        }
+        $update = $pdo->prepare('UPDATE users SET name = ?, palaysense_id = ?, data = ? WHERE LOWER(email) = ?');
+        $update->execute([$account['name'], $palaySenseId, json_encode($account, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), $identity['email']]);
         unset($account['password'], $account['password_hash'], $account['passwordHash'], $account['documents'], $account['uploadedDocs'], $account['govIdData']);
         respond(['success' => true, 'user' => $account]);
     }
@@ -498,13 +546,17 @@ try {
         $identity = $sessionIdentity();
         if ($identity['role'] !== 'farmer') respond(['error' => 'Farmer account required.'], 403);
         $body = jsonBody();
-        $deviceId = trim((string) ($body['deviceId'] ?? ''));
-        if ($deviceId !== 'ESP32-GRAIN-01') respond(['error' => 'Unknown PalaySense device.'], 422);
+        $deviceId = strtoupper(trim((string) ($body['deviceId'] ?? '')));
+        if (!preg_match('/^[A-Z0-9][A-Z0-9_-]{2,63}$/', $deviceId)) respond(['error' => 'Enter a valid PalaySense ID.'], 422);
         if ($method === 'POST') {
             $query = $pdo->prepare("SELECT 1 FROM users WHERE LOWER(email)=? AND role='farmer' AND is_approved=1");
             $query->execute([$identity['email']]);
             if (!$query->fetchColumn()) respond(['error' => 'Farmer account is not available.'], 403);
-            palaySensePair($identity['email'], $deviceId);
+            try {
+                palaySensePair($identity['email'], $deviceId);
+            } catch (DomainException) {
+                respond(['error' => 'This PalaySense device is already paired with another open farmer form.'], 409);
+            }
             respond(['paired' => true, 'expiresInSeconds' => 600]);
         }
         palaySenseUnpair($identity['email'], $deviceId);
@@ -519,14 +571,17 @@ try {
             $body = jsonBody();
             $value = $body['moisturePercentage'] ?? $body['moisture_percentage'] ?? null;
             if (!is_numeric($value) || !is_finite((float) $value) || (float) $value < 0 || (float) $value > 100) respond(['error' => 'moisturePercentage must be between 0 and 100.'], 422);
-            $deviceId = substr((string) ($body['deviceId'] ?? $body['device_id'] ?? 'ESP32-GRAIN-01'), 0, 100);
+            $deviceId = strtoupper(trim(substr((string) ($body['deviceId'] ?? $body['device_id'] ?? ''), 0, 64)));
+            if (!preg_match('/^[A-Z0-9][A-Z0-9_-]{2,63}$/', $deviceId)) respond(['error' => 'A valid deviceId is required.'], 422);
             $reading = palaySenseSubmit($deviceId, (float) $value);
             respond(['moisturePercentage' => $reading['moisture_percentage'], 'deviceId' => $reading['device_id'], 'temporary' => true], 201);
         }
         if ($method === 'GET') {
             $identity = $sessionIdentity();
             if ($identity['role'] !== 'farmer') respond(['error' => 'Farmer account required.'], 403);
-            $reading = palaySenseLatest($identity['email'], 'ESP32-GRAIN-01');
+            $deviceId = strtoupper(trim((string) ($_GET['deviceId'] ?? '')));
+            if (!preg_match('/^[A-Z0-9][A-Z0-9_-]{2,63}$/', $deviceId)) respond(['error' => 'A valid PalaySense ID is required.'], 422);
+            $reading = palaySenseLatest($identity['email'], $deviceId);
             $since = isset($_GET['since']) ? strtotime((string) $_GET['since']) : false;
             if ($since === false) respond(['error' => 'A form start time is required.'], 422);
             if ($reading && strtotime($reading['recorded_at']) < $since) $reading = null;
@@ -865,7 +920,6 @@ try {
         if ($text === '') respond(['error' => 'The AI provider returned an empty answer.'], 502);
         respond(['text' => $text, 'model' => $model]);
     }
-    if ($path === 'analyze-id' && $method === 'POST') respond(['error' => 'Optional Gemini endpoint is unavailable.'], 501);
     respond(['error' => 'API route not found.', 'route' => $path], 404);
 } catch (LiveConflict $error) {
     respond(['error' => $error->getMessage()], 409);

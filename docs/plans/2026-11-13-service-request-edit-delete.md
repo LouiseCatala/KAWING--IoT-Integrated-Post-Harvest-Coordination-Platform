@@ -8,7 +8,7 @@
 
 **Tech Stack:** React, TypeScript, PHP, existing realtime API and confirmation dialogs.
 
-**Spec:** `docs/superpowers/specs/2026-11-13-service-request-edit-delete-design.md`
+**Spec:** `docs/specs/2026-11-13-service-request-edit-delete-design.md`
 
 ## Global Constraints
 
@@ -43,7 +43,7 @@
 ### Task 2: Posted Request actions and edit form
 
 **Files:**
-- Modify: `src/components/FarmerDashboard.tsx`
+- Modify: `src/pages/farmer/FarmerDashboard.tsx`
 
 **Interfaces:**
 - Consumes: `onUpdateServiceRequest(id, updates)` and existing delete callback.

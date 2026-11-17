@@ -11,6 +11,9 @@ coverage/
 .env*
 !.env.example
 kawing-config.php
-deploy/cpanel/kawing-config.private.php
+deploy/kawing-config.private.php
 database/before-*.sql
 database/*backup*.sql
+
+# Generated browser test evidence
+.playwright-cli/

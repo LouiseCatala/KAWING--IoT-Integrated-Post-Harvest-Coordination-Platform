@@ -8,7 +8,7 @@
 
 **Tech Stack:** React 19, TypeScript, Tailwind CSS
 
-**Spec:** `docs/superpowers/specs/2026-11-13-service-requests-price-offers-style-design.md`
+**Spec:** `docs/specs/2026-11-13-service-requests-price-offers-style-design.md`
 
 ## Global Constraints
 
@@ -29,7 +29,7 @@
 ### Task 1: Match the Price Offers visual system
 
 **Files:**
-- Modify: `src/components/FarmerDashboard.tsx`
+- Modify: `src/pages/farmer/FarmerDashboard.tsx`
 
 - [x] Hide the generic header for the directory tab and add the matching emerald title card.
 - [x] Restyle the view selector to match the Price Offers tab bar.

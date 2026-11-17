@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 
-const dashboard = fs.readFileSync('src/components/FarmerDashboard.tsx', 'utf8');
+const dashboard = fs.readFileSync('src/pages/farmer/FarmerDashboard.tsx', 'utf8');
 const app = fs.readFileSync('src/App.tsx', 'utf8');
 const businessWrites = fs.readFileSync('public/api/businessWrites.php', 'utf8');
 

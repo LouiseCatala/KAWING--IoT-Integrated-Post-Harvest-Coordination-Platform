@@ -8,7 +8,7 @@
 
 **Tech Stack:** React, TypeScript, PHP, existing realtime/profile APIs.
 
-**Spec:** `docs/superpowers/specs/2026-11-13-multiple-coordination-contacts-design.md`
+**Spec:** `docs/specs/2026-11-13-multiple-coordination-contacts-design.md`
 
 ## Global Constraints
 
@@ -59,10 +59,10 @@
 ### Task 3: Coordinated contact visibility
 
 **Files:**
-- Modify: `src/components/FarmerDashboard.tsx`
-- Modify: `src/components/BuyerDashboard.tsx`
-- Modify: `src/components/ProductionLoanFarmer.tsx`
-- Modify: `src/components/ProductionLoanBuyer.tsx`
+- Modify: `src/pages/farmer/FarmerDashboard.tsx`
+- Modify: `src/pages/buyer/BuyerDashboard.tsx`
+- Modify: `src/pages/farmer/ProductionLoanFarmer.tsx`
+- Modify: `src/pages/buyer/ProductionLoanBuyer.tsx`
 
 **Interfaces:**
 - Consumes: `getContactNumbers(user)` and coordinated record statuses.

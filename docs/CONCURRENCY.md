@@ -60,11 +60,11 @@ overlap and arbitrary capacity units require a structured scheduling model.
 ## Verification
 
 - `npm.cmd run lint`
-- `node scripts/check-submissions.cjs`
-- `node scripts/check-realtime.cjs`
-- `php scripts/check-realtime.php`
-- `php scripts/check-realtime-db.php` (connection-local temporary tables)
-- `php scripts/check-concurrency.php` (parallel PHP workers in a uniquely named
+- `node tests/check-submissions.cjs`
+- `node tests/check-realtime.cjs`
+- `php tests/check-realtime.php`
+- `php tests/check-realtime-db.php` (connection-local temporary tables)
+- `php tests/check-concurrency.php` (parallel PHP workers in a uniquely named
   disposable database, removed in `finally`; requires CREATE/DROP DATABASE)
 
 The concurrency suite exercises competing offer winners, competing loan fund

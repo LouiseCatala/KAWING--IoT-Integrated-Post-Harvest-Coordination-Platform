@@ -9,8 +9,8 @@
 ## Deploy
 
 1. In **MySQL Databases**, create a database and user, then grant the user **All Privileges**.
-2. Select that database in phpMyAdmin and import `deploy/cpanel/schema.sql`.
-3. Copy `deploy/cpanel/kawing-config.example.php` to `/home/CPANEL_USERNAME/kawing-config.php`. Replace the database credentials, domain, and IoT key. Configure Grainy's `gemini_api_key`, `cloudflare_account_id`, and `cloudflare_ai_token` there too. Keep the config outside `public_html` and never commit it.
+2. Select that database in phpMyAdmin and import `deploy/schema.sql`.
+3. Copy `deploy/kawing-config.example.php` to `/home/CPANEL_USERNAME/kawing-config.php`. Replace the database credentials, domain, and IoT key. Configure Grainy's `gemini_api_key`, `cloudflare_account_id`, and `cloudflare_ai_token` there too. Keep the config outside `public_html` and never commit it.
 4. On your development computer run `npm install`, install PHP dependencies with `php composer.phar install --no-dev --optimize-autoloader`, then run `npm run build:cpanel`.
 5. Upload the **contents** of `dist/` into `public_html/`. Include hidden `.htaccess` files and the `api/` directory.
 6. Open `https://YOUR_DOMAIN/api/health`. It should report `"runtime":"php-mysql"`.
@@ -49,11 +49,11 @@ Users receive email only after choosing **Allow Email Updates** in KAWING. Each 
 
 ## ESP32 / PalaySense
 
-Keep the ESP32 configured with the app's `IOT_API_KEY` and `deviceId` (`ESP32-GRAIN-01`). It posts `deviceId`, `rawValue`, and `moisturePercentage` to `/api/moisture-readings`. It does not need a farmer email or any database credentials.
+Keep the ESP32 configured with the Hostinger `iot_api_key` and the PalaySense ID assigned to that device (for example, `001`). The ID must match the farmer's profile. It posts `deviceId`, `rawValue`, and `moisturePercentage` to `/api/moisture-readings`; it does not need a farmer email or database credentials.
 
 When an approved farmer opens Post Harvest or Offer Harvest, the signed-in form pairs the device to that farmer temporarily. The API relays only the latest reading in a private server temporary file. Closing the form clears the pairing and reading; abandoned pairings expire. Only submitting the harvest stores its moisture percentage in the harvest record. No sensor history is written to MySQL.
 
-The sketch currently targets a local IP address. For deployment, change `KAWING_API_URL` to `https://YOUR_DOMAIN/api/moisture-readings`, and replace the sketch's Wi-Fi password and API key with rotated credentials before uploading.
+Set `KAWING_API_URL` to `https://YOUR_DOMAIN/api/moisture-readings`. Use a strong, unique IoT API key that matches the server's `iot_api_key`, and protect the sketch because firmware contains that key.
 ## Notes
 
 - Docker, Node.js, and Composer are not needed on cPanel after the locally built `dist/` folder is uploaded.

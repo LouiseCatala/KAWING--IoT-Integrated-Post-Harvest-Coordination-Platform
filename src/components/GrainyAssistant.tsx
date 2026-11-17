@@ -308,7 +308,7 @@ export default function GrainyAssistant({ user }: { user: UserAccount }) {
 
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-90" aria-live="polite">
+    <div className="grainy-overlay pointer-events-none fixed inset-0 z-90" aria-live="polite">
       <AnimatePresence>
         {isPeeking && (
           <motion.button
@@ -320,7 +320,7 @@ export default function GrainyAssistant({ user }: { user: UserAccount }) {
             initial={{ opacity: 0, y: reducedMotion ? 0 : 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="pointer-events-auto absolute bottom-43.75 right-4 z-20 w-63.75 max-w-[calc(100vw-2rem)] rounded-2xl rounded-br-sm border border-emerald-200 bg-white px-6 py-5 text-left text-base font-semibold leading-7 text-emerald-950 shadow-lg cursor-pointer hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-500 dark:border-emerald-700 dark:bg-slate-900 dark:text-emerald-100 dark:hover:bg-slate-800 sm:bottom-61.25 sm:right-10"
+            className="grainy-greeting pointer-events-auto absolute bottom-43.75 right-4 z-20 w-63.75 max-w-[calc(100vw-2rem)] rounded-2xl rounded-br-sm border border-emerald-200 bg-white px-6 py-5 text-left text-base font-semibold leading-7 text-emerald-950 shadow-lg cursor-pointer hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-500 dark:border-emerald-700 dark:bg-slate-900 dark:text-emerald-100 dark:hover:bg-slate-800 sm:bottom-61.25 sm:right-10"
           >
             <span className="block min-h-14" aria-hidden="true">
               {peekText}
@@ -333,7 +333,7 @@ export default function GrainyAssistant({ user }: { user: UserAccount }) {
             initial={{ opacity: 0, y: 18, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 15, scale: 0.97 }}
-            className="pointer-events-auto absolute bottom-45 right-3 z-20 max-h-[calc(100dvh-195px)] w-[calc(100vw-1.5rem)] max-w-sm overflow-hidden rounded-2xl md:rounded-3xl border border-emerald-700/30 bg-[#fffdf4] shadow-2xl sm:bottom-77.5 sm:right-6"
+            className="grainy-chat pointer-events-auto absolute bottom-45 right-3 z-20 max-h-[calc(100dvh-195px)] w-[calc(100vw-1.5rem)] max-w-sm overflow-hidden rounded-2xl md:rounded-3xl border border-emerald-700/30 bg-[#fffdf4] shadow-2xl sm:bottom-77.5 sm:right-6"
           >
             <header className="flex items-center justify-between bg-linear-to-r from-emerald-800 to-emerald-600 px-4 py-3 md:px-5 md:py-4 text-white">
               <div><h2 className="font-extrabold">{lang === 'en' ? 'Grainy KAWING Assistant' : 'Grainy na Katulong ng KAWING'}</h2><p className="text-xs text-emerald-100">{lang === 'en' ? 'Your friendly post-harvest guide' : 'Ang iyong katuwang pagkatapos ng anihan'}</p></div>
@@ -381,7 +381,7 @@ export default function GrainyAssistant({ user }: { user: UserAccount }) {
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: reducedMotion ? 0 : 80 }}
         transition={{ duration: reducedMotion ? 0 : 0.35 }}
-        className={`absolute z-10 overflow-visible ${isPeeking ? '-bottom-px -right-22.25 h-50.25 w-67.5 sm:-right-23.25 sm:h-72.5 sm:w-97.5' : 'bottom-1 right-2 h-68.75 w-67.5 sm:-right-19 sm:h-106.25 sm:w-103.75'} transition-[width,height,bottom,right] duration-300`}
+        className={`grainy-character absolute z-10 overflow-visible ${isPeeking ? '-bottom-px -right-22.25 h-50.25 w-67.5 sm:-right-23.25 sm:h-72.5 sm:w-97.5' : 'bottom-1 right-2 h-68.75 w-67.5 sm:-right-19 sm:h-106.25 sm:w-103.75'} transition-[width,height,bottom,right] duration-300`}
       >
         {isPeeking && (
           <motion.button

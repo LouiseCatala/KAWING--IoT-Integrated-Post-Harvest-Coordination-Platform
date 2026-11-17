@@ -8,6 +8,7 @@ import {
 import { useApp } from '../context/AppContext';
 import UserProfileModal from './UserProfileModal';
 import ThemeToggle from './ThemeToggle';
+import { takeEmailConsentPrompt } from '../lib/emailConsentPrompt';
 import { notificationDestination } from '../lib/notificationRouting';
 
 export interface SidebarTabItem {
@@ -50,10 +51,15 @@ export default function Sidebar({
   const [showBuyerLogisticsEnable, setShowBuyerLogisticsEnable] = useState(false);
 
   React.useEffect(() => {
-    setShowEmailConsent(Boolean(user.email) && !user.emailNotificationConsentAsked && user.role !== 'admin');
-  }, [user.email, user.emailNotificationConsentAsked, user.role]);
+    if (user.emailNotificationsEnabled === true) setShowEmailConsent(false);
+    else if (takeEmailConsentPrompt(user)) setShowEmailConsent(true);
+  }, [user.email, user.emailNotificationsEnabled, user.role]);
 
   const saveEmailConsent = (enabled: boolean) => {
+    if (!enabled) {
+      setShowEmailConsent(false);
+      return;
+    }
     onUpdateUser?.(user.name, {
       ...user,
       emailNotificationsEnabled: enabled,
@@ -210,7 +216,7 @@ export default function Sidebar({
       
       {/* Mobile close button overlay */}
       {onCloseMobile && (
-        <div className="md:hidden flex justify-end p-2 border-b border-slate-100 dark:border-slate-800">
+        <div className="sidebar-mobile-close md:hidden flex justify-end p-2 border-b border-slate-100 dark:border-slate-800">
           <button
             onClick={onCloseMobile}
             className="min-h-11 min-w-11 p-2 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all md:min-h-0 md:min-w-0 md:p-1.5"
@@ -222,7 +228,7 @@ export default function Sidebar({
       )}
 
       {/* User Profile Card Button in Sidebar */}
-      <div className="mt-3 px-3 pt-3">
+      <div className="sidebar-profile-container mt-3 px-3 pt-3">
         <button
           onClick={() => setShowProfileModal(true)}
           className="sidebar-profile-button w-full p-2.5 bg-emerald-50/80 dark:bg-emerald-950/30 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/40 border border-emerald-200/80 dark:border-emerald-800/60 rounded-xl transition-all text-left flex items-center gap-2.5 cursor-pointer group shadow-2xs"
@@ -282,7 +288,7 @@ export default function Sidebar({
           return (
             <React.Fragment key={item.id}>
               {separatorBefore.has(item.id) && (
-                <div className="mx-2 my-2 border-t border-slate-200/80 dark:border-slate-700/80" aria-hidden="true" />
+                <div className="sidebar-divider mx-2 my-2 border-t border-slate-200/80 dark:border-slate-700/80" aria-hidden="true" />
               )}
               <button
               onClick={() => isGroup ? handleBuyerLogisticsClick() : handleNavClick(item.id)}
@@ -348,7 +354,7 @@ export default function Sidebar({
         <ThemeToggle variant="sidebar" />
       </div>
       {onLogout && (
-        <div className="border-t border-slate-100 px-3 py-1.5 dark:border-slate-800">
+        <div className="sidebar-logout-container border-t border-slate-100 px-3 py-1.5 dark:border-slate-800">
           <button
             id="sidebar-logout-btn"
             onClick={onLogout}
@@ -361,7 +367,7 @@ export default function Sidebar({
       )}
 
       {/* Sidebar Footer */}
-      <div className="p-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-[11px] text-slate-400 dark:text-slate-500 flex items-center justify-between">
+      <div className="sidebar-footer p-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-[11px] text-slate-400 dark:text-slate-500 flex items-center justify-between">
         <div className="sidebar-expanded-only flex items-center gap-1.5 font-bold">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
           <span>{lang === 'en' ? 'Account records secured' : 'Ligtas ang account records'}</span>
@@ -380,7 +386,7 @@ export default function Sidebar({
 
       {/* Mobile Drawer Overlay */}
       {isMobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden flex">
+        <div className="fixed inset-0 z-[100] md:hidden flex">
           <div 
             className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
             onClick={onCloseMobile}

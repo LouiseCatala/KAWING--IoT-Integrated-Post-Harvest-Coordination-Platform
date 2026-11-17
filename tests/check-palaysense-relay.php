@@ -9,12 +9,17 @@ $reading = palaySenseSubmit($device, 12.26);
 check($reading['moisture_percentage'] === 12.26, 'device sample accepted into temporary relay');
 check(palaySenseLatest($farmer, $device)['moisture_percentage'] === 12.26, 'paired farmer receives the reading');
 check(palaySenseLatest($other, $device) === null, 'other farmer cannot read it');
+try {
+    palaySensePair($other, $device);
+    check(false, 'another farmer cannot claim an active device');
+} catch (DomainException) {
+    check(true, 'another farmer cannot claim an active device');
+}
+check(palaySenseLatest($farmer, $device)['moisture_percentage'] === 12.26, 'rejected pairing keeps the current farmer reading');
+palaySenseUnpair($farmer, $device);
 palaySensePair($other, $device);
-check(palaySenseLatest($farmer, $device) === null, 'new pairing removes prior farmer access');
-check(palaySenseLatest($other, $device) === null, 'new pairing clears prior sample');
+check(palaySenseLatest($other, $device) === null, 'new pairing starts without an old sample');
 palaySenseSubmit($device, 14.1);
 check(palaySenseLatest($other, $device)['moisture_percentage'] === 14.1, 'new paired farmer receives new sample');
-palaySenseUnpair($farmer, $device);
-check(palaySenseLatest($other, $device)['moisture_percentage'] === 14.1, 'old farmer cannot unpair current owner');
 palaySenseUnpair($other, $device);
 check(palaySenseLatest($other, $device) === null, 'closing paired form clears temporary access');

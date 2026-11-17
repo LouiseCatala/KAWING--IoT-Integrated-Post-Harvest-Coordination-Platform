@@ -25,8 +25,13 @@ function palaySenseRelay(callable $update): mixed {
 
 function palaySensePair(string $email, string $deviceId): void {
     palaySenseRelay(static function (array &$state, float $now) use ($email, $deviceId): void {
-        $state['bindings'][hash('sha256', $deviceId)] = ['email' => strtolower($email), 'expires_at' => $now + 600];
-        unset($state['readings'][hash('sha256', $deviceId)]);
+        $key = hash('sha256', $deviceId);
+        $currentOwner = strtolower((string) ($state['bindings'][$key]['email'] ?? ''));
+        if ($currentOwner !== '' && $currentOwner !== strtolower($email)) {
+            throw new DomainException('PalaySense device is already paired.');
+        }
+        $state['bindings'][$key] = ['email' => strtolower($email), 'expires_at' => $now + 600];
+        unset($state['readings'][$key]);
     });
 }
 

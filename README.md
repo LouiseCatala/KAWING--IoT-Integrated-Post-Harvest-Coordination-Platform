@@ -44,13 +44,16 @@ MySQL / MariaDB
 
 | Location | Contents |
 | --- | --- |
-| `src/` | React interface, role dashboards, and shared state |
+| `src/pages/` | Screens grouped by admin, farmer, buyer, auth, and landing |
+| `src/components/` | Shared interface components |
+| `src/context/`, `src/lib/` | Shared state and application helpers |
 | `public/api/` | PHP endpoints and server-side validation |
 | `database/` | Local database schema and migrations |
-| `deploy/cpanel/` | Hosting setup and production schema |
-| `scripts/` | Development tools and verification checks |
+| `deploy/` | Hosting setup and production schema |
+| `scripts/` | Development startup and maintenance tools |
+| `tests/` | Verification checks |
 
-See [Concurrency safeguards](CONCURRENCY.md) for write conflicts, duplicate submissions, and shared-resource protection.
+See [Concurrency safeguards](docs/CONCURRENCY.md) for write conflicts, duplicate submissions, and shared-resource protection.
 
 ## Local development
 
@@ -84,13 +87,13 @@ Vite proxies `/api` requests to the local PHP server on port 8000. The PHP sourc
 Deploy the static React build alongside the PHP/PDO API and MySQL. Node.js and Docker are not required on the cPanel server.
 
 1. Create a cPanel MySQL database/user and grant all privileges.
-2. Import `deploy/cpanel/schema.sql` into the selected database.
-3. Copy and configure `deploy/cpanel/kawing-config.example.php` as `~/kawing-config.php` above `public_html`.
+2. Import `deploy/schema.sql` into the selected database.
+3. Copy and configure `deploy/kawing-config.example.php` as `~/kawing-config.php` above `public_html`.
 4. Build locally with `npm run build:cpanel`.
 5. Upload the contents of `dist/` to `public_html`, including both `.htaccess` files.
 6. Verify `https://YOUR_DOMAIN/api/health`.
 
-See `deploy/cpanel/README.md` for the complete checklist and ESP32 payload.
+See `deploy/README.md` for the complete checklist and ESP32 payload.
 
 ### Database tables
 
@@ -100,16 +103,14 @@ The API runs operational-data cleanup once per day: write receipts expire after 
 
 ### PalaySense API
 
-PalaySense sends readings to `POST /api/moisture-readings` with the `x-api-key` header matching `IOT_API_KEY`. Both camelCase and snake_case payload fields are accepted. `farmerEmail` is required for the reading to appear automatically in that farmer's Post Harvest form.
+PalaySense sends readings to `POST /api/moisture-readings` with the `x-api-key` header matching the server's `iot_api_key`. The `deviceId` must match the PalaySense ID saved in the farmer's profile. When that farmer opens a harvest form, KAWING temporarily pairs the device to the account and displays its latest reading. Moisture samples are not stored as a history.
 
 ```json
 {
-  "harvestId": "h1",
-  "batchId": "BATCH-001",
+  "deviceId": "001",
+  "rawValue": 3171,
   "moisturePercentage": 18.4,
-  "farmerEmail": "magsasaka@kawing.com",
-  "deviceId": "PALAYSENSE-01",
-  "gatewayId": "INTEL-NUC-01"
+  "classification": "Wet"
 }
 ```
 

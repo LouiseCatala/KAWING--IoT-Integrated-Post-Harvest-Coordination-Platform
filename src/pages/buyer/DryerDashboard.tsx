@@ -1,12 +1,12 @@
 import { IconFlame, IconWind } from '@tabler/icons-react';
 import React, { useState } from 'react';
-import { ServiceRequest, UserAccount, AppNotification } from '../types';
+import { ServiceRequest, UserAccount, AppNotification } from '../../types';
 import { Wind, Thermometer, Droplets, Percent, Calendar, MapPin, CheckCircle, Flame } from 'lucide-react';
-import { useApp } from '../context/AppContext';
-import Sidebar from './Sidebar';
-import PalayHub from './PalayHub';
-import AnnouncementsBoard from './AnnouncementsBoard';
-import { askConfirmation } from '../lib/appDialog';
+import { useApp } from '../../context/AppContext';
+import Sidebar from '../../components/Sidebar';
+import PalayHub from '../../components/PalayHub';
+import AnnouncementsBoard from '../../components/AnnouncementsBoard';
+import { askConfirmation } from '../../lib/appDialog';
 
 interface DryerDashboardProps {
   user: UserAccount;

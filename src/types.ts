@@ -48,6 +48,7 @@ export interface UserAccount {
   address?: string;
   businessName?: string;
   rsbsaNumber?: string;
+  palaySenseId?: string;
   registrationSource?: 'kiosk';
   registrationDocumentStatus?: 'pending_physical_verification';
   rsbsaDocumentStatus?: 'pending_physical_verification';

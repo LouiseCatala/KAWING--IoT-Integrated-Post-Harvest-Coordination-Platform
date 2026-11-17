@@ -1118,10 +1118,10 @@ html:not(.dark) .admin-dashboard-shell .dashboard-main ::selection {
     box-shadow: 0 -12px 28px rgb(2 6 23 / 0.28);
   }
 
-  .desktop-sidebar-shell .sidebar-content > .mt-3,
-  .desktop-sidebar-shell .sidebar-content > .border-t,
+  .desktop-sidebar-shell .sidebar-mobile-close,
+  .desktop-sidebar-shell .sidebar-footer,
   .desktop-sidebar-shell .sidebar-section-heading,
-  .desktop-sidebar-shell .sidebar-content [aria-hidden="true"] {
+  .desktop-sidebar-shell .sidebar-divider {
     display: none !important;
   }
 
@@ -1164,9 +1164,9 @@ html:not(.dark) .admin-dashboard-shell .dashboard-main ::selection {
     max-width: 4.75rem;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 0.625rem;
-    line-height: 0.75rem;
+    white-space: normal;
+    font-size: 0.6875rem;
+    line-height: 0.875rem;
   }
 
   .desktop-sidebar-shell .sidebar-nav-button > .sidebar-expanded-only,
@@ -1244,4 +1244,72 @@ html:not(.dark) .admin-dashboard-shell .dashboard-main ::selection {
   .admin-dashboard-shell aside nav > button span:not(.rounded-full) {
     display: none;
   }
+}
+
+/* Compact, readable controls on phones; retain desktop sizing. */
+@media (max-width: 767px) {
+  .desktop-sidebar-shell .sidebar-profile-container,
+  .desktop-sidebar-shell .sidebar-theme-container,
+  .desktop-sidebar-shell .sidebar-logout-container {
+    flex: 0 0 44px;
+    margin: 0;
+    padding: 12px 2px;
+    border: 0;
+  }
+  .desktop-sidebar-shell .sidebar-profile-container button,
+  .desktop-sidebar-shell .sidebar-theme-container button,
+  .desktop-sidebar-shell .sidebar-logout-button {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 4px;
+    justify-content: center;
+  }
+  .desktop-sidebar-shell :is(.sidebar-profile-container, .sidebar-theme-container, .sidebar-logout-container) .sidebar-expanded-only {
+    display: none;
+  }
+  .desktop-sidebar-shell .sidebar-profile-container button > svg { display: none; }
+  .desktop-sidebar-shell .sidebar-nav-button { min-height: 60px; overflow: visible; }
+  .desktop-sidebar-shell .sidebar-nav-button svg { width: 20px; height: 20px; flex-shrink: 0; }
+  .desktop-sidebar-shell .sidebar-content > .flex-1 { min-width: 0; padding-top: 8px; }
+  html:not(.dark) .desktop-sidebar-shell .sidebar-content > .flex-1 > .sidebar-expanded-only {
+    background: #fff; border-color: #cbd5e1; color: #0f172a;
+  }
+  .dashboard-main h1 { font-size: 1.25rem; line-height: 1.4; }
+  .dashboard-main h2 { font-size: 1.125rem; line-height: 1.4; }
+  .dashboard-main h3 { line-height: 1.4; }
+  .dashboard-main > * { min-width: 0; max-width: 100%; }
+  .dashboard-main :is(p, label) { overflow-wrap: anywhere; }
+  .admin-dashboard-shell aside nav > button > div { gap: 6px; flex-direction: column; }
+  .admin-dashboard-shell aside nav > button span:not(.rounded-full) {
+    display: block; font-size: 11px; line-height: 1.3; max-width: 90px; white-space: normal;
+  }
+  .admin-dashboard-shell aside nav > button { min-width: 76px; }
+  .admin-dashboard-shell .dashboard-main { padding-bottom: 1.5rem !important; }
+  .auth-panel :is(input, select, textarea) { font-size: 16px; }
+}
+
+@media (max-width: 767px) {
+  .admin-dashboard-shell aside nav { align-items: center; height: 76px; flex-shrink: 0; }
+  .admin-dashboard-shell aside nav > button { height: 68px; max-width: 112px; position: relative; }
+  .admin-dashboard-shell aside nav > button > span { position: absolute; top: 3px; right: 3px; }
+  .admin-dashboard-shell aside nav > div { display: none; }
+  .farmer-module .dashboard-main > div:first-child > div:last-child { align-items: stretch; }
+  .farmer-module .dashboard-main > div:first-child > div:last-child button { min-height: 48px; }
+  .grainy-overlay { bottom: calc(4.75rem + env(safe-area-inset-bottom)); }
+  .grainy-overlay .grainy-character { transform-origin: bottom right; scale: .65; }
+  .grainy-overlay .grainy-chat { bottom: 112px; max-height: calc(100dvh - 210px); }
+  .grainy-overlay .grainy-greeting { bottom: 120px; padding: 12px 16px; font-size: 14px; line-height: 1.5; }
+}
+
+@media (max-width: 767px) {
+  .partner-list-card { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; padding: 16px; }
+  .partner-list-card > span:last-child { grid-column: 2; justify-self: start; }
+  .partner-list-card strong { white-space: normal; overflow-wrap: anywhere; }
+  .partner-list-card svg { flex-shrink: 0; }
+}
+
+@media (max-width: 767px) {
+  .auth-utility-bar { position: static; justify-content: center; margin-bottom: 16px; gap: 6px; }
+  .auth-utility-bar button { min-height: 44px; }
 }

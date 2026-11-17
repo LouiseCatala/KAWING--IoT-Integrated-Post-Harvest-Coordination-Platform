@@ -1,23 +1,23 @@
 import { IconAlertTriangle, IconArrowRight, IconArrowUpRight, IconCalendar, IconCash, IconCheck, IconCircleCheck, IconCircleX, IconCoin, IconConfetti, IconDroplet, IconFolderOpen, IconHammer, IconHeartHandshake, IconMapPin, IconMedal, IconPackage, IconSettings, IconTools, IconTrophy, IconTruck, IconWheat, IconWind, IconWorld, IconX } from '@tabler/icons-react';
 import React, { useEffect, useState } from 'react';
-import { Harvest, ServiceRequest, UserAccount, AppNotification, Offer, OfferedService } from '../types';
+import { Harvest, ServiceRequest, UserAccount, AppNotification, Offer, OfferedService } from '../../types';
 import { Plus, Calendar, MapPin, AlertTriangle, TrendingUp, RefreshCw, Check, X, Phone, Mail, ShieldCheck, Trash2, Pencil, Truck, HardDrive, Wind, ChevronDown, ChevronUp, Star, CircleDot, Search } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useApp } from '../context/AppContext';
-import { getMoistureClassification } from '../lib/moisture';
-import { getBusinessCapability, hasApprovedBusinessCapability } from '../lib/businessCapabilities';
-import { getContactNumbers } from '../lib/contactDetails';
-import Sidebar from './Sidebar';
-import TransactionRating from './TransactionRating';
-import RatingSummary from './RatingSummary';
-import AnimatedButton from './AnimatedButton';
-import AnnouncementsBoard from './AnnouncementsBoard';
+import { useApp } from '../../context/AppContext';
+import { getMoistureClassification } from '../../lib/moisture';
+import { getBusinessCapability, hasApprovedBusinessCapability } from '../../lib/businessCapabilities';
+import { getContactNumbers } from '../../lib/contactDetails';
+import Sidebar from '../../components/Sidebar';
+import TransactionRating from '../../components/TransactionRating';
+import RatingSummary from '../../components/RatingSummary';
+import AnimatedButton from '../../components/AnimatedButton';
+import AnnouncementsBoard from '../../components/AnnouncementsBoard';
 import ProductionLoanFarmer from './ProductionLoanFarmer';
-import CoordinatedContactCard from './CoordinatedContactCard';
-import { ProductionLoanRequest } from '../types';
-import farmerBackground from '../assets/images/Farmer_Background.jpg';
-import { alertDialog, askConfirmation } from '../lib/appDialog';
-import { NotificationBadge, notificationDestination } from '../lib/notificationRouting';
+import CoordinatedContactCard from '../../components/CoordinatedContactCard';
+import { ProductionLoanRequest } from '../../types';
+import farmerBackground from '../../assets/images/Farmer_Background.jpg';
+import { alertDialog, askConfirmation } from '../../lib/appDialog';
+import { NotificationBadge, notificationDestination } from '../../lib/notificationRouting';
 
 const alert = (message: string) => { void alertDialog(message, { tone: 'info' }); };
 
@@ -186,6 +186,8 @@ export default function FarmerDashboard({
   const [postLocation, setPostLocation] = useState('');
   const [postUrgency, setPostUrgency] = useState<'low' | 'medium' | 'high'>('medium');
   const [postMoisture, setPostMoisture] = useState('');
+  const palaySenseDeviceId = user.role === 'farmer' ? (user.palaySenseId || '').trim().toUpperCase() : '';
+  const activePalaySenseDeviceId = /^[A-Z0-9][A-Z0-9_-]{2,63}$/.test(palaySenseDeviceId) ? palaySenseDeviceId : '';
   const postMoistureCardClass = {
     high: 'border-red-600 bg-red-600 text-white shadow-red-600/30',
     'needs-drying': 'border-orange-500 bg-orange-500 text-slate-950 shadow-orange-500/30',
@@ -201,6 +203,12 @@ export default function FarmerDashboard({
   const [postRemarks, setPostRemarks] = useState('');
   const [targetHarvestBuyer, setTargetHarvestBuyer] = useState<UserAccount | null>(null);
   const [showPostHarvestReview, setShowPostHarvestReview] = useState(false);
+
+  useEffect(() => {
+    setPalaySenseStatus('waiting');
+    setPostMoisture('');
+    setPalaySenseReadingAt('');
+  }, [palaySenseDeviceId]);
 
   const handleOpenPostHarvestModal = (targetBuyer: UserAccount | null = null) => {
     setShowPostHarvestReview(false);
@@ -224,7 +232,7 @@ export default function FarmerDashboard({
   };
 
   useEffect(() => {
-    if (!showPostHarvestModal || !palaySenseSessionStart) return;
+    if (!showPostHarvestModal || !palaySenseSessionStart || !activePalaySenseDeviceId) return;
     let cancelled = false;
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout>;
@@ -233,7 +241,7 @@ export default function FarmerDashboard({
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ deviceId: 'ESP32-GRAIN-01' }),
+        body: JSON.stringify({ deviceId: activePalaySenseDeviceId }),
         signal: controller.signal,
       });
       if (!response.ok) throw new Error('Could not connect PalaySense');
@@ -244,6 +252,7 @@ export default function FarmerDashboard({
         const params = new URLSearchParams({
           limit: '1',
           since: palaySenseSessionStart,
+          deviceId: activePalaySenseDeviceId,
         });
         const response = await fetch(`/api/moisture-readings?${params.toString()}`, { credentials: 'include', cache: 'no-store', signal: controller.signal });
         if (!response.ok) throw new Error('PalaySense service unavailable');
@@ -275,11 +284,11 @@ export default function FarmerDashboard({
         method: 'DELETE',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ deviceId: 'ESP32-GRAIN-01' }),
+        body: JSON.stringify({ deviceId: activePalaySenseDeviceId }),
         keepalive: true,
       });
     };
-  }, [showPostHarvestModal, palaySenseSessionStart, user.email]);
+  }, [showPostHarvestModal, palaySenseSessionStart, activePalaySenseDeviceId, user.email]);
 
   useEffect(() => {
     const quantityKg = Number(reqContainerQuantity) * Number(reqEstimatedKgPerContainer);
@@ -1078,7 +1087,7 @@ export default function FarmerDashboard({
                       onClick={() => entry.kind === 'buyer'
                         ? setSelectedBuyerModal(entry.user)
                         : setSelectedOperatorModal({ ...entry.user, role: entry.serviceRole! })}
-                      className="group flex w-full items-center gap-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-900 px-5 py-4 text-left shadow-sm transition-all hover:border-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      className="partner-list-card group flex w-full items-center gap-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-900 px-5 py-4 text-left shadow-sm transition-all hover:border-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-800"
                     >
                       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-xl group-hover:bg-emerald-950">{entry.icon}</span>
                       <span className="min-w-0 flex-1">
@@ -2598,12 +2607,18 @@ export default function FarmerDashboard({
 
               {/* Moisture content is supplied exclusively by a fresh PalaySense reading. */}
               <div className={`post-harvest-moisture rounded-2xl border p-4 shadow-md transition-colors duration-300 ${postMoistureCardClass}`}>
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <label className="text-sm font-display font-black uppercase tracking-wide"><span className="inline-flex items-center gap-1.5 align-middle mr-1.5"><IconDroplet size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Moisture Content (%)"}</span><span className="text-red-500">*</span>
+                <div className="grid grid-cols-[minmax(0,1fr)_9rem] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_10rem]">
+                  <label className="whitespace-nowrap text-xs font-display font-black uppercase tracking-wide sm:text-sm"><span className="inline-flex items-center gap-1 align-middle mr-1 sm:gap-1.5 sm:mr-1.5"><IconDroplet size={20} stroke={2} aria-hidden="true" className="inline-block h-4 w-4 shrink-0 sm:h-5 sm:w-5" />{"Moisture Content (%)"}</span><span className="text-red-500">*</span>
                   </label>
-                  <span className={`${palaySenseStatus !== 'connected' && palaySenseStatus !== 'error' ? 'invisible' : ''} shrink-0 rounded-lg border px-2.5 py-1.5 text-[9px] font-black uppercase tracking-wider ${palaySenseStatus === 'connected' ? 'border-emerald-400 bg-emerald-100 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : 'border-red-400 bg-red-100 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300'}`}>
-                    {palaySenseStatus === 'connected' ? <span className="inline-flex items-center gap-1.5 align-middle"><span aria-hidden="true" className="inline-block h-2 w-2 shrink-0 rounded-full bg-emerald-500" />{"PalaySense Connected"}</span> : palaySenseStatus === 'error' ? <span className="inline-flex items-center gap-1.5 align-middle"><span aria-hidden="true" className="inline-block h-2 w-2 shrink-0 rounded-full bg-red-500" />{"Connection Error"}</span> : ''}
-                  </span>
+                  <div
+                    className={`flex h-8 min-w-0 items-center justify-end gap-1 rounded-lg border bg-white/85 px-2 text-slate-900 ${palaySenseStatus === 'connected' ? 'border-emerald-600' : palaySenseStatus === 'error' ? 'border-red-600' : 'border-black/20'}`}
+                    aria-label={`PalaySense ID: ${palaySenseDeviceId || (lang === 'en' ? 'Not set' : 'Hindi nakatakda')}`}
+                    title={palaySenseStatus === 'connected' ? 'PalaySense connected' : palaySenseStatus === 'error' ? 'Connection error' : 'Set your PalaySense ID in your profile'}
+                  >
+                    <span className="shrink-0 text-[9px] font-semibold text-slate-600">PalaySense ID:</span>
+                    <span className="min-w-0 truncate text-sm font-extrabold tabular-nums">{palaySenseDeviceId || (lang === 'en' ? 'Not set' : 'Hindi nakatakda')}</span>
+                    <span aria-hidden="true" className={`h-2 w-2 shrink-0 rounded-full ${palaySenseStatus === 'connected' ? 'bg-emerald-600' : palaySenseStatus === 'error' ? 'bg-red-600' : 'bg-slate-400'}`} />
+                  </div>
                 </div>
 
                 {postMoisture === '' && <div className="mt-3">

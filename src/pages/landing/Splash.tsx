@@ -1,12 +1,12 @@
 import { IconCheck, IconDroplet, IconHeartHandshake, IconTruck } from '@tabler/icons-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
-import './landing/landing.css';
-import ThemeToggle from './ThemeToggle';
-import { useApp } from '../context/AppContext';
-import baseIslandImage from '../assets/images/land-without.png';
-import kawingLogo from '../assets/images/kawing_logo_new_1784129186773.jpg';
-import revealIslandImage from '../assets/images/ratatatatata.nbg.png';
+import './landing.css';
+import ThemeToggle from '../../components/ThemeToggle';
+import { useApp } from '../../context/AppContext';
+import baseIslandImage from '../../assets/images/land-without.png';
+import kawingLogo from '../../assets/images/kawing_logo_new_1784129186773.jpg';
+import revealIslandImage from '../../assets/images/ratatatatata.nbg.png';
 
 interface SplashProps { onComplete: () => void; }
 
