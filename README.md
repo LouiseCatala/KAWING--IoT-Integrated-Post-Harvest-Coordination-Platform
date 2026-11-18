@@ -7,6 +7,7 @@
 Connecting farmers, buyers, and agricultural service providers across Pampanga.
 
 **React 19 &middot; TypeScript &middot; Tailwind CSS 4 &middot; PHP &middot; MySQL &middot; PalaySense**
+https://kawingph.com/
 
 [Overview](#overview) &middot; [Features](#features) &middot; [Local development](#local-development) &middot; [Deployment](#deployment) &middot; [PalaySense API](#palaysense-api)
 
