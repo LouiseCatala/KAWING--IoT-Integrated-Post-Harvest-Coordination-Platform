@@ -236,17 +236,95 @@ try {
         respond(['success' => true, 'user' => $account], 201);
     }
     if ($path === 'announcements' && $method === 'GET') {
-        $statement = $pdo->prepare("SELECT setting_value FROM system_settings WHERE setting_key = 'announcements' LIMIT 1");
-        $statement->execute();
-        $items = json_decode((string) ($statement->fetchColumn() ?: '[]'), true);
-        respond(['announcements' => is_array($items) ? $items : []]);
+        if (!liveTableExists($pdo, 'announcements')) respond(['error' => 'The announcements table is not installed. Apply the announcements database migration first.'], 503);
+
+        $readAnnouncements = static function () use ($pdo): array {
+            $rows = $pdo->query('SELECT id,title,category,DATE_FORMAT(announcement_date, "%Y-%m-%d") AS date,content,status FROM announcements ORDER BY id DESC')->fetchAll();
+            return array_map(static fn(array $item): array => [
+                'id' => (int) $item['id'], 'title' => $item['title'], 'category' => $item['category'],
+                'date' => $item['date'], 'content' => $item['content'], 'status' => $item['status'],
+            ], $rows);
+        };
+
+        // Preserve existing admin posts saved by older versions in system_settings.
+        beginEndpointWrite($pdo, ['settings:announcements']);
+        $legacyQuery = $pdo->prepare("SELECT setting_value FROM system_settings WHERE setting_key = 'announcements' FOR UPDATE");
+        $legacyQuery->execute();
+        $legacyValue = $legacyQuery->fetchColumn();
+        if ($legacyValue !== false) {
+            $count = (int) $pdo->query('SELECT COUNT(*) FROM announcements')->fetchColumn();
+            if ($count === 0) {
+                $legacyItems = json_decode((string) $legacyValue, true);
+                if (is_array($legacyItems)) {
+                    $insert = $pdo->prepare('INSERT INTO announcements (title,category,announcement_date,content,status) VALUES (?,?,?,?,?)');
+                    foreach ($legacyItems as $item) {
+                        if (!is_array($item)) continue;
+                        $title = trim((string) ($item['title'] ?? ''));
+                        $content = trim((string) ($item['content'] ?? ''));
+                        if ($title === '' || $content === '') continue;
+                        $date = (string) ($item['date'] ?? date('Y-m-d'));
+                        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) $date = date('Y-m-d');
+                        $category = in_array(($item['category'] ?? ''), ['System Maintenance', 'Harvest Advisory'], true) ? $item['category'] : 'Harvest Advisory';
+                        $status = ($item['status'] ?? '') === 'Draft' ? 'Draft' : 'Published';
+                        $insert->execute([$title, $category, $date, $content, $status]);
+                    }
+                }
+            }
+            $pdo->exec("DELETE FROM system_settings WHERE setting_key = 'announcements'");
+        }
+        respond(['announcements' => $readAnnouncements()]);
     }
     if ($path === 'announcements' && $method === 'POST') {
         $requireAdmin();
         $body = jsonBody();
+        if (!liveTableExists($pdo, 'announcements')) respond(['error' => 'The announcements table is not installed. Apply the announcements database migration first.'], 503);
+        $next = $body['announcements'] ?? null;
+        $before = $body['before'] ?? null;
+        if (!is_array($next) || !is_array($before)) throw new InvalidArgumentException('Reload the announcements list before saving.');
+        if (count($next) > 500) throw new InvalidArgumentException('Too many announcements in one save.');
         beginEndpointWrite($pdo, ['settings:announcements']);
-        $items = saveSharedList($pdo, 'announcements', $body);
-        respond(['success' => true, 'announcements' => array_values($items)]);
+        $currentRows = $pdo->query('SELECT id,title,category,DATE_FORMAT(announcement_date, "%Y-%m-%d") AS date,content,status FROM announcements ORDER BY id DESC FOR UPDATE')->fetchAll();
+        $current = array_map(static fn(array $item): array => [
+            'id' => (int) $item['id'], 'title' => $item['title'], 'category' => $item['category'],
+            'date' => $item['date'], 'content' => $item['content'], 'status' => $item['status'],
+        ], $currentRows);
+        if (!liveEqual($current, $before) && !liveEqual($current, $next)) throw new LiveConflict('Another administrator changed announcements. Reload and review the list.');
+
+        $currentById = [];
+        foreach ($current as $item) $currentById[(string) $item['id']] = $item;
+        $retainedIds = [];
+        $update = $pdo->prepare('UPDATE announcements SET title=?,category=?,announcement_date=?,content=?,status=? WHERE id=?');
+        $insert = $pdo->prepare('INSERT INTO announcements (title,category,announcement_date,content,status) VALUES (?,?,?,?,?)');
+        foreach ($next as $item) {
+            if (!is_array($item)) throw new InvalidArgumentException('Invalid announcement.');
+            $title = trim((string) ($item['title'] ?? ''));
+            $content = trim((string) ($item['content'] ?? ''));
+            $category = (string) ($item['category'] ?? '');
+            $status = (string) ($item['status'] ?? '');
+            $date = (string) ($item['date'] ?? '');
+            if ($title === '' || mb_strlen($title) > 255 || $content === '' || !in_array($category, ['System Maintenance', 'Harvest Advisory'], true) || !in_array($status, ['Published', 'Draft'], true) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) throw new InvalidArgumentException('Check the announcement title, category, date, message, and status.');
+            [$year, $month, $day] = array_map('intval', explode('-', $date));
+            if (!checkdate($month, $day, $year)) throw new InvalidArgumentException('Enter a valid announcement date.');
+            $id = (string) ($item['id'] ?? '');
+            if ($id !== '' && isset($currentById[$id])) {
+                $retainedIds[] = $id;
+                $update->execute([$title, $category, $date, $content, $status, $id]);
+            } else {
+                $insert->execute([$title, $category, $date, $content, $status]);
+                $retainedIds[] = (string) $pdo->lastInsertId();
+            }
+        }
+        $deleteIds = array_diff(array_keys($currentById), $retainedIds);
+        if ($deleteIds) {
+            $placeholders = implode(',', array_fill(0, count($deleteIds), '?'));
+            $pdo->prepare("DELETE FROM announcements WHERE id IN ({$placeholders})")->execute(array_values($deleteIds));
+        }
+        $items = $pdo->query('SELECT id,title,category,DATE_FORMAT(announcement_date, "%Y-%m-%d") AS date,content,status FROM announcements ORDER BY id DESC')->fetchAll();
+        $items = array_map(static fn(array $item): array => [
+            'id' => (int) $item['id'], 'title' => $item['title'], 'category' => $item['category'],
+            'date' => $item['date'], 'content' => $item['content'], 'status' => $item['status'],
+        ], $items);
+        respond(['success' => true, 'announcements' => $items]);
     }
     if ($path === 'faqs' && $method === 'GET') {
         $statement = $pdo->prepare("SELECT setting_value FROM system_settings WHERE setting_key = 'faqs' LIMIT 1");

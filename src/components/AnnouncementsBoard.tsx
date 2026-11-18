@@ -36,75 +36,14 @@ export interface PlatformAnnouncement {
   actionLabelTl?: string;
 }
 
-const SAMPLE_ANNOUNCEMENTS: PlatformAnnouncement[] = [
-  {
-    id: 'ann-1',
-    category: 'market',
-    titleEn: 'DA Reference Price Benchmark Updated: ₱22.80/kg',
-    titleTl: 'Opisyal na Gabay sa Presyo ng Palay mula sa DA: ₱22.80/kg',
-    contentEn: 'The Department of Agriculture (DA) has released the benchmark reference price for fresh and dry palay (14% moisture content). Farmers and buyers are encouraged to use this price reference for fair trade transactions across Luzon.',
-    contentTl: 'Inilabas ng Kagawaran ng Pagsasaka (DA) ang opisyal na gabay sa presyo ng tuyong palay (14% moisture). Inirerekomenda sa mga magsasaka at mamimili na gamitin ito bilang batayan sa patas na bentahan.',
-    badgeEn: ' Market Benchmark',
-    badgeTl: ' Presyo sa Merkado',
-    date: 'Today, 8:00 AM',
-    isUrgent: true,
-    actionFeatureId: 'palay',
-    actionLabelEn: 'View Market Insights',
-    actionLabelTl: 'Suriin ang Presyo',
-  },
-  {
-    id: 'ann-2',
-    category: 'logistics',
-    titleEn: '12 New Verified Hauling Operators Joined Kawing Fleet',
-    titleTl: '12 Bagong Byahero at Truck Operators ang Handa Na',
-    contentEn: 'We have added 12 new verified truck operators in Bulacan, Nueva Ecija, Tarlac, and Pampanga. You can now request immediate or scheduled crop hauling with transparent per-bag distance rates.',
-    contentTl: 'Nagdagdag ng 12 bagong beripikadong truck operators sa Bulacan, Nueva Ecija, Tarlac, at Pampanga. Pwede nang humiling ng biyahe para sa paghakot ng ani gamit ang makatarungang rate.',
-    badgeEn: ' Logistics Fleet',
-    badgeTl: ' Transportasyon',
-    date: 'Yesterday',
-    actionFeatureId: 'services',
-    actionLabelEn: 'Book Hauling Truck',
-    actionLabelTl: 'Humingi ng Byahero',
-  },
-  {
-    id: 'ann-3',
-    category: 'system',
-    titleEn: 'Enhanced Direct Buyer Bidding & In-App Alerts Enabled',
-    titleTl: 'Pinalakas na Bidding System at In-App na Abiso',
-    contentEn: 'Kawing Hub now shows real-time in-app updates when buyers submit higher price offers or accept harvest listings.',
-    contentTl: 'Mabilis nang nagpapadala ang Kawing Hub ng mga abiso sa tuwing may bagong alok na presyo ang mga buyer sa inyong na-post na ani. Siguraduhing tama ang inyong numero.',
-    badgeEn: ' System Update',
-    badgeTl: ' Update sa Sistema',
-    date: 'July 24, 2026',
-    actionFeatureId: 'interests',
-    actionLabelEn: 'Check Offers',
-    actionLabelTl: 'Tingnan ang Alok',
-  },
-  {
-    id: 'ann-4',
-    category: 'advisory',
-    titleEn: 'Solar Drying Facilities Operating at Full Capacity',
-    titleTl: 'Pasilidad sa Pagpapatuyo sa Tarlac at Nueva Ecija',
-    contentEn: 'Mechanical and solar drying centers are prioritizing harvest batches from accredited cooperatives. Reserve your drying slot in advance to avoid post-harvest moisture degradation.',
-    contentTl: 'Inuuna ng mga drying centers ang mga ani ng accredited cooperatives. Mag-book ng maaga upang maiwasan ang pagka-sira ng kalidad ng palay.',
-    badgeEn: ' Processing Alert',
-    badgeTl: ' Abiso sa Patuyuan',
-    date: 'July 22, 2026',
-    actionFeatureId: 'services',
-    actionLabelEn: 'Request Dryer Slot',
-    actionLabelTl: 'Mag-book ng Dryer',
-  }
-];
-
 export default function AnnouncementsBoard({
-  marketReferencePrice = 22.8,
   user,
   showWeather = true,
   notifications = [],
   onMarkNotificationRead,
   onClearAllNotifications,
   onNavigateToFeature,
-}: AnnouncementsBoardProps & { marketReferencePrice?: number }) {
+}: AnnouncementsBoardProps) {
   const { lang } = useApp();
   const liveRevision = useLiveRevision('announcements');
   const [filterCategory, setFilterCategory] = useState<'all' | 'market' | 'logistics' | 'system' | 'alerts'>('all');
@@ -146,13 +85,7 @@ export default function AnnouncementsBoard({
   const userNotifications = notifications.filter(n => n.userEmail === user.email);
   const unreadNotifications = userNotifications.filter(n => !n.isRead);
 
-  const announcements = [...storedAnnouncements, ...SAMPLE_ANNOUNCEMENTS].map((announcement) => announcement.id === 'ANN-001'
-    ? {
-        ...announcement,
-        titleEn: `DA Reference Price Benchmark Updated: ₱${marketReferencePrice.toFixed(2)}/kg`,
-        titleTl: `Opisyal na Gabay sa Presyo ng Palay mula sa DA: ₱${marketReferencePrice.toFixed(2)}/kg`,
-      }
-    : announcement);
+  const announcements = storedAnnouncements;
   const filteredAnnouncements = announcements.filter(ann => {
     if (filterCategory !== 'all' && filterCategory !== 'alerts' && ann.category !== filterCategory) {
       return false;

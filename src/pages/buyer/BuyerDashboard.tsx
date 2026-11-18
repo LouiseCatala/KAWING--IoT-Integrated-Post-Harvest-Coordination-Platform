@@ -420,7 +420,6 @@ export default function BuyerDashboard({
 
         {activeTab === 'announcements' && (
           <AnnouncementsBoard
-            marketReferencePrice={marketReferencePrice}
             user={user}
             notifications={notifications}
             onMarkNotificationRead={onMarkNotificationRead}

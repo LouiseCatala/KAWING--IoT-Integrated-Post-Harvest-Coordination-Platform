@@ -1017,7 +1017,6 @@ export default function FarmerDashboard({
 
           {activeTab === 'announcements' && (
             <AnnouncementsBoard 
-              marketReferencePrice={marketReferencePrice}
               user={user}
               notifications={notifications}
               onMarkNotificationRead={onMarkNotificationRead}

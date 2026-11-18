@@ -86,8 +86,7 @@ function sendKawingEmail(array $smtp, string $recipient, string $subject, string
         $mail->addEmbeddedImage($localLogoPath, 'kawing-logo', 'kawing-logo.png', PHPMailer::ENCODING_BASE64, 'image/png');
         $logoSource = 'cid:kawing-logo';
     }
-    $heroSource = $hasPublicAssetHost ? $assetBaseUrl . '/email-assets/palay-palay.png' : '';
-    $mail->Body = renderKawingEmailTemplate($subject, $message, $displayName, $appUrl, $details, $logoSource, $heroSource);
+    $mail->Body = renderKawingEmailTemplate($subject, $message, $displayName, $appUrl, $details, $logoSource);
     $mail->AltBody = "Hello {$displayName},\n\n" . $subject . "\n\n" . $message . ($appUrl !== '' ? "\n\nOpen KAWING: " . $appUrl : '') . "\n\nKAWING\nSmart Post-Harvest Coordination Platform";
     $mail->send();
 }

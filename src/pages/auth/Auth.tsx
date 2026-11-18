@@ -133,7 +133,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
         window.open(
           data.url,
           'google_oauth_popup',
-          `width=${width},height=${height},top=${top},left=${left},status=no,menubar=no,toolbar=no
+          `width=${width},height=${height},top=${top},left=${left},status=no,menubar=no,toolbar=no`
         );
       } else {
         setErrorMsg(data.error || 'Google authentication is not configured. Please use your username and password.');
@@ -161,14 +161,14 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
         clearLoginCredentials();
         setErrorMsg(
           lang === 'en'
-            ? `This Google account (${selectedEmail}) is registered and waiting for approval. You can sign in after an administrator approves it.
-            : `Ang Google account (${selectedEmail}) ay nakarehistro na, ngunit naghihintay pa ng approval mula sa Admin. Mangyaring maghintay ng beripikasyon.
+            ? 'This Google account (' + selectedEmail + ') is registered and waiting for approval. You can sign in after an administrator approves it.'
+            : 'Ang Google account (' + selectedEmail + ') ay nakarehistro na, ngunit naghihintay pa ng approval mula sa Admin. Mangyaring maghintay ng beripikasyon.'
         );
       } else {
         setSuccessMsg(
           lang === 'en'
-            ? `Google Authentication Successful! Logging in as ${existingUser.name}...
-            : `Matagumpay ang Google Authentication! Naglo-login bilang ${existingUser.name}...
+            ? 'Google Authentication Successful! Logging in as ' + existingUser.name + '...'
+            : 'Matagumpay ang Google Authentication! Naglo-login bilang ' + existingUser.name + '...'
         );
         setTimeout(() => {
           void fetch('/api/auth/me', { credentials: 'include' })
@@ -188,8 +188,8 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
       setEmail(selectedEmail);
       setSuccessMsg(
         lang === 'en'
-          ? `Google Account (${selectedEmail}) connected! Please choose your role and complete the required details below to submit for Admin approval.
-          : `Naka-connect na ang Google Account (${selectedEmail})! Pakipili ang iyong kategorya at kumpletuhin ang mga detalye sa ibaba upang maisumite sa Admin approval.
+            ? 'Google Account (' + selectedEmail + ') connected! Please choose your role and complete the required details below to submit for Admin approval.'
+            : 'Naka-connect na ang Google Account (' + selectedEmail + ')! Pakipili ang iyong kategorya at kumpletuhin ang mga detalye sa ibaba upang maisumite sa Admin approval.'
       );
     }
   };
@@ -786,7 +786,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <User className="h-5 w-5 text-slate-600 dark:text-slate-500" />
                 </div>
-                <inpu
+                <input
                   id="manual-account-entry"
                   type="text"
                   required
@@ -811,7 +811,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Lock className="h-5 w-5 text-slate-600 dark:text-slate-500" />
                 </div>
-                <inpu
+                <input
                   id="manual-secret-entry"
                   type={showPassword ? 'text' : 'password'}
                   required
@@ -859,7 +859,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Lock className="h-5 w-5 text-slate-600 dark:text-slate-500" />
                   </div>
-                  <inpu
+                  <input
                     id="auth-confirm-password"
                     type={showPassword ? 'text' : 'password'}
                     required
@@ -978,7 +978,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                     <label className="block text-xs font-bold text-slate-600 dark:text-slate-400">
                       {lang === 'en' ? 'Full Name' : 'Buong Pangalan'} <span className="text-red-500">*</span>
                     </label>
-                    <inpu
+                    <input
                       required
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
@@ -1015,7 +1015,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <Mail className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                     </div>
-                    <inpu
+                    <input
                       id="auth-email"
                       type="email"
                       required
@@ -1037,7 +1037,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <Phone className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                       </div>
-                      <inpu
+                      <input
                         type="text"
                         required
                         value={contactNumber}
@@ -1059,7 +1059,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <MapPin className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                       </div>
-                      <inpu
+                      <input
                         type="text"
                         required
                         value={address}
@@ -1136,7 +1136,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                       {lang === 'en' ? 'Clear photo or business icon' : 'Larawan ng mukha o logo'}
                     </p>
                     <div className="relative">
-                      <inpu
+                      <input
                         type="file"
                         accept=".jpg,.jpeg,.png,image/jpeg,image/png"
                         onChange={(e) => handleFileChange(e, 'avatar')}
@@ -1158,8 +1158,42 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                   </div>
                   </>}
 
-                  {/* Required identity document changes with the selected role. */}
-
+                  {!isKioskRegistration && (
+                    <div className="p-3 border border-slate-150 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/30">
+                      <label htmlFor="upload-registration-id" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
+                        <span className="flex items-center gap-1">
+                          <FileText className="w-3.5 h-3.5 text-emerald-500" />
+                          <span>{role === 'farmer'
+                            ? (lang === 'en' ? 'RSBSA Registration ID' : 'ID ng Rehistro sa RSBSA')
+                            : role === 'agricultural_business'
+                              ? (lang === 'en' ? 'Company Registration ID' : 'ID ng Rehistro ng Kumpanya')
+                              : (lang === 'en' ? 'Government ID' : 'Government ID')}</span>
+                        </span>
+                        <span className="text-[10px] text-red-500 font-bold">*</span>
+                      </label>
+                      <p className="text-[10px] text-slate-600 dark:text-slate-500 mb-2">
+                        {lang === 'en' ? 'Upload a clear JPG, PNG, or PDF image of your ID.' : 'Mag-upload ng malinaw na JPG, PNG, o PDF ng iyong ID.'}
+                      </p>
+                      <input
+                        id="upload-registration-id"
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                        required={!uploadedDocs.govId}
+                        onChange={(e) => handleFileChange(e, 'govId')}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="upload-registration-id"
+                        className="flex items-center justify-center gap-1.5 px-3 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-emerald-50/30 cursor-pointer transition-all"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>{uploadedDocs.govId
+                          ? (lang === 'en' ? 'ID uploaded' : 'Na-upload ang ID')
+                          : (lang === 'en' ? 'Upload ID *' : 'Mag-upload ng ID *')}</span>
+                      </label>
+                      {uploadedDocs.govId && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1.5 block truncate font-mono">{uploadedDocs.govId}</span>}
+                    </div>
+                  )}
 
                   {/* Driver's License (Truck only) */}
 
@@ -1259,7 +1293,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
               >
                 {isLogin
                   ? loginRetrySeconds > 0
-                    ? `${lang === 'en' ? 'Try again in' : 'Maghintay'} ${Math.floor(loginRetrySeconds / 60)}:${String(loginRetrySeconds % 60).padStart(2, '0')}
+                    ? `${lang === 'en' ? 'Try again in' : 'Maghintay'} ${Math.floor(loginRetrySeconds / 60)}:${String(loginRetrySeconds % 60).padStart(2, '0')}`
                     : (lang === 'en' ? 'Login' : 'Mag-login')
                   : (lang === 'en' ? 'Submit Registration for Approval' : 'Isumite ang Rehistrasyon')}
               </AnimatedButton>
@@ -1374,14 +1408,14 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
               </span>
 
               <div className="space-y-2">
-                <inpu
+                <input
                   type="text"
                   placeholder={lang === 'en' ? 'Google Account Name (e.g., Juan Cruz)' : 'Pangalan sa Google (e.g., Juan Cruz)'}
                   value={customGoogleName}
                   onChange={(e) => setCustomGoogleName(e.target.value)}
                   className="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 />
-                <inpu
+                <input
                   type="email"
                   placeholder={lang === 'en' ? 'Google Email (e.g., juan@gmail.com)' : 'Google Email (e.g., juan@gmail.com)'}
                   value={customGoogleEmail}
