@@ -12,7 +12,7 @@ Connecting farmers, buyers, and agricultural service providers across Pampanga.
 
 </div>
 
-![KAWING landing page with a floating green island against a dark background](kawing.jpg)
+![KAWING landing page with a floating green island against a dark background](kawing.png)
 
 ## Overview
 
