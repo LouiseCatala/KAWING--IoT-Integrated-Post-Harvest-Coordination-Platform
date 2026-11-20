@@ -216,6 +216,9 @@ export default function AdminDashboard({
         
         {/* LEFT SIDEBAR - Navigation Rail */}
         <aside className="w-full md:w-60 lg:w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl md:rounded-2xl p-2 md:p-3 lg:p-4 flex flex-col gap-2 md:gap-3 shrink-0 h-auto md:h-full z-10 overflow-y-hidden md:overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <button type="button" className="admin-mobile-profile md:hidden" onClick={() => setViewingProfile(user)} aria-label={lang === 'en' ? 'Admin profile' : 'Profile ng admin'} title={lang === 'en' ? 'Admin profile' : 'Profile ng admin'}>
+            <Shield className="h-5 w-5" aria-hidden="true" />
+          </button>
           <div className="max-md:hidden mx-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 px-3 py-3 flex items-center gap-3">
             <div className="p-2.5 bg-emerald-950/50 text-emerald-400 rounded-xl shrink-0 ring-1 ring-emerald-500/20">
               <Shield className="w-5 h-5 stroke-[2.5]" />
@@ -416,6 +419,10 @@ export default function AdminDashboard({
               </button>
             </div>
           </nav>
+          <div className="admin-mobile-controls md:hidden">
+            <ThemeToggle variant="floating" />
+            <button type="button" onClick={onLogout} aria-label={lang === 'en' ? 'Log out' : 'Mag-log out'} title={lang === 'en' ? 'Log out' : 'Mag-log out'} className="admin-mobile-logout"><LogOut className="h-5 w-5" aria-hidden="true" /></button>
+          </div>
         </aside>
 
         {/* RIGHT BOARD - Content Router */}
@@ -517,7 +524,7 @@ export default function AdminDashboard({
               <div>
                 <h3 className="font-extrabold text-slate-900 dark:text-white text-md font-display flex items-center gap-2">
                   <Shield className="w-5 h-5 text-emerald-600" />
-                  <span>{lang === 'en' ? 'User Registry File' : 'Profile ng Miyembro'}</span>
+                  <span>{viewingProfile.email === user.email ? (lang === 'en' ? 'Admin Profile' : 'Profile ng Admin') : (lang === 'en' ? 'User Registry File' : 'Profile ng Miyembro')}</span>
                 </h3>
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">KAWING SECURE IDENTITY DOCUMENT</p>
               </div>
@@ -541,6 +548,10 @@ export default function AdminDashboard({
               </div>
 
               <div className="space-y-2.5">
+                {viewingProfile.email === user.email && <div className="flex justify-between gap-3 py-1 border-b border-slate-50 dark:border-slate-800">
+                  <span className="text-slate-400 font-bold">Email:</span>
+                  <span className="min-w-0 break-all text-right font-semibold text-slate-800 dark:text-slate-200">{viewingProfile.email}</span>
+                </div>}
                 <div className="flex justify-between py-1 border-b border-slate-50 dark:border-slate-800">
                   <span className="text-slate-400 font-bold">Contact Number:</span>
                   <span className="font-semibold text-slate-800 dark:text-slate-200">{viewingProfile.contactNumber || 'N/A'}</span>
@@ -558,12 +569,12 @@ export default function AdminDashboard({
                   </span>
                 </div>
 
-                <div className="flex justify-between py-1">
+                {viewingProfile.email !== user.email && <div className="flex justify-between py-1">
                   <span className="text-slate-400 font-bold">Reliability Index Rating:</span>
                   <span className="font-bold text-slate-800 dark:text-slate-200">
                     {(viewingProfile.rating || 5).toFixed(1)} / 5.0 ({( (viewingProfile.rating || 5) * 20 ).toFixed(0)}% Score)
                   </span>
-                </div>
+                </div>}
               </div>
 
               <button

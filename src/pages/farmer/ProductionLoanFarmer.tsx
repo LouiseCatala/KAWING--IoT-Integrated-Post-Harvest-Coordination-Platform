@@ -250,7 +250,7 @@ export default function ProductionLoanFarmer({
     <div className="space-y-6">
       {/* Navigation Sub-Tabs */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
-        <div className="flex items-center gap-3 md:gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 snap-x">
+        <div className="farmer-loan-tabs flex items-center gap-3 md:gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 snap-x">
           <button
             onClick={() => setActiveSubTab('available')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
@@ -261,9 +261,6 @@ export default function ProductionLoanFarmer({
           >
             <Landmark className="w-4 h-4" />
             <span>{lang === 'en' ? 'Available Loan Providers' : 'Mga Nagpapautang na Buyer'}</span>
-            <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-[11px]">
-              {availableBuyers.length}
-            </span>
           </button>
 
           <button
@@ -281,9 +278,6 @@ export default function ProductionLoanFarmer({
           >
             <FileText className="w-4 h-4" />
             <span>{lang === 'en' ? 'My Loan Requests' : 'Aking Mga Hiling na Pautang'}</span>
-            <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-[11px]">
-              {myRequests.length}
-            </span>
 
             {hasApprovedLoan && (
               <span className="inline-flex items-center justify-center min-w-[22px] h-5 px-1.5 rounded-full bg-rose-600 text-white font-black text-xs shadow-md border border-rose-300 animate-pulse">
@@ -340,7 +334,7 @@ export default function ProductionLoanFarmer({
                 const shortRepaymentMethod = fullRepaymentMethod.split('(')[0].trim();
                 return (
                   <div key={buyer.name} className="overflow-x-auto rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
-                    <div className="grid min-w-[1000px] grid-cols-[1.3fr_1fr_0.7fr_1fr_1.2fr_auto] items-center gap-5">
+                    <div className="grid min-w-0 grid-cols-1 md:min-w-[1000px] md:grid-cols-[1.3fr_1fr_0.7fr_1fr_1.2fr_auto] items-center gap-5">
                       <div className="min-w-0 space-y-2">
                         <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
                           <ShieldAlert className="h-3.5 w-3.5" />

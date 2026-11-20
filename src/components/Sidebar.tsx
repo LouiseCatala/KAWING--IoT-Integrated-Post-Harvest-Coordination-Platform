@@ -311,7 +311,12 @@ export default function Sidebar({
                   )}
                 </span>
                 <span className={`sidebar-expanded-only truncate ${isActive ? 'font-black text-white' : 'font-bold'}`}>
-                  {lang === 'en' ? item.labelEn : item.labelTl}
+                  {item.id === 'announcements' ? (
+                    <>
+                      <span className="md:hidden">{lang === 'en' ? 'Announcements' : 'Mga Anunsyo'}</span>
+                      <span className="hidden md:inline">{lang === 'en' ? item.labelEn : item.labelTl}</span>
+                    </>
+                  ) : (lang === 'en' ? item.labelEn : item.labelTl)}
                 </span>
               </div>
 

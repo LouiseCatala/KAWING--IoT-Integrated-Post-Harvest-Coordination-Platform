@@ -308,24 +308,27 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
 
       {/* EDIT ANNOUNCEMENT MODAL */}
       {editingAnn && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center overflow-y-auto p-3 md:p-4 z-55">
-          <div className="my-auto max-h-[calc(100dvh-1.5rem)] bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl max-w-md w-full overflow-y-auto shadow-2xl border border-slate-100 dark:border-slate-800">
-            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+        <div className="fixed inset-0 z-55 flex items-center justify-center bg-slate-900/60 p-3 backdrop-blur-sm md:p-6" role="dialog" aria-modal="true" aria-labelledby="edit-announcement-title">
+          <div className="flex max-h-[calc(100dvh-1.5rem)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900 md:max-h-[min(42rem,calc(100dvh-3rem))]">
+            <div className="flex shrink-0 items-center justify-between gap-4 border-b border-slate-200 px-4 py-4 dark:border-slate-700 md:px-6">
               <div>
-                <h3 className="font-extrabold text-slate-900 dark:text-white text-md font-display flex items-center gap-2">
+                <h3 id="edit-announcement-title" className="font-display flex items-center gap-2 text-base font-extrabold text-slate-900 dark:text-white">
                   <Pencil className="w-4 h-4 text-emerald-600" />
                   <span>{lang === 'en' ? 'Modify Advisory Bulletin' : 'Baguhin ang Paunawa'}</span>
                 </h3>
               </div>
               <button
+                type="button"
                 onClick={() => setEditingAnn(null)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                aria-label={lang === 'en' ? 'Close editor' : 'Isara ang editor'}
+                className="shrink-0 rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-white"
               >
-                <X className="w-4 h-4" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveEdit} className="p-6 space-y-4 text-xs">
+            <form onSubmit={handleSaveEdit} className="flex min-h-0 flex-1 flex-col text-sm">
+              <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 md:px-6 md:py-5">
               <div className="space-y-1">
                 <label className="block font-bold text-slate-600 dark:text-slate-300">{lang === 'en' ? 'Advisory Title' : 'Pamagat ng Paunawa'}</label>
                 <input
@@ -372,17 +375,19 @@ export default function AnnouncementsTab({ lang, onPublishAnnouncement }: Announ
                 />
               </div>
 
-              <div className="flex gap-2.5 border-t border-slate-100 dark:border-slate-800 pt-4 mt-5">
+              </div>
+
+              <div className="flex shrink-0 gap-2.5 border-t border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900 md:px-6 md:py-4">
                 <button
                   type="button"
                   onClick={() => setEditingAnn(null)}
-                  className="flex-grow py-2.5 text-center text-xs font-bold rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 transition-all cursor-pointer"
+                  className="min-h-11 flex-1 rounded-xl border border-slate-300 py-2.5 text-center text-sm font-bold text-slate-700 transition-all hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
                 >
                   {lang === 'en' ? 'Cancel' : 'Kanselahin'}
                 </button>
                 <button
                   type="submit"
-                  className="flex-grow py-2.5 text-center text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 py-2.5 text-center text-sm font-bold text-white transition-all hover:bg-emerald-500"
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>{lang === 'en' ? 'Update Advisory' : 'I-update ang Paunawa'}</span>

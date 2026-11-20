@@ -187,7 +187,7 @@ export default function UsersTab({
       {/* Users Data Table */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-150 dark:border-slate-800 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="mobile-records w-full text-left border-collapse text-xs">
             <thead>
               <tr className="bg-emerald-50 dark:bg-emerald-950/30 border-b border-slate-150 dark:border-slate-800 font-bold text-emerald-800 dark:text-emerald-200">
                 <th className="p-4 w-12 text-center">
@@ -217,7 +217,7 @@ export default function UsersTab({
               ) : (
                 paginatedUsers.map((u) => (
                   <tr key={`${u.name}-${u.role}-${u.email || ''}`} className={`hover:bg-slate-50/50 dark:hover:bg-slate-850/10 ${u.isSuspended ? 'bg-red-50/10 dark:bg-red-950/5' : ''}`}>
-                    <td className="p-4 text-center">
+                    <td data-label={lang === 'en' ? 'Select' : 'Piliin'} className="p-4 text-center">
                       <input
                         type="checkbox"
                         checked={selectedNames.includes(u.name)}
@@ -226,17 +226,17 @@ export default function UsersTab({
                       />
                     </td>
                     {/* User ID */}
-                    <td className="p-4 font-mono font-bold text-slate-500 dark:text-slate-400">
+                    <td data-label={lang === 'en' ? 'User ID' : 'ID ng User'} className="p-4 font-mono font-bold text-slate-500 dark:text-slate-400">
                       {u.computedId}
                     </td>
 
                     {/* Name */}
-                    <td className="p-4 font-bold text-slate-900 dark:text-white">
+                    <td data-label={lang === 'en' ? 'Full Name' : 'Pangalan'} className="p-4 font-bold text-slate-900 dark:text-white">
                       {u.name}
                     </td>
 
                     {/* Role Tag */}
-                    <td className="p-4">
+                    <td data-label={lang === 'en' ? 'Role' : 'Kategorya'} className="p-4">
                       <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
                         u.role === 'farmer'
                           ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20'
@@ -247,12 +247,12 @@ export default function UsersTab({
                     </td>
 
                     {/* Contact Number */}
-                    <td className="p-4 text-slate-600 dark:text-slate-300">
+                    <td data-label={lang === 'en' ? 'Contact Number' : 'Telepono'} className="p-4 text-slate-600 dark:text-slate-300">
                       {u.contactNumber || (lang === 'en' ? 'N/A' : 'Wala')}
                     </td>
 
                     {/* Verification Status */}
-                    <td className="p-4">
+                    <td data-label={lang === 'en' ? 'Verification Status' : 'Katayuan'} className="p-4">
                       {u.isSuspended ? (
                         <span className="inline-flex items-center gap-1 text-[10px] text-red-600 font-bold">
                           <span className="w-1.5 h-1.5 rounded-full bg-red-600 inline-block animate-pulse" />
@@ -272,7 +272,7 @@ export default function UsersTab({
                     </td>
 
                     {/* Reliability Score */}
-                    <td className="p-4">
+                    <td data-label={lang === 'en' ? 'Reliability Score' : 'Reliability'} className="p-4">
                       <div className="flex items-center gap-1.5">
                         <div className="w-12 bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                           <div 
@@ -287,7 +287,7 @@ export default function UsersTab({
                     </td>
 
                     {/* Action Buttons */}
-                    <td className="p-4">
+                    <td data-label={lang === 'en' ? 'Actions' : 'Mga Aksyon'} className="p-4">
                       <div className="flex items-center justify-center gap-2">
                         {/* View Details */}
                         <button

@@ -22,8 +22,8 @@ export default function AdminConfirmationModal({
   const Icon = intent === 'danger' ? AlertTriangle : CircleHelp;
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/65 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="admin-confirm-title">
-      <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center overflow-y-auto bg-slate-950/65 p-3 backdrop-blur-sm md:p-4" role="dialog" aria-modal="true" aria-labelledby="admin-confirm-title">
+      <div className="my-auto max-h-[calc(100dvh-1.5rem)] w-full max-w-sm overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-2xl dark:border-slate-700 dark:bg-slate-900 md:p-6">
         <Icon className={`mx-auto h-8 w-8 ${intent === 'danger' ? 'text-red-500' : 'text-emerald-600'}`} aria-hidden="true" />
         <h2 id="admin-confirm-title" className="mt-3 text-lg font-extrabold text-slate-900 dark:text-white">{title}</h2>
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{message}</p>

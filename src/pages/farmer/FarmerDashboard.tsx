@@ -1,4 +1,4 @@
-import { IconAlertTriangle, IconArrowRight, IconArrowUpRight, IconCalendar, IconCash, IconCheck, IconCircleCheck, IconCircleX, IconCoin, IconConfetti, IconDroplet, IconFolderOpen, IconHammer, IconHeartHandshake, IconMapPin, IconMedal, IconPackage, IconSettings, IconTools, IconTrophy, IconTruck, IconWheat, IconWind, IconWorld, IconX } from '@tabler/icons-react';
+import { IconAlertTriangle, IconArrowRight, IconArrowUpRight, IconCalendar, IconCash, IconCheck, IconCircleCheck, IconCircleX, IconCoin, IconConfetti, IconDroplet, IconFolderOpen, IconHammer, IconHeartHandshake, IconMapPin, IconMedal, IconPackage, IconSettings, IconTools, IconTrophy, IconTruck, IconUsers, IconWheat, IconWind, IconWorld, IconX } from '@tabler/icons-react';
 import React, { useEffect, useState } from 'react';
 import { Harvest, ServiceRequest, UserAccount, AppNotification, Offer, OfferedService } from '../../types';
 import { Plus, Calendar, MapPin, AlertTriangle, TrendingUp, RefreshCw, Check, X, Phone, Mail, ShieldCheck, Trash2, Pencil, Truck, HardDrive, Wind, ChevronDown, ChevronUp, Star, CircleDot, Search } from 'lucide-react';
@@ -743,7 +743,7 @@ export default function FarmerDashboard({
                       </p>
                     </div>
                   </div>
-                  <div className="flex flex-col items-stretch gap-2.5 min-[390px]:flex-row min-[390px]:items-center lg:shrink-0">
+                  <div className="service-request-actions flex flex-col items-stretch gap-2.5 min-[390px]:flex-row min-[390px]:items-center lg:shrink-0">
                     <AnimatedButton
                       onClick={handleOpenRequestServiceModal}
                       variant="outline"
@@ -764,7 +764,7 @@ export default function FarmerDashboard({
                 </div>
               </div>
 
-              <div role="tablist" className="grid w-full grid-cols-1 gap-2 rounded-2xl border border-slate-200/80 bg-white/80 p-2 shadow-sm backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/80 min-[520px]:grid-cols-3" aria-label={lang === 'en' ? 'Service request views' : 'Mga view ng hiling na serbisyo'}>
+              <div role="tablist" className="service-request-tabs grid w-full grid-cols-1 gap-2 rounded-2xl border border-slate-200/80 bg-white/80 p-2 shadow-sm backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/80 min-[520px]:grid-cols-3" aria-label={lang === 'en' ? 'Service request views' : 'Mga view ng hiling na serbisyo'}>
                 <button
                   type="button"
                   role="tab"
@@ -1026,10 +1026,10 @@ export default function FarmerDashboard({
           )}
 
           {activeTab === 'services' && (
-            <section className="flex h-[calc(100dvh-13.5rem)] min-h-96 flex-col gap-5 overflow-hidden">
-              <div className="rounded-2xl border border-slate-200/70 dark:border-slate-700/70 bg-white dark:bg-slate-900 p-4 shadow-lg">
+            <section className="farmer-partner-section flex h-[calc(100dvh-13.5rem)] min-h-96 flex-col gap-5 overflow-hidden">
+              <div className="farmer-partner-filters rounded-2xl border border-slate-200/70 dark:border-slate-700/70 bg-white dark:bg-slate-900 p-4 shadow-lg">
                 <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-                  <div className="flex flex-wrap gap-2">
+                  <div className="farmer-partner-filter-buttons flex flex-wrap gap-2">
                     {([
                       ['all', lang === 'en' ? 'All Partners' : 'Lahat'],
                       ['buyer', lang === 'en' ? 'Buyers' : 'Mga Buyer'],
@@ -1042,11 +1042,15 @@ export default function FarmerDashboard({
                         key={filter}
                         type="button"
                         onClick={() => setPartnerFilter(filter)}
+                        aria-label={label.trim()}
+                        aria-pressed={partnerFilter === filter}
+                        title={label.trim()}
                         className={`rounded-lg px-3.5 py-2.5 text-sm font-extrabold transition-colors ${partnerFilter === filter ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-950/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
                       >
                         <span className="inline-flex items-center gap-1.5">
-                          {filter !== 'all' && filter !== 'buyer' && React.createElement(({ transport: IconTruck, storage: IconPackage, drying: IconWind, milling: IconWheat })[filter], { size: 17, stroke: 2, className: 'inline-block shrink-0', 'aria-hidden': true })}
-                          <span>{label.trim()}</span>
+                          {React.createElement(({ all: IconHeartHandshake, buyer: IconUsers, transport: IconTruck, storage: IconPackage, drying: IconWind, milling: IconWheat })[filter], { size: 17, stroke: 2, className: 'inline-block shrink-0 md:hidden', 'aria-hidden': true })}
+                          {filter !== 'all' && filter !== 'buyer' && React.createElement(({ transport: IconTruck, storage: IconPackage, drying: IconWind, milling: IconWheat })[filter], { size: 17, stroke: 2, className: 'hidden shrink-0 md:inline-block', 'aria-hidden': true })}
+                          <span className="hidden md:inline">{label.trim()}</span>
                         </span>
                       </button>
                     ))}
@@ -1635,7 +1639,7 @@ export default function FarmerDashboard({
           ) : activeTab === 'directory' ? null : activeTab === 'interests' ? (
             /* RANKING SYSTEM FOR BUYER OFFERS */
             <div className="space-y-6">
-              <div className="overflow-hidden rounded-3xl border border-emerald-800/60 bg-emerald-950 p-5 text-white shadow-xl shadow-emerald-950/15 sm:p-6">
+              <div className="price-offer-heading overflow-hidden rounded-3xl border border-emerald-800/60 bg-emerald-950 p-5 text-white shadow-xl shadow-emerald-950/15 sm:p-6">
                 <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                   <div className="flex min-w-0 items-start gap-4">
                     <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-400 text-slate-950 shadow-lg shadow-amber-400/20"><IconTrophy size={25} stroke={2.2} aria-hidden="true" /></span>
@@ -1650,7 +1654,7 @@ export default function FarmerDashboard({
                       </p>
                     </div>
                   </div>
-                  <div className="flex flex-col min-[390px]:flex-row items-stretch min-[390px]:items-center gap-2.5 lg:shrink-0">
+                  <div className="price-offer-actions flex flex-col min-[390px]:flex-row items-stretch min-[390px]:items-center gap-2.5 lg:shrink-0">
                     <AnimatedButton
                       onClick={handleOpenRequestServiceModal}
                       variant="outline"
@@ -1670,7 +1674,7 @@ export default function FarmerDashboard({
                   </div>
                 </div>
               </div>
-              <div className="grid w-full grid-cols-2 gap-2 rounded-2xl border border-slate-200/80 bg-white/80 p-2 shadow-sm backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/80" role="tablist" aria-label={lang === 'en' ? 'Offer views' : 'Mga view ng alok'}>
+              <div className="price-offer-tabs grid w-full grid-cols-2 gap-2 rounded-2xl border border-slate-200/80 bg-white/80 p-2 shadow-sm backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/80" role="tablist" aria-label={lang === 'en' ? 'Offer views' : 'Mga view ng alok'}>
                 <button
                   type="button"
                   role="tab"
@@ -2001,7 +2005,7 @@ export default function FarmerDashboard({
 
       {/* MODAL 1: REQUEST SERVICE MODAL (LOGISTICS & PROCESSING) */}
       {showRequestServiceModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 sm:p-4 backdrop-blur-xs overflow-y-auto">
+        <div className="request-service-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 sm:p-4 backdrop-blur-xs overflow-y-auto">
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -2401,13 +2405,13 @@ export default function FarmerDashboard({
 
       {/* MODAL 2: POST HARVEST MODAL (FOR SELLING TO BUYERS WITH MOISTURE LEVEL & PHOTO UPLOAD) */}
       {showPostHarvestModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 sm:p-4 backdrop-blur-xs overflow-y-auto">
+        <div className="harvest-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 sm:p-4 backdrop-blur-xs overflow-y-auto">
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="kawing-readable-modal relative bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl md:rounded-3xl w-full max-w-xl sm:max-w-6xl shadow-2xl overflow-hidden max-h-[calc(100dvh-1rem)] md:max-h-[96vh] flex flex-col my-auto"
           >
-            <div className="px-4 sm:px-5 py-3.5 flex items-center justify-between gap-3 bg-emerald-600 text-white shrink-0">
+            <div className="harvest-heading px-4 sm:px-5 py-3.5 flex items-center justify-between gap-3 bg-emerald-600 text-white shrink-0">
               <div className="flex min-w-0 items-center gap-2">
                 <span className="text-xl"><span className="inline-flex items-center gap-1.5 align-middle"><IconWheat size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></span>
                 <div className="min-w-0">

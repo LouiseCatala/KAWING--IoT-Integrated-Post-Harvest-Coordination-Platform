@@ -8,6 +8,7 @@ import {
   Building2, ChevronRight, XCircle, FileText, Trash2
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { createPortal } from 'react-dom';
 import { useApp } from '../context/AppContext';
 import WeatherWidget from './WeatherWidget';
 
@@ -320,7 +321,7 @@ export default function AnnouncementsBoard({
 
       </div>
 
-      {showClearConfirmation && (
+      {showClearConfirmation && createPortal((
         <div
           className="fixed inset-0 z-[110] flex items-center justify-center overflow-y-auto bg-slate-950/75 p-3 md:p-4 backdrop-blur-sm"
 
@@ -373,9 +374,9 @@ export default function AnnouncementsBoard({
             </div>
           </motion.div>
         </div>
-      )}
+      ), document.body)}
 
-      {selectedAnnouncement && (
+      {selectedAnnouncement && createPortal((
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-slate-950/75 backdrop-blur-sm p-3 md:p-4"
 
@@ -443,7 +444,7 @@ export default function AnnouncementsBoard({
             </div>
           </motion.div>
         </div>
-      )}
+      ), document.body)}
 
     </div>
   );

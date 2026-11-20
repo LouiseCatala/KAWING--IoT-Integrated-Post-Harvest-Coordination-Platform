@@ -218,7 +218,7 @@ export default function TransactionsTab({
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-150 dark:border-slate-800 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           {activeSubTab === 'logistics' ? (
-            <table className="w-full text-left border-collapse text-xs">
+            <table className="mobile-records w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-emerald-50 dark:bg-emerald-950/30 border-b border-slate-150 dark:border-slate-800 font-bold text-emerald-800 dark:text-emerald-200">
                   <th className="p-4">{lang === 'en' ? 'Match ID' : 'ID ng Pagtutugma'}</th>
@@ -239,10 +239,10 @@ export default function TransactionsTab({
                 ) : (
                   paginatedConnections.map((c) => (
                     <tr key={c.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/10">
-                      <td className="p-4 font-mono font-bold text-slate-400">{c.id}</td>
+                      <td data-label={lang === 'en' ? 'Match ID' : 'ID ng Pagtutugma'} className="p-4 font-mono font-bold text-slate-400">{c.id}</td>
                       
                       {/* Farmer Name & Contact */}
-                      <td className="p-4">
+                      <td data-label={lang === 'en' ? 'Farmer Name & Contact' : 'Magsasaka at Kontak'} className="p-4">
                         <div className="font-bold text-slate-900 dark:text-white">{c.farmer}</div>
                         <div className="flex items-center gap-1 mt-1 text-slate-500 dark:text-slate-400">
                           <Phone className="w-3 h-3 text-emerald-600" />
@@ -251,7 +251,7 @@ export default function TransactionsTab({
                       </td>
 
                       {/* Service Partner & Contact */}
-                      <td className="p-4">
+                      <td data-label={lang === 'en' ? 'Logistics Partner & Contact' : 'Logistiko at Kontak'} className="p-4">
                         <div className="font-bold text-slate-900 dark:text-white">{c.provider}</div>
                         <div className="flex items-center gap-1 mt-1 text-slate-500 dark:text-slate-400">
                           <Phone className="w-3 h-3 text-emerald-600" />
@@ -260,16 +260,16 @@ export default function TransactionsTab({
                       </td>
 
                       {/* Produce */}
-                      <td className="p-4 text-slate-700 dark:text-slate-200">
+                      <td data-label={lang === 'en' ? 'Produce / Service' : 'Paninda o Serbisyo'} className="p-4 text-slate-700 dark:text-slate-200">
                         <span className="font-bold text-slate-900 dark:text-slate-100"><span className="inline-flex items-center gap-1.5 align-middle mr-1.5"><IconWheat size={16} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span>{c.crop}</span> 
                         <div className="text-[11px] text-slate-400">{c.qty}</div>
                       </td>
 
                       {/* Date */}
-                      <td className="p-4 text-slate-400 font-mono text-[11px]">{c.date}</td>
+                      <td data-label={lang === 'en' ? 'Date Merged' : 'Petsa ng Pagtutugma'} className="p-4 text-slate-400 font-mono text-[11px]">{c.date}</td>
                       
                       {/* Status */}
-                      <td className="p-4">
+                      <td data-label={lang === 'en' ? 'Matching Status' : 'Kalagayan ng Pagtutugma'} className="p-4">
                         <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
                           c.status === 'Completed'
                             ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400'
@@ -285,7 +285,7 @@ export default function TransactionsTab({
               </tbody>
             </table>
           ) : (
-            <table className="w-full text-left border-collapse text-xs">
+            <table className="mobile-records w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-emerald-50 dark:bg-emerald-950/30 border-b border-slate-150 dark:border-slate-800 font-bold text-emerald-800 dark:text-emerald-200">
                   <th className="p-4">{lang === 'en' ? 'Deal ID' : 'ID ng Kasunduan'}</th>
@@ -308,24 +308,24 @@ export default function TransactionsTab({
                 ) : (
                   paginatedOffers.map((o) => (
                     <tr key={o.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/10">
-                      <td className="p-4 font-mono font-bold text-slate-400">{o.id}</td>
-                      <td className="p-4 font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <td data-label={lang === 'en' ? 'Deal ID' : 'ID ng Kasunduan'} className="p-4 font-mono font-bold text-slate-400">{o.id}</td>
+                      <td data-label={lang === 'en' ? 'Buyer Name' : 'Pangalan ng Mamimili'} className="p-4 font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
                         <UserCheck className="w-3.5 h-3.5 text-emerald-500" />
                         <span>{o.buyerName}</span>
                       </td>
-                      <td className="p-4 font-bold text-slate-700 dark:text-slate-300">{o.farmerName}</td>
-                      <td className="p-4 text-slate-700 dark:text-slate-200">
+                      <td data-label={lang === 'en' ? 'Farmer Name' : 'Pangalan ng Magsasaka'} className="p-4 font-bold text-slate-700 dark:text-slate-300">{o.farmerName}</td>
+                      <td data-label={lang === 'en' ? 'Interested Crop' : 'Interesadong Ani'} className="p-4 text-slate-700 dark:text-slate-200">
                         <span className="font-bold">{o.cropType}</span> ({o.quantity} {o.unit})
                       </td>
-                      <td className="p-4 text-slate-600 dark:text-slate-300 font-semibold flex flex-col justify-center">
+                      <td data-label={lang === 'en' ? 'Direct Contacts' : 'Direktang Kontak'} className="p-4 text-slate-600 dark:text-slate-300 font-semibold flex flex-col justify-center">
                         <div className="flex items-center gap-1.5">
                           <Phone className="w-3 h-3 text-emerald-600" />
                           <span className="font-bold text-slate-900 dark:text-white">{o.buyerPhone || 'N/A'}</span>
                         </div>
                         <span className="text-[10px] text-slate-400 truncate">{o.buyerEmail}</span>
                       </td>
-                      <td className="p-4 text-slate-400 font-mono text-[11px]">{o.createdAt || '—'}</td>
-                      <td className="p-4">
+                      <td data-label={lang === 'en' ? 'Submitted Date' : 'Petsa ng Pagsumite'} className="p-4 text-slate-400 font-mono text-[11px]">{o.createdAt || '—'}</td>
+                      <td data-label={lang === 'en' ? 'Approval Status' : 'Kalagayan ng Pag-apruba'} className="p-4">
                         <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
                           o.status === 'accepted'
                             ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400'
@@ -336,7 +336,7 @@ export default function TransactionsTab({
                           {o.status === 'accepted' ? 'Approved & Connected' : o.status === 'declined' ? 'Declined' : 'Pending Verification'}
                         </span>
                       </td>
-                      <td className="p-4">
+                      <td data-label={lang === 'en' ? 'Identity & ID Review' : 'Pagsuri ng Pagkakakilanlan at ID'} className="p-4">
                         <div className="flex justify-center">
                           {o.govIdData ? (
                             <button

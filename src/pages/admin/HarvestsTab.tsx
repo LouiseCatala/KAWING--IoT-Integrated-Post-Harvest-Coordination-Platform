@@ -343,7 +343,7 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
       {/* Harvests Registry Table */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-150 dark:border-slate-800 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="mobile-records w-full text-left border-collapse text-xs">
             <thead>
               <tr className="bg-emerald-50 dark:bg-emerald-950/30 border-b border-slate-150 dark:border-slate-800 font-bold text-emerald-800 dark:text-emerald-200">
                 <th className="p-4 w-12 text-center">
@@ -375,7 +375,7 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
               ) : (
                 paginatedHarvests.map((h) => (
                   <tr key={h.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/10">
-                    <td className="p-4 text-center">
+                    <td data-label={lang === 'en' ? 'Select' : 'Piliin'} className="p-4 text-center">
                       <input
                         type="checkbox"
                         checked={selectedIds.includes(h.id)}
@@ -384,17 +384,17 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
                       />
                     </td>
                     {/* Harvest ID */}
-                    <td className="p-4 font-mono font-bold text-slate-500 dark:text-slate-400">
+                    <td data-label={lang === 'en' ? 'Harvest ID' : 'ID ng Ani'} className="p-4 font-mono font-bold text-slate-500 dark:text-slate-400">
                       {h.id}
                     </td>
 
                     {/* Farmer Name */}
-                    <td className="p-4 font-bold text-slate-900 dark:text-white">
+                    <td data-label={lang === 'en' ? 'Farmer Name' : 'Magsasaka'} className="p-4 font-bold text-slate-900 dark:text-white">
                       {h.farmerName}
                     </td>
 
                     {/* Crop Type with Icon */}
-                    <td className="p-4 font-semibold text-slate-700 dark:text-slate-200">
+                    <td data-label={lang === 'en' ? 'Crop Type' : 'Klase ng Ani'} className="p-4 font-semibold text-slate-700 dark:text-slate-200">
                       <div className="flex items-center gap-1.5">
                         <span className="text-emerald-600"><span className="inline-flex items-center gap-1.5 align-middle"><IconWheat size={16} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></span>
                         <span>{h.cropType}</span>
@@ -402,12 +402,12 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
                     </td>
 
                     {/* Quantity */}
-                    <td className="p-4 font-bold text-slate-800 dark:text-slate-100">
+                    <td data-label={lang === 'en' ? 'Quantity' : 'Dami'} className="p-4 font-bold text-slate-800 dark:text-slate-100">
                       {h.quantity} {h.unit}
                     </td>
 
                     {/* Harvest Date */}
-                    <td className="p-4 text-slate-500 dark:text-slate-400">
+                    <td data-label={lang === 'en' ? 'Harvest Date' : 'Araw ng Pag-ani'} className="p-4 text-slate-500 dark:text-slate-400">
                       <div className="flex items-center gap-1.5">
                         <Calendar className="w-3.5 h-3.5 text-slate-400" />
                         <span>{h.harvestDate}</span>
@@ -415,7 +415,7 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
                     </td>
 
                     {/* Farm Location */}
-                    <td className="p-4 text-slate-600 dark:text-slate-300">
+                    <td data-label={lang === 'en' ? 'Farm Location' : 'Lokasyon'} className="p-4 text-slate-600 dark:text-slate-300">
                       <div className="flex items-center gap-1.5">
                         <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                         <span className="truncate max-w-[150px]">{h.location}</span>
@@ -423,7 +423,7 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
                     </td>
 
                     {/* Spoilage Risk Badge */}
-                    <td className="p-4">
+                    <td data-label={lang === 'en' ? 'Spoilage Risk' : 'Peligro'} className="p-4">
                       <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
                         h.spoilageRisk === 'high'
                           ? 'bg-red-50 text-red-700 dark:bg-red-950/20'
@@ -437,7 +437,7 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
                     </td>
 
                     {/* Status Badge */}
-                    <td className="p-4 text-center">
+                    <td data-label={lang === 'en' ? 'Status' : 'Katayuan'} className="p-4 text-center">
                       <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wide ${
                         h.status === 'completed'
                           ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40'
@@ -450,7 +450,7 @@ export default function HarvestsTab({ lang, harvestsList, onDeleteHarvest, onDel
                     </td>
 
                     {/* Action Panel for deletion */}
-                    <td className="p-4">
+                    <td data-label={lang === 'en' ? 'Actions' : 'Aksyon'} className="p-4">
                       <div className="flex items-center justify-center">
                         {confirmDeleteId === h.id ? (
                           <div className="flex items-center gap-1 bg-red-50 dark:bg-red-950/30 p-1 rounded-lg border border-red-200 dark:border-red-900/40 animate-fade-in">

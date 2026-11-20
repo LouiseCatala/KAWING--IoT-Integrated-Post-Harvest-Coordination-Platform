@@ -556,7 +556,7 @@ export default function BuyerDashboard({
         {activeTab === 'offers' && (
           <div className="space-y-4">
             {/* Status filter pills */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <div className="flex items-center gap-2 flex-wrap md:flex-nowrap md:overflow-x-auto pb-1">
               <button
                 onClick={() => setOfferStatusFilter('all')}
                 className={`px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
@@ -772,7 +772,7 @@ export default function BuyerDashboard({
 
         {activeTab === 'services' && (
           <div className="space-y-4">
-            <div className="flex w-fit max-w-full gap-1.5 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex w-fit max-w-full gap-1.5 flex-wrap md:flex-nowrap md:overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden dark:border-slate-800 dark:bg-slate-900">
               {([
                 ['all', lang === 'en' ? 'All Bookings' : 'Lahat'],
                 ['completed', lang === 'en' ? 'Completed' : 'Tapos'],

@@ -381,7 +381,7 @@ export default function GrainyAssistant({ user }: { user: UserAccount }) {
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: reducedMotion ? 0 : 80 }}
         transition={{ duration: reducedMotion ? 0 : 0.35 }}
-        className={`grainy-character absolute z-10 overflow-visible ${isPeeking ? '-bottom-px -right-22.25 h-50.25 w-67.5 sm:-right-23.25 sm:h-72.5 sm:w-97.5' : 'bottom-1 right-2 h-68.75 w-67.5 sm:-right-19 sm:h-106.25 sm:w-103.75'} transition-[width,height,bottom,right] duration-300`}
+        className={`grainy-character ${isPeeking ? 'grainy-character-peeking' : ''} absolute z-10 overflow-visible ${isPeeking ? '-bottom-px -right-22.25 h-50.25 w-67.5 sm:-right-23.25 sm:h-72.5 sm:w-97.5' : 'bottom-1 right-2 h-68.75 w-67.5 sm:-right-19 sm:h-106.25 sm:w-103.75'} transition-[width,height,bottom,right] duration-300`}
       >
         {isPeeking && (
           <motion.button
