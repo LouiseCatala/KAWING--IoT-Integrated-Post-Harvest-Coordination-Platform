@@ -15,11 +15,13 @@ import ProductionLoanBuyer from './ProductionLoanBuyer';
 import CoordinatedContactCard from '../../components/CoordinatedContactCard';
 import { ProductionLoanRequest, ProductionLoanStatus } from '../../types';
 import buyerBackground from '../../assets/images/buyer_background.jpg';
-import { hasApprovedBusinessCapability } from '../../lib/businessCapabilities';
+import { getBusinessCapability, hasApprovedBusinessCapability } from '../../lib/businessCapabilities';
 import { isAvailableServiceRequestFor } from '../../lib/serviceRequestVisibility';
 import { alertDialog, askConfirmation, confirmDialog } from '../../lib/appDialog';
 import { NotificationBadge, notificationDestination } from '../../lib/notificationRouting';
 import { getContactNumbers } from '../../lib/contactDetails';
+import { EQUIPMENT_OPTIONS } from '../../lib/serviceEquipmentTypes';
+import { isValidMobileNumber, normalizeMobileNumber } from '../../lib/phoneNumber';
 
 gsap.registerPlugin(useGSAP);
 
@@ -99,8 +101,14 @@ export default function BuyerDashboard({
   // Post Service Modal state
   const [showPostServiceModal, setShowPostServiceModal] = useState(false);
   const [serviceType, setServiceType] = useState<'transport' | 'storage' | 'drying' | 'milling' | ''>('');
+  const registeredVehicleType = getBusinessCapability(user, 'transport')?.vehicleType?.trim();
+  const registeredEquipmentType = serviceType === 'storage' ? getBusinessCapability(user, 'storage')?.storageType?.trim()
+    : serviceType === 'drying' ? getBusinessCapability(user, 'drying')?.dryerType?.trim()
+    : serviceType === 'milling' ? getBusinessCapability(user, 'milling')?.millType?.trim()
+    : undefined;
   const [serviceTitle, setServiceTitle] = useState('');
   const [truckType, setTruckType] = useState('');
+  const [isOtherEquipmentType, setIsOtherEquipmentType] = useState(false);
   const [capacity, setCapacity] = useState('');
   const [locationCoverage, setLocationCoverage] = useState('');
   const [rateInfo, setRateInfo] = useState('');
@@ -111,6 +119,7 @@ export default function BuyerDashboard({
     setServiceType(service?.serviceType || '');
     setServiceTitle(service?.title || '');
     setTruckType(service?.truckType || '');
+    setIsOtherEquipmentType(Boolean(service?.truckType && service.serviceType !== 'transport' && !EQUIPMENT_OPTIONS[service.serviceType as keyof typeof EQUIPMENT_OPTIONS]?.some(option => option === service.truckType)));
     setCapacity(service?.capacity || '');
     setLocationCoverage(service?.locationCoverage || '');
     const rate = service?.rateInfo.match(/^₱?([\d.]+)\s*(per .+)?$/);
@@ -126,7 +135,12 @@ export default function BuyerDashboard({
   const handleSelectServiceCategory = (type: 'transport' | 'storage' | 'drying' | 'milling') => {
     setServiceType(type);
     setServiceTitle('');
-    setTruckType('');
+    setTruckType(type === 'transport'
+      ? getBusinessCapability(user, 'transport')?.vehicleType?.trim() || ''
+      : type === 'storage' ? getBusinessCapability(user, 'storage')?.storageType?.trim() || ''
+      : type === 'drying' ? getBusinessCapability(user, 'drying')?.dryerType?.trim() || ''
+      : getBusinessCapability(user, 'milling')?.millType?.trim() || '');
+    setIsOtherEquipmentType(false);
     setCapacity('');
     setLocationCoverage('');
     setRateInfo('');
@@ -376,7 +390,7 @@ export default function BuyerDashboard({
           </div>
 
           <div className="flex flex-col min-[390px]:flex-row items-stretch min-[390px]:items-center gap-2.5 self-stretch sm:self-auto">
-            {(approvedServices.length > 0 || activeTab === 'posted_services') && <button
+            {activeTab === 'posted_services' && offeredServices.some(service => service.providerEmail === user.email) && <button
               type="button"
               onClick={() => openServiceForm()}
               className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-blue-500 sm:flex-none"
@@ -1177,8 +1191,12 @@ export default function BuyerDashboard({
                   void alertDialog(lang === 'en' ? 'Please select a service category first.' : 'Pumili muna ng kategorya ng serbisyo.', { tone: 'info' });
                   return;
                 }
-                if (!serviceTitle.trim() || !capacity.trim() || !locationCoverage.trim()) {
+                if (!serviceTitle.trim() || !truckType.trim() || !capacity.trim() || !locationCoverage.trim()) {
                   void alertDialog(lang === 'en' ? 'Please fill in required fields.' : 'Mangyaring punan ang kinakailangang impormasyon.', { tone: 'info' });
+                  return;
+                }
+                if (!isValidMobileNumber(contactPhone)) {
+                  void alertDialog(lang === 'en' ? 'Enter a valid Philippine mobile number (09 or +63). Dummy numbers are not allowed.' : 'Maglagay ng wastong Philippine mobile number (09 o +63). Bawal ang pekeng numero.', { tone: 'info' });
                   return;
                 }
                 if (editingService && !await confirmDialog(
@@ -1203,7 +1221,7 @@ export default function BuyerDashboard({
                     locationCoverage: locationCoverage.trim(),
                     rateInfo: rateInfo.trim() ? `₱${rateInfo.trim()} ${rateBasis}` : '',
                     notes: serviceNotes.trim(),
-                    providerPhone: contactPhone.trim(),
+                    providerPhone: normalizeMobileNumber(contactPhone),
                     companyName: companyName || user.businessName || user.name,
                     isAvailable: editingService?.isAvailable ?? true,
                   };
@@ -1321,20 +1339,46 @@ export default function BuyerDashboard({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:col-span-2">
                     <div>
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                        {lang === 'en' ? 'Vehicle / Equipment / Facility Type' : 'Uri ng Sasakyan / Equipment'}
+                        {serviceType === 'transport' ? (lang === 'en' ? 'Truck Type' : 'Uri ng Truck') :
+                         serviceType === 'drying' ? (lang === 'en' ? 'Dryer Type' : 'Uri ng Patuyuan') :
+                         serviceType === 'storage' ? (lang === 'en' ? 'Facility Type' : 'Uri ng Pasilidad') :
+                         (lang === 'en' ? 'Mill Type' : 'Uri ng Gilingan')}
                       </label>
-                      <input
-                        type="text"
+                      {isOtherEquipmentType ? <div className="relative">
+                        <input
+                          type="text"
+                          required
+                          autoFocus
+                          value={truckType}
+                          onChange={(e) => setTruckType(e.target.value)}
+                          placeholder={lang === 'en' ? 'Specify the type' : 'Ilagay ang uri'}
+                          className="w-full px-3.5 py-2.5 pr-20 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                        />
+                        <button type="button" onClick={() => { setIsOtherEquipmentType(false); setTruckType(''); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-cyan-700 dark:text-cyan-300">
+                          {lang === 'en' ? 'Change' : 'Palitan'}
+                        </button>
+                      </div> : <select
+                        required
                         value={truckType}
-                        onChange={(e) => setTruckType(e.target.value)}
-                        placeholder={
-                          serviceType === 'transport' ? 'e.g. 6-Wheeler Medium Duty Truck' :
-                          serviceType === 'storage' ? 'e.g. Secure Dry Warehouse Facility' :
-                          serviceType === 'drying' ? 'e.g. Batch Recirculating Dryer (Biomass/Gas)' :
-                          'e.g. Modern Multi-Pass Rice Mill'
-                        }
-                        className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-cyan-500 focus:outline-none"
-                      />
+                        onChange={(e) => {
+                          const other = e.target.value === 'other';
+                          setIsOtherEquipmentType(other);
+                          setTruckType(other ? '' : e.target.value);
+                        }}
+                        className="w-[calc(100%-0.5rem)] px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                      >
+                        <option value="">{lang === 'en' ? 'Select type' : 'Pumili ng uri'}</option>
+                        {serviceType === 'transport' ? <>
+                          {truckType && truckType !== registeredVehicleType && !EQUIPMENT_OPTIONS.transport.some(option => option === truckType) && <option value={truckType}>{truckType}</option>}
+                          {registeredVehicleType && !EQUIPMENT_OPTIONS.transport.some(option => option === registeredVehicleType) && <option value={registeredVehicleType}>{registeredVehicleType}</option>}
+                          {EQUIPMENT_OPTIONS.transport.map(option => <option key={option} value={option}>{option}</option>)}
+                          <option value="other">{lang === 'en' ? 'Others' : 'Iba pa'}</option>
+                        </> : <>
+                          {registeredEquipmentType && !EQUIPMENT_OPTIONS[serviceType as keyof typeof EQUIPMENT_OPTIONS].some(option => option === registeredEquipmentType) && <option value={registeredEquipmentType}>{registeredEquipmentType}</option>}
+                          {EQUIPMENT_OPTIONS[serviceType as keyof typeof EQUIPMENT_OPTIONS].map(option => <option key={option} value={option}>{option}</option>)}
+                          <option value="other">{lang === 'en' ? 'Others' : 'Iba pa'}</option>
+                        </>}
+                      </select>}
                     </div>
 
                     <div>
@@ -1342,7 +1386,8 @@ export default function BuyerDashboard({
                         {lang === 'en' ? 'Service Capacity' : 'Kapasidad ng Serbisyo'} <span className="text-red-500">*</span>
                       </label>
                       <input
-                        type="text"
+                        type="tel"
+                        inputMode="tel"
                         required
                         value={capacity}
                         onChange={(e) => setCapacity(e.target.value)}
@@ -1385,7 +1430,7 @@ export default function BuyerDashboard({
                         type="text"
                         required
                         value={contactPhone}
-                        onChange={(e) => setContactPhone(e.target.value)}
+                        onChange={(e) => setContactPhone(e.target.value.replace(/[\s-]/g, ''))}
                         placeholder="0917-XXX-XXXX"
                         className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-cyan-500 focus:outline-none"
                       />
