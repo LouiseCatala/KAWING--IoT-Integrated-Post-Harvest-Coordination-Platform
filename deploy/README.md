@@ -60,3 +60,12 @@ Set `KAWING_API_URL` to `https://YOUR_DOMAIN/api/moisture-readings`. Use a stron
 - `/api/db`, `/api/db/sync`, `/api/db/clear-demo`, and PalaySense use PHP/PDO.
 - Grainy uses server-side Gemini first, then Cloudflare Workers AI within the daily caps above, and saved local help as a fallback.
 - Google sign-in falls back to the app's account chooser until the PHP OAuth callback is configured.
+
+
+## License and Support
+
+Copyright © 2026 Orland Louise Catala. All rights reserved for my original work, except where an existing license states otherwise. Third-party materials remain subject to their respective licenses.
+
+Please do not copy, modify, redistribute, sell, or claim my original project files as your own without my permission.
+
+I’m a student developer with limited financial resources, and these projects represent many hours of effort. Please respect and support my work. If you would like a copy of the project files, contact me at **[louise.catala24@gmail.com](mailto:louise.catala24@gmail.com)** to discuss a cheap price. Your support helps me continue studying and creating.
