@@ -14,6 +14,10 @@ function requireTransition(?array $current, ?array $next, array $transitions, st
 
 function validateBusinessWrite(PDO $pdo, string $collection, ?array $current, ?array &$next, array $identity, array &$topics): void {
     if ($current !== null && liveEqual($current, $next)) return;
+    if ($collection === 'offeredServices' && $next !== null) {
+        if (!is_string($next['providerPhone'] ?? null) || !isValidMobileNumber($next['providerPhone'])) throw new InvalidArgumentException('Enter a valid Philippine mobile number (09 or +63).');
+        $next['providerPhone'] = normalizeMobileNumber($next['providerPhone']);
+    }
     $admin = $identity['role'] === 'admin'; $email = liveEmail($identity['email']);
     if ($collection === 'users' && $next !== null) ensureUniqueAccount($pdo, (string) ($next['name'] ?? ''), (string) ($next['email'] ?? ''));
     if ($collection === 'harvests' && $current !== null) {

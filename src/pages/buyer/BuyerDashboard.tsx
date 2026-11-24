@@ -390,15 +390,6 @@ export default function BuyerDashboard({
           </div>
 
           <div className="flex flex-col min-[390px]:flex-row items-stretch min-[390px]:items-center gap-2.5 self-stretch sm:self-auto">
-            {activeTab === 'posted_services' && offeredServices.some(service => service.providerEmail === user.email) && <button
-              type="button"
-              onClick={() => openServiceForm()}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-blue-500 sm:flex-none"
-            >
-              <Truck className="w-4 h-4" />
-              {lang === 'en' ? 'Post Logistics Service' : 'Mag-post ng Logistics Service'}
-            </button>}
-
             {activeTab === 'browse' && (
               <div className="relative w-full sm:w-64">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

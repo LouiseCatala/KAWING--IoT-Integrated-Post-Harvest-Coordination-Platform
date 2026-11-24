@@ -10,9 +10,9 @@ const capabilityProfiles = (user: UserAccount, lang: 'en' | 'tl') => {
     buyer: 'Bumili / Magkalakal ng Palay', loan_provider: 'Pautang sa Produksyon', transport: 'Transportasyon', storage: 'Imbakan', drying: 'Pagpapatuyo', milling: 'Paggiling',
   };
   const fieldLabels: Record<string, string> = lang === 'en' ? {
-    vehicleType: 'Vehicle type', plateNumber: 'Plate number', carryingCapacity: 'Carrying capacity', capacity: 'Capacity', storageCapacity: 'Storage capacity', facilityLocation: 'Facility location', dryerType: 'Dryer type', batchCapacity: 'Batch capacity', millingCapacity: 'Milling capacity', locationCoverage: 'Service coverage', rateInfo: 'Rate information', notes: 'Notes',
+    vehicleType: 'Vehicle type', plateNumber: 'Plate number', carryingCapacity: 'Carrying capacity', capacity: 'Capacity', storageType: 'Storage type', storageCapacity: 'Storage capacity', facilityLocation: 'Facility location', dryerType: 'Dryer type', batchCapacity: 'Batch capacity', millType: 'Mill type', millingCapacity: 'Milling capacity', locationCoverage: 'Service coverage', rateInfo: 'Rate information', notes: 'Notes',
   } : {
-    vehicleType: 'Uri ng sasakyan', plateNumber: 'Plaka ng sasakyan', carryingCapacity: 'Kakayahang magdala', capacity: 'Kapasidad', storageCapacity: 'Kapasidad ng imbakan', facilityLocation: 'Lokasyon ng pasilidad', dryerType: 'Uri ng patuyuan', batchCapacity: 'Kapasidad bawat batch', millingCapacity: 'Kapasidad ng gilingan', locationCoverage: 'Lugar na pinagsisilbihan', rateInfo: 'Impormasyon sa bayad', notes: 'Mga tala',
+    vehicleType: 'Uri ng sasakyan', plateNumber: 'Plaka ng sasakyan', carryingCapacity: 'Kakayahang magdala', capacity: 'Kapasidad', storageType: 'Uri ng imbakan', storageCapacity: 'Kapasidad ng imbakan', facilityLocation: 'Lokasyon ng pasilidad', dryerType: 'Uri ng patuyuan', batchCapacity: 'Kapasidad bawat batch', millType: 'Uri ng gilingan', millingCapacity: 'Kapasidad ng gilingan', locationCoverage: 'Lugar na pinagsisilbihan', rateInfo: 'Impormasyon sa bayad', notes: 'Mga tala',
   };
   return Object.entries({ ...(user.logisticsServices || {}), ...(user.businessCapabilities || {}) } as Record<string, BusinessCapabilityProfile | undefined>)
     .filter(([, profile]) => Boolean(profile?.enabled))
@@ -287,7 +287,7 @@ export default function VerificationTab({
                     </h4>
                     {u.registrationSource === 'kiosk' && (u.registrationDocumentStatus === 'pending_physical_verification' || u.rsbsaDocumentStatus === 'pending_physical_verification') && (
                       <p className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs font-semibold leading-relaxed text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
-                        {lang === 'en' ? 'Kiosk registration: no ID image was uploaded. Check the applicant’s physical registration ID before approving.' : 'Kiosk registration: walang na-upload na ID image. Suriin ang pisikal na registration ID bago aprubahan.'}
+                        {lang === 'en' ? 'Kiosk registration: check the applicant’s physical registration ID and any selected service documents (OR/CR or facility proof) before approving.' : 'Kiosk registration: suriin ang pisikal na registration ID at mga dokumento ng napiling serbisyo (OR/CR o patunay ng pasilidad) bago aprubahan.'}
                       </p>
                     )}
                     {documentsForReview(u, lang).length ? <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">

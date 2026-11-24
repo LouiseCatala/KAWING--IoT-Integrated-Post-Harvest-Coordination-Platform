@@ -23,9 +23,11 @@ export interface LogisticsServiceProfile {
   proofOfOwnershipDocument?: string;
   proofOfOwnershipDocumentData?: string;
   storageCapacity?: string;
+  storageType?: string;
   dryerType?: string;
   batchCapacity?: string;
   millingCapacity?: string;
+  millType?: string;
   facilityLocation?: string;
 }
 
@@ -67,6 +69,8 @@ export interface UserAccount {
   loanConfig?: BuyerLoanConfig; // Production loan config for Buyers/Traders
   buyerLogisticsEnabled?: boolean; // buyer opted into trucking/logistics functions
   documents?: {
+    avatar?: string;
+    avatarData?: string;
     govId?: string; // stored filename or base64 thumbnail
     govIdData?: string; // actual base64
     license?: string;

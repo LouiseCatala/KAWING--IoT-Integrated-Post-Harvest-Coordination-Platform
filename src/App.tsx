@@ -250,11 +250,15 @@ export default function App() {
       body: JSON.stringify({
         before,
         name: updated.name,
+        fullName: updated.fullName || '',
         contactNumber: updated.contactNumber || '',
         additionalContactNumbers: updated.additionalContactNumbers || [],
         address: updated.address || '',
         businessName: updated.businessName || '',
         legalCompanyName: updated.legalCompanyName || '',
+        contactPersonName: updated.contactPersonName || '',
+        operatingAddress: updated.operatingAddress || '',
+        serviceCoverageArea: updated.serviceCoverageArea || '',
         rsbsaNumber: updated.rsbsaNumber || '',
         palaySenseId: updated.role === 'farmer' ? (updated.palaySenseId || '').trim().toUpperCase() : '',
         avatarUrl: updated.avatarUrl || '',
@@ -456,7 +460,8 @@ export default function App() {
       originalUser?.emailNotificationConsentAsked !== updated.emailNotificationConsentAsked
     );
     const profileChanged = isSelf && [
-      'name', 'contactNumber', 'additionalContactNumbers', 'address', 'businessName', 'legalCompanyName',
+      'name', 'fullName', 'contactNumber', 'additionalContactNumbers', 'address', 'businessName', 'legalCompanyName',
+      'contactPersonName', 'operatingAddress', 'serviceCoverageArea',
       'rsbsaNumber', 'palaySenseId', 'avatarUrl', 'bio',
     ].some((field) => originalUser?.[field as keyof UserAccount] !== updated[field as keyof UserAccount]);
     const providerSettingsChanged = isSelf && (

@@ -10,6 +10,8 @@ function load(file) {
 }
 const { relevantGrainyFaqs, grainyAccountContext } = load('src/lib/grainyContext.ts');
 const { buildGrainySystemPrompt } = load('src/lib/grainyKnowledge.ts');
+const { answerGrainyLocally } = load('src/lib/grainyHelp.ts');
+const { FAQ_DATA } = load('src/data/faqs.ts');
 const faq = (id, questionEn, answerEn) => ({ id, questionEn, answerEn, questionTl: questionEn, answerTl: answerEn });
 const faqs = Array.from({ length: 35 }, (_, i) => faq(String(i), 'Generic welcome', 'Welcome'));
 faqs.push(faq('loan', 'How to apply for a loan?', 'Use Farm Loans'));
@@ -24,4 +26,18 @@ assert.equal(context.capabilities.find(c => c.name === 'drying').approval, 'pend
 const prompt = buildGrainySystemPrompt(user, 'tl', faqs, 'pautang', 'Loan Management');
 for (const privateValue of ['PRIVATE NAME', 'private@example.test', 'PRIVATE PASSWORD', 'PRIVATE ID']) assert.ok(!prompt.includes(privateValue));
 for (const required of ['Loan Management', 'Use Farm Loans', 'Pick-up Place', 'Drop Place', 'MC means moisture content', 'capability', 'Google', 'price per kg']) assert.ok(prompt.includes(required), required);
+const farmer = { ...user, role: 'farmer' };
+const farmerPrompt = buildGrainySystemPrompt(farmer, 'en', FAQ_DATA, 'How do I post a harvest?', 'Farm Loans');
+assert.ok(farmerPrompt.includes('Post Harvest button at the top of the farmer page'));
+assert.ok(FAQ_DATA.find(item => item.id === 'faq-2').answerEn.startsWith('Select Post Harvest at the top of any farmer page.'));
+assert.ok(answerGrainyLocally('How do I post a harvest?', farmer, 'en', FAQ_DATA).startsWith('Select Post Harvest at the top of a farmer page.'));
+assert.ok(farmerPrompt.includes('If Grainy covers the button, close the chat with X first.'));
+assert.ok(FAQ_DATA.find(item => item.id === 'faq-2').answerEn.includes('close the Grainy chat with X first'));
+assert.ok(FAQ_DATA.find(item => item.id === 'faq-2').answerTl.includes('isara muna ang Grainy chat gamit ang X'));
+assert.ok(answerGrainyLocally('How do I post a harvest?', farmer, 'en', FAQ_DATA).includes('close the Grainy chat with X first'));
+assert.ok(farmerPrompt.includes('Request Service button at the top of the farmer page'));
+assert.ok(FAQ_DATA.find(item => item.id === 'faq-5').answerEn.includes('close the Grainy chat with X first'));
+assert.ok(FAQ_DATA.find(item => item.id === 'faq-5').answerTl.includes('isara muna ang Grainy chat gamit ang X'));
+assert.ok(answerGrainyLocally('Where is Request Service?', farmer, 'en', FAQ_DATA).includes('close the Grainy chat with X first'));
+assert.ok(answerGrainyLocally('How do I request service?', farmer, 'en', FAQ_DATA).includes('close the Grainy chat with X first'));
 console.log('PASS: relevant FAQ retrieval beyond first 30, bilingual aliases, screen/capability context, privacy and cross-workflow prompt coverage');

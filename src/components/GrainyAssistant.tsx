@@ -217,7 +217,7 @@ export default function GrainyAssistant({ user }: { user: UserAccount }) {
       fallbackReason = lang === 'en' ? 'The AI provider is unavailable. Showing saved help.' : 'Hindi available ang AI provider. Naka-save na tulong ang ipinapakita.';
       const conversation = [
         {
-          role: 'system',
+          role: 'user',
           content: buildGrainySystemPrompt(user, lang, faqItems, messages.slice(-4).filter(message => message.sender === 'user').map(message => message.text).concat(question).join(' '), grainyScreen),
         },
         ...messages.filter(message => message.id !== 'welcome' && message.source !== 'local').slice(-16).map(message => ({

@@ -1,13 +1,48 @@
 import { IconArrowLeft, IconArrowRight, IconCheck, IconCoin, IconFileText, IconHeartHandshake, IconPackage, IconPhoto, IconTruck, IconWheat, IconWind } from '@tabler/icons-react';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import riceFieldBackground from '../../assets/images/rice_field_bg_1783944116925.jpg';
 import kawingLogo from '../../assets/images/kawing_logo_new_1784129186773.jpg';
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import { BusinessCapability, LogisticsServiceType, UserAccount, UserRole } from '../../types';
 import { Leaf, ShieldAlert, Globe, User, Lock, Phone, MapPin, Mail, Upload, CheckCircle, Briefcase, Eye, EyeOff, Check, Circle, AlertCircle, FileText, ArrowLeft, X } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import AnimatedButton from '../../components/AnimatedButton';
 import ThemeToggle from '../../components/ThemeToggle';
+import { EQUIPMENT_OPTIONS } from '../../lib/serviceEquipmentTypes';
+import { isValidMobileNumber, normalizeMobileNumber } from '../../lib/phoneNumber';
+
+function RegistrationTypeField({ value, onChange, options, label, lang }: {
+  value: string;
+  onChange: (value: string) => void;
+  options: readonly string[];
+  label: string;
+  lang: string;
+}) {
+  const [isOther, setIsOther] = useState(() => Boolean(value && !options.some(option => option === value)));
+  const fieldClass = 'w-full min-w-0 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs';
+  return <div className="min-w-0">
+    <label className="mb-1 block text-xs font-bold text-slate-700 dark:text-slate-300">{label} <span className="text-red-500">*</span></label>
+    {isOther ? <div className="relative">
+      <input required autoFocus value={value} onChange={(event) => onChange(event.target.value)} placeholder={lang === 'en' ? 'Specify the type' : 'Ilagay ang uri'} className={`${fieldClass} pr-16`} />
+      <button type="button" onClick={() => { setIsOther(false); onChange(''); }} className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] font-bold text-cyan-700 dark:text-cyan-300">{lang === 'en' ? 'Change' : 'Palitan'}</button>
+    </div> : <select required value={value} onChange={(event) => {
+      const other = event.target.value === 'other';
+      setIsOther(other);
+      onChange(other ? '' : event.target.value);
+    }} className={fieldClass}>
+      <option value="">{lang === 'en' ? `Select ${label.toLowerCase()}` : 'Pumili ng uri'}</option>
+      {options.map(option => <option key={option} value={option}>{option}</option>)}
+      <option value="other">{lang === 'en' ? 'Others' : 'Iba pa'}</option>
+    </select>}
+  </div>;
+}
+
+function SummaryField({ label, value }: { label: string; value: string }) {
+  return <div className="min-w-0 rounded-xl bg-slate-100 p-3 dark:bg-slate-800">
+    <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-600 dark:text-slate-400">{label}</dt>
+    <dd className="mt-1 break-words text-sm font-semibold text-slate-900 dark:text-slate-100">{value}</dd>
+  </div>;
+}
 
 const CAPTCHA_COLORS = [
   { id: 'red', labelEn: 'Red', labelTl: 'Pula', className: 'bg-red-500' },
@@ -50,21 +85,34 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
   const [plateNumber, setPlateNumber] = useState('');
   const [carryingCapacity, setCarryingCapacity] = useState('');
   const [storageCapacity, setStorageCapacity] = useState('');
+  const [storageType, setStorageType] = useState('');
   const [storageFacilityLocation, setStorageFacilityLocation] = useState('');
   const [dryerType, setDryerType] = useState('');
   const [dryingBatchCapacity, setDryingBatchCapacity] = useState('');
   const [dryingFacilityLocation, setDryingFacilityLocation] = useState('');
   const [millingCapacity, setMillingCapacity] = useState('');
+  const [millType, setMillType] = useState('');
   const [millingFacilityLocation, setMillingFacilityLocation] = useState('');
   const [role, setRole] = useState<UserRole>('farmer');
   const [selectedLogisticsServices, setSelectedLogisticsServices] = useState<BusinessCapability[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string>('');
+  const errorBannerRef = useRef<HTMLDivElement>(null);
+  const reduceMotion = useReducedMotion();
   const [successMsg, setSuccessMsg] = useState<string>('');
   const [showRegistrationSummary, setShowRegistrationSummary] = useState(false);
   const [isSubmittingRegistration, setIsSubmittingRegistration] = useState(false);
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [kioskRegistrationMode, setKioskRegistrationMode] = useState(false);
   const [kioskDeviceId] = useState(() => new URLSearchParams(window.location.hash.replace(/^#/, '')).get('kiosk') || '');
+
+  const scrollToRegistrationError = () => {
+    requestAnimationFrame(() => errorBannerRef.current?.scrollIntoView({ behavior: reduceMotion ? 'instant' : 'smooth', block: 'start' }));
+  };
+
+  useEffect(() => {
+    if (!isLogin && errorMsg && !showRegistrationSummary) scrollToRegistrationError();
+  }, [errorMsg, isLogin, showRegistrationSummary]);
 
   // Google Auth State
   const [showGoogleModal, setShowGoogleModal] = useState(false);
@@ -189,7 +237,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
       setSuccessMsg(
         lang === 'en'
             ? 'Google Account (' + selectedEmail + ') connected! Please choose your role and complete the required details below to submit for Admin approval.'
-            : 'Naka-connect na ang Google Account (' + selectedEmail + ')! Pakipili ang iyong kategorya at kumpletuhin ang mga detalye sa ibaba upang maisumite sa Admin approval.'
+            : 'Naka-connect na ang Google Account (' + selectedEmail + ')! Pakipili ang iyong papel at kumpletuhin ang mga detalye sa ibaba upang maisumite sa Admin approval.'
       );
     }
   };
@@ -349,7 +397,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
         password,
         role,
         isApproved: false, // Must be approved by Admin user
-        contactNumber,
+        contactNumber: normalizeMobileNumber(contactNumber),
         address,
         rsbsaNumber: role === 'farmer' ? rsbsaNumber.trim() : undefined,
         palaySenseId: role === 'farmer' ? palaySenseId.trim().toUpperCase() || undefined : undefined,
@@ -377,6 +425,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                 capacity: carryingCapacity.trim(), orCrDocument: uploadedDocs.transportOrCr, orCrDocumentData: uploadedDocs.transportOrCrData,
               } : {}),
               ...(service === 'storage' ? {
+                storageType: storageType.trim(),
                 storageCapacity: storageCapacity.trim(), capacity: storageCapacity.trim(), facilityLocation: storageFacilityLocation.trim(),
                 proofOfOwnershipDocument: uploadedDocs.storageProof, proofOfOwnershipDocumentData: uploadedDocs.storageProofData,
               } : {}),
@@ -385,6 +434,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                 proofOfOwnershipDocument: uploadedDocs.dryingProof, proofOfOwnershipDocumentData: uploadedDocs.dryingProofData,
               } : {}),
               ...(service === 'milling' ? {
+                millType: millType.trim(),
                 millingCapacity: millingCapacity.trim(), capacity: millingCapacity.trim(), facilityLocation: millingFacilityLocation.trim(),
                 proofOfOwnershipDocument: uploadedDocs.millingProof, proofOfOwnershipDocumentData: uploadedDocs.millingProofData,
               } : {}),
@@ -482,6 +532,10 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
         setErrorMsg(lang === 'en' ? 'Contact number and complete contact address are required.' : 'Kailangan ang contact number at kumpletong contact address.');
         return;
       }
+      if (!isValidMobileNumber(contactNumber)) {
+        setErrorMsg(lang === 'en' ? 'Enter a valid Philippine mobile number (09 or +63). Dummy numbers are not allowed.' : 'Maglagay ng wastong Philippine mobile number (09 o +63). Bawal ang pekeng numero.');
+        return;
+      }
 
       // Sign-up process with verification requirements
       const exists = registeredUsers.some(
@@ -546,20 +600,20 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
           setErrorMsg(lang === 'en' ? 'Please enter the service coverage area for your selected services.' : 'Ilagay ang sakop na lugar para sa mga napiling serbisyo.');
           return;
         }
-        if (selectedLogisticsServices.includes('transport') && (!uploadedDocs.transportOrCr || !vehicleType.trim() || !plateNumber.trim() || !carryingCapacity.trim())) {
-          setErrorMsg(lang === 'en' ? 'Trucking requires an OR/CR image, vehicle type, plate number, and carrying capacity.' : 'Kailangan sa trucking ang OR/CR image, uri ng sasakyan, plate number, at carrying capacity.');
+        if (selectedLogisticsServices.includes('transport') && ((!kioskRegistrationMode && !uploadedDocs.transportOrCr) || !vehicleType.trim() || !plateNumber.trim() || !carryingCapacity.trim())) {
+          setErrorMsg(lang === 'en' ? `Trucking requires ${kioskRegistrationMode ? '' : 'an OR/CR image, '}vehicle type, plate number, and carrying capacity.` : `Kailangan sa trucking ang ${kioskRegistrationMode ? '' : 'OR/CR image, '}uri ng sasakyan, plate number, at carrying capacity.`);
           return;
         }
-        if (selectedLogisticsServices.includes('storage') && (!uploadedDocs.storageProof || !storageCapacity.trim() || !storageFacilityLocation.trim())) {
-          setErrorMsg(lang === 'en' ? 'Storage requires proof of ownership/management, storage capacity, and facility location.' : 'Kailangan sa storage ang patunay ng ownership/management, kapasidad, at lokasyon ng pasilidad.');
+        if (selectedLogisticsServices.includes('storage') && ((!kioskRegistrationMode && !uploadedDocs.storageProof) || !storageType.trim() || !storageCapacity.trim() || !storageFacilityLocation.trim())) {
+          setErrorMsg(lang === 'en' ? `Storage requires ${kioskRegistrationMode ? '' : 'proof of ownership/management, '}storage type, capacity, and facility location.` : `Kailangan sa storage ang ${kioskRegistrationMode ? '' : 'patunay ng ownership/management, '}uri, kapasidad, at lokasyon ng pasilidad.`);
           return;
         }
-        if (selectedLogisticsServices.includes('drying') && (!uploadedDocs.dryingProof || !dryerType.trim() || !dryingBatchCapacity.trim() || !dryingFacilityLocation.trim())) {
-          setErrorMsg(lang === 'en' ? 'Drying requires proof of ownership/management, dryer type, batch capacity, and facility location.' : 'Kailangan sa drying ang patunay ng ownership/management, dryer type, batch capacity, at lokasyon.');
+        if (selectedLogisticsServices.includes('drying') && ((!kioskRegistrationMode && !uploadedDocs.dryingProof) || !dryerType.trim() || !dryingBatchCapacity.trim() || !dryingFacilityLocation.trim())) {
+          setErrorMsg(lang === 'en' ? `Drying requires ${kioskRegistrationMode ? '' : 'proof of ownership/management, '}dryer type, batch capacity, and facility location.` : `Kailangan sa drying ang ${kioskRegistrationMode ? '' : 'patunay ng ownership/management, '}dryer type, batch capacity, at lokasyon.`);
           return;
         }
-        if (selectedLogisticsServices.includes('milling') && (!uploadedDocs.millingProof || !millingCapacity.trim() || !millingFacilityLocation.trim())) {
-          setErrorMsg(lang === 'en' ? 'Milling requires proof of ownership/management, milling capacity, and facility location.' : 'Kailangan sa milling ang patunay ng ownership/management, milling capacity, at lokasyon.');
+        if (selectedLogisticsServices.includes('milling') && ((!kioskRegistrationMode && !uploadedDocs.millingProof) || !millType.trim() || !millingCapacity.trim() || !millingFacilityLocation.trim())) {
+          setErrorMsg(lang === 'en' ? `Milling requires ${kioskRegistrationMode ? '' : 'proof of ownership/management, '}mill type, capacity, and facility location.` : `Kailangan sa milling ang ${kioskRegistrationMode ? '' : 'patunay ng ownership/management, '}uri ng gilingan, kapasidad, at lokasyon.`);
           return;
         }
       }
@@ -722,14 +776,16 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
 
       <div className={`${isLogin ? 'mt-4' : 'mt-8'} sm:mx-auto sm:w-full sm:max-w-xl`}>
         <motion.div
-          layou
           className={`auth-panel bg-white/90 dark:bg-slate-900/95 text-slate-900 dark:text-slate-100 px-4 shadow-2xl rounded-2xl md:rounded-3xl sm:px-10 border border-slate-200 dark:border-slate-800 backdrop-blur-xl ${isLogin ? 'py-4 sm:py-5' : 'py-6 md:py-8'}`}
         >
           {errorMsg && (
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-5 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 text-sm rounded-xl flex items-start gap-2.5"
+              ref={errorBannerRef}
+              role="alert"
+              initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -8, scale: 0.96 }}
+              animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: [0.96, 1.02, 1] }}
+              transition={{ duration: reduceMotion ? 0.1 : 0.28 }}
+              className="mb-5 scroll-mt-4 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 text-sm rounded-xl flex items-start gap-2.5"
             >
               <ShieldAlert className="w-5 h-5 flex-shrink-0 mt-0.5" />
               <span>
@@ -757,11 +813,11 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
 
 
 
-          <form className={isLogin ? 'space-y-3' : 'space-y-5'} onSubmit={handleSubmit} autoComplete="off" data-lpignore="true" data-1p-ignore="true">
+          <form className={isLogin ? 'space-y-3' : 'space-y-5'} onSubmit={event => { handleSubmit(event); if (!isLogin) window.setTimeout(scrollToRegistrationError, 0); }} autoComplete="off" data-lpignore="true" data-1p-ignore="true">
             {!isLogin && (
               <div className="auth-progress grid grid-cols-3 gap-2" aria-label="Registration progress">
                 {[
-                  [1, lang === 'en' ? 'Category' : 'Kategorya'],
+                  [1, lang === 'en' ? 'Role' : 'Papel'],
                   [2, lang === 'en' ? 'Account' : 'Account'],
                   [3, lang === 'en' ? 'Requirements' : 'Requirements'],
                 ].map(([step, label]) => (
@@ -1038,10 +1094,11 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                         <Phone className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                       </div>
                       <input
-                        type="text"
+                        type="tel"
+                        inputMode="tel"
                         required
                         value={contactNumber}
-                        onChange={(e) => setContactNumber(e.target.value)}
+                        onChange={(e) => setContactNumber(e.target.value.replace(/[\s-]/g, ''))}
                         placeholder="e.g. 0917-123-4567"
                         className="block w-full pl-10 pr-3 py-2 border border-slate-250 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-slate-800 dark:text-white text-xs"
                       />
@@ -1074,48 +1131,51 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                 {role === 'agricultural_business' && selectedLogisticsServices.includes('transport') && (
                   <div className="rounded-2xl border border-cyan-500/30 bg-cyan-950/15 p-4 space-y-3">
                     <h5 className="text-sm font-extrabold text-cyan-800 dark:text-cyan-300"><span className="inline-flex items-center gap-1.5 align-middle"><IconTruck size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Trucking Requirements"}</span></h5>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      {[[lang === 'en' ? 'Vehicle Type' : 'Uri ng Sasakyan', vehicleType, setVehicleType, 'e.g. 6-wheel truck'], [lang === 'en' ? 'Plate Number' : 'Plaka ng Sasakyan', plateNumber, setPlateNumber, 'e.g. ABC 1234'], [lang === 'en' ? 'Carrying Capacity' : 'Kakayahang Magdala', carryingCapacity, setCarryingCapacity, 'e.g. 8,000 kg']].map(([label, value, setter, placeholder]) => <div className="space-y-1" key={label as string}><label className="text-xs font-bold text-slate-700 dark:text-slate-300">{label as string} <span className="text-red-500">*</span></label><input required value={value as string} onChange={(e) => (setter as React.Dispatch<React.SetStateAction<string>>)(e.target.value)} placeholder={placeholder as string} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-cyan-500 outline-none" /></div>)}
+                    <RegistrationTypeField value={vehicleType} onChange={setVehicleType} options={EQUIPMENT_OPTIONS.transport} label={lang === 'en' ? 'Truck Type' : 'Uri ng Truck'} lang={lang} />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {[[lang === 'en' ? 'Plate Number' : 'Plaka ng Sasakyan', plateNumber, setPlateNumber, 'e.g. ABC 1234'], [lang === 'en' ? 'Carrying Capacity' : 'Kakayahang Magdala', carryingCapacity, setCarryingCapacity, 'e.g. 8,000 kg']].map(([label, value, setter, placeholder]) => <div className="space-y-1" key={label as string}><label className="text-xs font-bold text-slate-700 dark:text-slate-300">{label as string} <span className="text-red-500">*</span></label><input required value={value as string} onChange={(e) => (setter as React.Dispatch<React.SetStateAction<string>>)(e.target.value)} placeholder={placeholder as string} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-cyan-500 outline-none" /></div>)}
                     </div>
-                    <input id="transport-orcr" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" required={!uploadedDocs.transportOrCr} onChange={(e) => handleFileChange(e, 'transportOrCr')} className="hidden" />
-                    <label htmlFor="transport-orcr" className="flex justify-center px-3 py-2 rounded-xl border border-dashed border-cyan-500/50 text-xs font-bold text-cyan-800 dark:text-cyan-300 cursor-pointer"><Upload className="w-4 h-4 mr-2" />{uploadedDocs.transportOrCr ? `OR/CR uploaded: ${uploadedDocs.transportOrCr}` : 'Upload OR/CR image *'}</label>
+                    {!isKioskRegistration && <><input id="transport-orcr" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" required={!uploadedDocs.transportOrCr} onChange={(e) => handleFileChange(e, 'transportOrCr')} className="hidden" />
+                    <label htmlFor="transport-orcr" className="flex justify-center px-3 py-2 rounded-xl border border-dashed border-cyan-500/50 text-xs font-bold text-cyan-800 dark:text-cyan-300 cursor-pointer"><Upload className="w-4 h-4 mr-2" />{uploadedDocs.transportOrCr ? `OR/CR uploaded: ${uploadedDocs.transportOrCr}` : 'Upload OR/CR image *'}</label></>}
                   </div>
                 )}
 
                 {role === 'agricultural_business' && selectedLogisticsServices.includes('storage') && (
                   <div className="rounded-2xl border border-violet-500/30 bg-violet-950/15 p-4 space-y-3">
                     <h5 className="text-sm font-extrabold text-violet-800 dark:text-violet-300"><span className="inline-flex items-center gap-1.5 align-middle"><IconPackage size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Storage Requirements"}</span></h5>
+                    <RegistrationTypeField value={storageType} onChange={setStorageType} options={EQUIPMENT_OPTIONS.storage} label={lang === 'en' ? 'Storage Type' : 'Uri ng Imbakan'} lang={lang} />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <input required value={storageCapacity} onChange={(e) => setStorageCapacity(e.target.value)} placeholder="Storage capacity (e.g. 5,000 sacks)" className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs" />
-                      <input required value={storageFacilityLocation} onChange={(e) => setStorageFacilityLocation(e.target.value)} placeholder="Complete facility location" className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs" />
+                      <label className="min-w-0 space-y-1 text-xs font-bold text-slate-700 dark:text-slate-300"><span className="block">{lang === 'en' ? 'Storage Capacity' : 'Kapasidad ng Imbakan'} <span className="text-red-500">*</span></span><input required value={storageCapacity} onChange={(e) => setStorageCapacity(e.target.value)} placeholder="e.g. 5,000 sacks" className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs" /></label>
+                      <label className="min-w-0 space-y-1 text-xs font-bold text-slate-700 dark:text-slate-300"><span className="block">{lang === 'en' ? 'Facility Location' : 'Lokasyon ng Pasilidad'} <span className="text-red-500">*</span></span><input required value={storageFacilityLocation} onChange={(e) => setStorageFacilityLocation(e.target.value)} placeholder="Complete facility location" className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs" /></label>
                     </div>
-                    <input id="storage-proof" type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" required={!uploadedDocs.storageProof} onChange={(e) => handleFileChange(e, 'storageProof')} className="hidden" />
-                    <label htmlFor="storage-proof" className="flex justify-center px-3 py-2 rounded-xl border border-dashed border-violet-500/50 text-xs font-bold text-violet-800 dark:text-violet-300 cursor-pointer"><Upload className="w-4 h-4 mr-2" />{uploadedDocs.storageProof ? `Proof uploaded: ${uploadedDocs.storageProof}` : 'Upload proof of ownership/management *'}</label>
+                    {!isKioskRegistration && <><input id="storage-proof" type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" required={!uploadedDocs.storageProof} onChange={(e) => handleFileChange(e, 'storageProof')} className="hidden" />
+                    <label htmlFor="storage-proof" className="flex justify-center px-3 py-2 rounded-xl border border-dashed border-violet-500/50 text-xs font-bold text-violet-800 dark:text-violet-300 cursor-pointer"><Upload className="w-4 h-4 mr-2" />{uploadedDocs.storageProof ? `Proof uploaded: ${uploadedDocs.storageProof}` : 'Upload proof of ownership/management *'}</label></>}
                   </div>
                 )}
 
                 {role === 'agricultural_business' && selectedLogisticsServices.includes('drying') && (
                   <div className="rounded-2xl border border-amber-500/30 bg-amber-950/15 p-4 space-y-3">
                     <h5 className="text-sm font-extrabold text-amber-700 dark:text-amber-300"><span className="inline-flex items-center gap-1.5 align-middle"><IconWind size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Drying Requirements"}</span></h5>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <input required value={dryerType} onChange={(e) => setDryerType(e.target.value)} placeholder="Dryer type" className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs" />
-                      <input required value={dryingBatchCapacity} onChange={(e) => setDryingBatchCapacity(e.target.value)} placeholder="Batch capacity (kg)" className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs" />
-                      <input required value={dryingFacilityLocation} onChange={(e) => setDryingFacilityLocation(e.target.value)} placeholder="Facility location" className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs" />
+                    <RegistrationTypeField value={dryerType} onChange={setDryerType} options={EQUIPMENT_OPTIONS.drying} label={lang === 'en' ? 'Dryer Type' : 'Uri ng Patuyuan'} lang={lang} />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <label className="min-w-0 space-y-1 text-xs font-bold text-slate-700 dark:text-slate-300"><span className="block">{lang === 'en' ? 'Batch Capacity' : 'Kapasidad ng Batch'} <span className="text-red-500">*</span></span><input required value={dryingBatchCapacity} onChange={(e) => setDryingBatchCapacity(e.target.value)} placeholder="e.g. 5,000 kg" className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs" /></label>
+                      <label className="min-w-0 space-y-1 text-xs font-bold text-slate-700 dark:text-slate-300"><span className="block">{lang === 'en' ? 'Facility Location' : 'Lokasyon ng Pasilidad'} <span className="text-red-500">*</span></span><input required value={dryingFacilityLocation} onChange={(e) => setDryingFacilityLocation(e.target.value)} placeholder="Facility location" className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs" /></label>
                     </div>
-                    <input id="drying-proof" type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" required={!uploadedDocs.dryingProof} onChange={(e) => handleFileChange(e, 'dryingProof')} className="hidden" />
-                    <label htmlFor="drying-proof" className="flex justify-center px-3 py-2 rounded-xl border border-dashed border-amber-500/50 text-xs font-bold text-amber-700 dark:text-amber-300 cursor-pointer"><Upload className="w-4 h-4 mr-2" />{uploadedDocs.dryingProof ? `Proof uploaded: ${uploadedDocs.dryingProof}` : 'Upload proof of ownership/management *'}</label>
+                    {!isKioskRegistration && <><input id="drying-proof" type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" required={!uploadedDocs.dryingProof} onChange={(e) => handleFileChange(e, 'dryingProof')} className="hidden" />
+                    <label htmlFor="drying-proof" className="flex justify-center px-3 py-2 rounded-xl border border-dashed border-amber-500/50 text-xs font-bold text-amber-700 dark:text-amber-300 cursor-pointer"><Upload className="w-4 h-4 mr-2" />{uploadedDocs.dryingProof ? `Proof uploaded: ${uploadedDocs.dryingProof}` : 'Upload proof of ownership/management *'}</label></>}
                   </div>
                 )}
 
                 {role === 'agricultural_business' && selectedLogisticsServices.includes('milling') && (
                   <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/15 p-4 space-y-3">
                     <h5 className="text-sm font-extrabold text-emerald-700 dark:text-emerald-300"><span className="inline-flex items-center gap-1.5 align-middle"><IconWheat size={24} stroke={2} aria-hidden="true" className="inline-block shrink-0" />{"Milling Requirements"}</span></h5>
+                    <RegistrationTypeField value={millType} onChange={setMillType} options={EQUIPMENT_OPTIONS.milling} label={lang === 'en' ? 'Mill Type' : 'Uri ng Gilingan'} lang={lang} />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <input required value={millingCapacity} onChange={(e) => setMillingCapacity(e.target.value)} placeholder="Milling capacity (e.g. kg/hour)" className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs" />
-                      <input required value={millingFacilityLocation} onChange={(e) => setMillingFacilityLocation(e.target.value)} placeholder="Complete facility location" className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs" />
+                      <label className="min-w-0 space-y-1 text-xs font-bold text-slate-700 dark:text-slate-300"><span className="block">{lang === 'en' ? 'Milling Capacity' : 'Kapasidad ng Paggiling'} <span className="text-red-500">*</span></span><input required value={millingCapacity} onChange={(e) => setMillingCapacity(e.target.value)} placeholder="e.g. kg/hour" className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs" /></label>
+                      <label className="min-w-0 space-y-1 text-xs font-bold text-slate-700 dark:text-slate-300"><span className="block">{lang === 'en' ? 'Facility Location' : 'Lokasyon ng Pasilidad'} <span className="text-red-500">*</span></span><input required value={millingFacilityLocation} onChange={(e) => setMillingFacilityLocation(e.target.value)} placeholder="Complete facility location" className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs" /></label>
                     </div>
-                    <input id="milling-proof" type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" required={!uploadedDocs.millingProof} onChange={(e) => handleFileChange(e, 'millingProof')} className="hidden" />
-                    <label htmlFor="milling-proof" className="flex justify-center px-3 py-2 rounded-xl border border-dashed border-emerald-500/50 text-xs font-bold text-emerald-700 dark:text-emerald-300 cursor-pointer"><Upload className="w-4 h-4 mr-2" />{uploadedDocs.millingProof ? `Proof uploaded: ${uploadedDocs.millingProof}` : 'Upload proof of ownership/management *'}</label>
+                    {!isKioskRegistration && <><input id="milling-proof" type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" required={!uploadedDocs.millingProof} onChange={(e) => handleFileChange(e, 'millingProof')} className="hidden" />
+                    <label htmlFor="milling-proof" className="flex justify-center px-3 py-2 rounded-xl border border-dashed border-emerald-500/50 text-xs font-bold text-emerald-700 dark:text-emerald-300 cursor-pointer"><Upload className="w-4 h-4 mr-2" />{uploadedDocs.millingProof ? `Proof uploaded: ${uploadedDocs.millingProof}` : 'Upload proof of ownership/management *'}</label></>}
                   </div>
                 )}
 
@@ -1212,7 +1272,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
             {!isLogin && registrationStep === 1 && (
               <div className="space-y-2 pt-2">
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                  {lang === 'en' ? 'Choose your Registration Category' : 'Pumili ng iyong Kategorya sa Pagpaparehistro'}
+                  {lang === 'en' ? 'Choose your Registration Role' : 'Pumili ng iyong Papel sa Pagpaparehistro'}
                 </label>
 
                 <div className="auth-role-grid grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-72 overflow-y-auto p-1 border border-slate-100 dark:border-slate-800/80 rounded-xl bg-slate-50/30 dark:bg-slate-900/10">
@@ -1252,7 +1312,8 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                 )}
                 <button
                   type="button"
-                  onClick={() => {
+                  disabled={isCheckingUsername}
+                  onClick={async () => {
                     setErrorMsg('');
                     if (registrationStep === 1) {
                       setRegistrationStep(2);
@@ -1270,11 +1331,32 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
                       setErrorMsg(lang === 'en' ? 'The password confirmation must match.' : 'Dapat magkapareho ang password at confirmation.');
                       return;
                     }
+                    setIsCheckingUsername(true);
+                    try {
+                      const response = await fetch('/api/registrations/username', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: name.trim() }),
+                      });
+                      if (!response.ok) throw new Error('Username check unavailable. Please try again.');
+                      const result = await response.json();
+                      if (result.available !== true) {
+                        setErrorMsg(lang === 'en'
+                          ? 'This username or company name is already registered. Choose another.'
+                          : 'Nakarehistro na ang username o pangalan ng kompanya. Pumili ng iba.');
+                        return;
+                      }
+                    } catch {
+                      setErrorMsg(lang === 'en' ? 'Could not check the username. Please try again.' : 'Hindi masuri ang username. Subukan muli.');
+                      return;
+                    } finally {
+                      setIsCheckingUsername(false);
+                    }
                     setRegistrationStep(3);
                   }}
-                  className="flex-[1.5] rounded-xl bg-emerald-600 px-4 py-3 text-sm font-extrabold text-white hover:bg-emerald-500"
+                  className="flex-[1.5] rounded-xl bg-emerald-600 px-4 py-3 text-sm font-extrabold text-white hover:bg-emerald-500 disabled:cursor-wait disabled:opacity-60"
                 >
-                  {lang === 'en' ? 'Continue' : 'Magpatuloy'}<span className="inline-flex items-center gap-1.5 align-middle"><IconArrowRight size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></button>
+                  {isCheckingUsername ? (lang === 'en' ? 'Checking...' : 'Sinusuri...') : (lang === 'en' ? 'Continue' : 'Magpatuloy')}<span className="inline-flex items-center gap-1.5 align-middle"><IconArrowRight size={20} stroke={2} aria-hidden="true" className="inline-block shrink-0" /></span></button>
               </div>
             )}
 
@@ -1300,7 +1382,7 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
             </div>}
 
           </form>
-          {kioskRegistrationMode && <div className="mt-3 flex justify-center"><span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-bold text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300">{lang === 'en' ? 'Kiosk registration enabled' : 'Naka-enable ang pagpaparehistro sa kiosk'}</span></div>}
+          {kioskRegistrationMode && <div className="mt-3 flex justify-center"><span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-bold text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300">Kiosk Mode</span></div>}
         </motion.div>
       </div>
       </div>
@@ -1317,12 +1399,12 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
             aria-modal="true"
             aria-labelledby="registration-summary-title"
             onClick={(event) => event.stopPropagation()}
-            className="my-auto max-h-[calc(100dvh-1.5rem)] w-full max-w-xl overflow-y-auto rounded-2xl md:rounded-3xl border border-emerald-500/30 bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xl"
+            className="my-auto flex max-h-[calc(100dvh-1.5rem)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-emerald-500/30 bg-white text-slate-900 shadow-2xl dark:bg-slate-900 dark:text-white md:rounded-3xl"
           >
-            <div className="bg-gradient-to-r from-emerald-700 to-teal-600 px-6 py-5">
+            <div className="shrink-0 bg-gradient-to-r from-emerald-700 to-teal-600 px-5 py-5 text-white sm:px-7">
               <button type="button" aria-label={lang === 'en' ? 'Close popup' : 'Isara ang popup'} onClick={() => setShowRegistrationSummary(false)} className="float-right relative z-10 flex h-9 w-9 items-center justify-center rounded-full text-xl hover:bg-slate-500/20">&times;</button>
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-100">{lang === 'en' ? 'Final Review' : 'Panghuling Pagsusuri'}</p>
-              <h2 id="registration-summary-title" className="mt-1 text-xl font-black">
+              <h2 id="registration-summary-title" className="mt-1 text-2xl font-black">
                 {lang === 'en' ? 'Registration Summary' : 'Buod ng Rehistrasyon'}
               </h2>
               <p className="mt-1 text-xs text-emerald-100">
@@ -1330,27 +1412,62 @@ export default function Auth({ onBack, onAuthSuccess, registeredUsers, onRegiste
               </p>
             </div>
 
-            <div className="max-h-[60vh] space-y-4 overflow-y-auto p-4 md:p-6">
-              <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-                <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">{lang === 'en' ? 'Account category' : 'Uri ng account'}</span><strong>{lang === 'en' ? roleLabels[role].titleEN : roleLabels[role].titleTL}</strong></div>
-                <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">{lang === 'en' ? 'Username / company' : 'Username / kumpanya'}</span><strong className="break-words">{name.trim()}</strong></div>
-                {(fullName.trim() || contactPersonName.trim()) && <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">{lang === 'en' ? 'Full name / contact person' : 'Buong pangalan / taong kokontakin'}</span><strong className="break-words">{fullName.trim() || contactPersonName.trim()}</strong></div>}
-                <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">Email</span><strong className="break-all">{email.trim()}</strong></div>
-                <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">{lang === 'en' ? 'Contact number' : 'Numero ng telepono'}</span><strong>{contactNumber.trim()}</strong></div>
-                <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">{lang === 'en' ? 'Complete address' : 'Kumpletong address'}</span><strong className="break-words">{address.trim()}</strong></div>
-              </div>
+            <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4 sm:p-6 md:p-7">
+              <section className="space-y-3">
+                <h3 className="text-sm font-extrabold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">1. {lang === 'en' ? 'Role' : 'Papel'}</h3>
+                <dl className="grid gap-3 sm:grid-cols-2"><SummaryField label={lang === 'en' ? 'Registration role' : 'Papel sa rehistrasyon'} value={lang === 'en' ? roleLabels[role].titleEN : roleLabels[role].titleTL} /></dl>
+              </section>
 
-              {role === 'farmer' && <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-sm"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">{lang === 'en' ? 'RSBSA number' : 'Numero ng RSBSA'}</span><strong>{rsbsaNumber.trim()}</strong></div>}
-              {role === 'agricultural_business' && (
-                <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4">
-                  <span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">{lang === 'en' ? 'Selected business functions' : 'Mga napiling serbisyo ng negosyo'}</span>
-                  <p className="mt-2 text-sm font-semibold text-slate-800 dark:text-slate-200">{selectedLogisticsServices.length ? selectedLogisticsServices.map(service => service.replace('_', ' ')).join(', ') : (lang === 'en' ? 'None — enable later from your account' : 'Wala — maaari itong i-enable sa iyong account sa susunod')}</p>
+              <section className="space-y-3 border-t border-slate-200 pt-5 dark:border-slate-700">
+                <h3 className="text-sm font-extrabold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">2. {lang === 'en' ? 'Account and contact' : 'Account at kontak'}</h3>
+                <dl className="grid gap-3 sm:grid-cols-2">
+                  <SummaryField label={lang === 'en' ? 'Username / company name' : 'Username / pangalan ng kumpanya'} value={name.trim()} />
+                  <SummaryField label={lang === 'en' ? 'Password' : 'Password'} value={lang === 'en' ? 'Set (hidden for security)' : 'Nakatakda (nakatago para sa seguridad)'} />
+                  <SummaryField label="Email" value={email.trim()} />
+                  <SummaryField label={lang === 'en' ? 'Contact number' : 'Numero ng telepono'} value={normalizeMobileNumber(contactNumber)} />
+                  <SummaryField label={lang === 'en' ? 'Complete address' : 'Kumpletong address'} value={address.trim()} />
+                </dl>
+              </section>
+
+              <section className="space-y-3 border-t border-slate-200 pt-5 dark:border-slate-700">
+                <h3 className="text-sm font-extrabold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">3. {lang === 'en' ? 'Requirements' : 'Mga kailangan'}</h3>
+                <dl className="grid gap-3 sm:grid-cols-2">
+                  {role === 'farmer' && <>
+                    <SummaryField label={lang === 'en' ? 'Full name' : 'Buong pangalan'} value={fullName.trim()} />
+                    <SummaryField label="RSBSA Number" value={rsbsaNumber.trim()} />
+                    <SummaryField label="PalaySense ID" value={palaySenseId.trim().toUpperCase()} />
+                  </>}
+                  {role === 'agricultural_business' && <>
+                    <SummaryField label={lang === 'en' ? 'Contact person' : 'Taong kokontakin'} value={contactPersonName.trim()} />
+                    <SummaryField label={lang === 'en' ? 'Legal company name' : 'Rehistradong pangalan ng kumpanya'} value={legalCompanyName.trim()} />
+                    <SummaryField label={lang === 'en' ? 'Operating address' : 'Address ng operasyon'} value={operatingAddress.trim()} />
+                    {selectedLogisticsServices.length > 0 && <SummaryField label={lang === 'en' ? 'Service coverage area' : 'Lugar na sakop ng serbisyo'} value={serviceCoverageArea.trim()} />}
+                    <SummaryField label={lang === 'en' ? 'Selected services' : 'Mga napiling serbisyo'} value={selectedLogisticsServices.length ? selectedLogisticsServices.map(service => service === 'transport' ? 'Trucking' : service === 'storage' ? 'Storage' : service === 'drying' ? 'Drying' : 'Milling').join(', ') : (lang === 'en' ? 'None' : 'Wala')} />
+                  </>}
+                </dl>
+
+                {role === 'agricultural_business' && selectedLogisticsServices.includes('transport') && <div className="rounded-xl border border-cyan-500/30 p-3"><h4 className="mb-3 text-sm font-bold text-cyan-700 dark:text-cyan-300">{lang === 'en' ? 'Trucking' : 'Trak'}</h4><dl className="grid gap-3 sm:grid-cols-2"><SummaryField label={lang === 'en' ? 'Truck type' : 'Uri ng trak'} value={vehicleType.trim()} /><SummaryField label={lang === 'en' ? 'Plate number' : 'Numero ng plaka'} value={plateNumber.trim()} /><SummaryField label={lang === 'en' ? 'Carrying capacity' : 'Kapasidad'} value={carryingCapacity.trim()} /></dl></div>}
+                {role === 'agricultural_business' && selectedLogisticsServices.includes('storage') && <div className="rounded-xl border border-violet-500/30 p-3"><h4 className="mb-3 text-sm font-bold text-violet-700 dark:text-violet-300">{lang === 'en' ? 'Storage' : 'Imbakan'}</h4><dl className="grid gap-3 sm:grid-cols-2"><SummaryField label={lang === 'en' ? 'Storage type' : 'Uri ng imbakan'} value={storageType.trim()} /><SummaryField label={lang === 'en' ? 'Storage capacity' : 'Kapasidad'} value={storageCapacity.trim()} /><SummaryField label={lang === 'en' ? 'Facility location' : 'Lokasyon ng pasilidad'} value={storageFacilityLocation.trim()} /></dl></div>}
+                {role === 'agricultural_business' && selectedLogisticsServices.includes('drying') && <div className="rounded-xl border border-amber-500/30 p-3"><h4 className="mb-3 text-sm font-bold text-amber-700 dark:text-amber-300">{lang === 'en' ? 'Drying' : 'Patuyuan'}</h4><dl className="grid gap-3 sm:grid-cols-2"><SummaryField label={lang === 'en' ? 'Dryer type' : 'Uri ng patuyuan'} value={dryerType.trim()} /><SummaryField label={lang === 'en' ? 'Batch capacity' : 'Kapasidad ng batch'} value={dryingBatchCapacity.trim()} /><SummaryField label={lang === 'en' ? 'Facility location' : 'Lokasyon ng pasilidad'} value={dryingFacilityLocation.trim()} /></dl></div>}
+                {role === 'agricultural_business' && selectedLogisticsServices.includes('milling') && <div className="rounded-xl border border-emerald-500/30 p-3"><h4 className="mb-3 text-sm font-bold text-emerald-700 dark:text-emerald-300">{lang === 'en' ? 'Milling' : 'Gilingan'}</h4><dl className="grid gap-3 sm:grid-cols-2"><SummaryField label={lang === 'en' ? 'Mill type' : 'Uri ng gilingan'} value={millType.trim()} /><SummaryField label={lang === 'en' ? 'Milling capacity' : 'Kapasidad'} value={millingCapacity.trim()} /><SummaryField label={lang === 'en' ? 'Facility location' : 'Lokasyon ng pasilidad'} value={millingFacilityLocation.trim()} /></dl></div>}
+
+                <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                  <h4 className="mb-3 text-sm font-bold">{lang === 'en' ? 'Documents' : 'Mga dokumento'}</h4>
+                  <dl className="grid gap-3 sm:grid-cols-2">
+                    {isKioskRegistration ? <SummaryField label={lang === 'en' ? 'Document check' : 'Pagsusuri ng dokumento'} value={lang === 'en' ? 'Physical verification by staff' : 'Pisikal na susuriin ng kawani'} /> : <>
+                      <SummaryField label={role === 'farmer' ? 'RSBSA Registration ID' : 'Company Registration ID'} value={uploadedDocs.govId || (lang === 'en' ? 'Not uploaded' : 'Walang na-upload')} />
+                      <SummaryField label={lang === 'en' ? 'Profile photo' : 'Larawan sa profile'} value={uploadedDocs.avatar || (lang === 'en' ? 'Not provided' : 'Walang inilagay')} />
+                      {role === 'agricultural_business' && selectedLogisticsServices.includes('transport') && <SummaryField label="OR/CR" value={uploadedDocs.transportOrCr || (lang === 'en' ? 'Not uploaded' : 'Walang na-upload')} />}
+                      {role === 'agricultural_business' && selectedLogisticsServices.includes('storage') && <SummaryField label={lang === 'en' ? 'Storage proof' : 'Patunay ng imbakan'} value={uploadedDocs.storageProof || (lang === 'en' ? 'Not uploaded' : 'Walang na-upload')} />}
+                      {role === 'agricultural_business' && selectedLogisticsServices.includes('drying') && <SummaryField label={lang === 'en' ? 'Drying proof' : 'Patunay ng patuyuan'} value={uploadedDocs.dryingProof || (lang === 'en' ? 'Not uploaded' : 'Walang na-upload')} />}
+                      {role === 'agricultural_business' && selectedLogisticsServices.includes('milling') && <SummaryField label={lang === 'en' ? 'Milling proof' : 'Patunay ng gilingan'} value={uploadedDocs.millingProof || (lang === 'en' ? 'Not uploaded' : 'Walang na-upload')} />}
+                    </>}
+                  </dl>
                 </div>
-              )}
-              <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-sm"><span className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">{lang === 'en' ? 'Uploaded documents' : 'Mga na-upload na dokumento'}</span><strong>{Object.keys(uploadedDocs).filter(key => !key.endsWith('Data')).length} {lang === 'en' ? 'file(s)' : 'file'}</strong></div>
+              </section>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 border-t border-slate-200 dark:border-slate-800 p-4 min-[390px]:grid-cols-2 md:grid-cols-2 md:p-5">
+            <div className="grid shrink-0 grid-cols-1 gap-3 border-t border-slate-200 p-4 dark:border-slate-800 min-[390px]:grid-cols-2 md:p-5">
               <button type="button" onClick={() => setShowRegistrationSummary(false)} className="rounded-xl border border-slate-300 dark:border-slate-600 px-4 py-3 text-sm font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">
                 {lang === 'en' ? 'Back and Edit' : 'Bumalik at I-edit'}
               </button>

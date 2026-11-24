@@ -19,7 +19,7 @@ export default function SpoilageTab({ lang, harvestsList }: SpoilageTabProps) {
       cropType: harvest.cropType,
       riskLevel: (harvest.spoilageRisk[0].toUpperCase() + harvest.spoilageRisk.slice(1)) as 'High' | 'Medium' | 'Low',
       moistureLevel: harvest.moistureLevel,
-      date: harvest.harvestDate || harvest.createdAt,
+      date: harvest.harvestDate,
     }));
 
   // Filters

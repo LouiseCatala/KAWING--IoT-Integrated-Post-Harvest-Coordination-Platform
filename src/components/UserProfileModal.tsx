@@ -6,6 +6,15 @@ import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import RatingSummary from './RatingSummary';
 import { getContactNumbers, normalizeAdditionalContactNumbers } from '../lib/contactDetails';
+import { isValidMobileNumber, normalizeMobileNumber } from '../lib/phoneNumber';
+import { getBusinessCapability } from '../lib/businessCapabilities';
+
+function RegistrationDetail({ label, value }: { label: string; value: string }) {
+  return <div className="min-w-0 rounded-xl border border-slate-200/60 bg-slate-50 p-3 dark:border-slate-700/60 dark:bg-slate-800/40">
+    <dt className="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</dt>
+    <dd className="mt-1 break-words text-xs font-semibold text-slate-800 dark:text-slate-200">{value}</dd>
+  </div>;
+}
 
 interface UserProfileModalProps {
   user: UserAccount;
@@ -31,26 +40,40 @@ export default function UserProfileModal({
   const [additionalContactNumbers, setAdditionalContactNumbers] = useState<string[]>(user.additionalContactNumbers || []);
   const [address, setAddress] = useState(user.address || '');
   const [businessName, setBusinessName] = useState(user.businessName || user.legalCompanyName || '');
+  const [contactPersonName, setContactPersonName] = useState(user.contactPersonName || '');
+  const [operatingAddress, setOperatingAddress] = useState(user.operatingAddress || '');
+  const [serviceCoverageArea, setServiceCoverageArea] = useState(user.serviceCoverageArea || '');
   const [rsbsaNumber, setRsbsaNumber] = useState(user.rsbsaNumber || '');
   const [palaySenseId, setPalaySenseId] = useState(user.palaySenseId || '');
-  const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl || '');
+  const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl || user.documents?.avatarData || '');
   const [avatarFailed, setAvatarFailed] = useState(false);
   useEffect(() => setAvatarFailed(false), [avatarUrl]);
   const [bio, setBio] = useState(user.bio || '');
   const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(user.emailNotificationsEnabled === true);
+  const [phoneError, setPhoneError] = useState('');
 
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
+    if (!isValidMobileNumber(contactNumber) || additionalContactNumbers.some(number => number.trim() && !isValidMobileNumber(number))) {
+      setPhoneError(lang === 'en' ? 'Enter valid Philippine mobile numbers (09 or +63). Dummy numbers are not allowed.' : 'Maglagay ng wastong Philippine mobile number (09 o +63). Bawal ang pekeng numero.');
+      return;
+    }
+    setPhoneError('');
 
     const updatedUser: UserAccount = {
       ...user,
       name: name.trim(),
-      contactNumber: contactNumber.trim(),
-      additionalContactNumbers: normalizeAdditionalContactNumbers(contactNumber, additionalContactNumbers).slice(0, 1),
+      fullName: user.role === 'farmer' ? name.trim() : user.fullName,
+      contactNumber: normalizeMobileNumber(contactNumber),
+      additionalContactNumbers: normalizeAdditionalContactNumbers(normalizeMobileNumber(contactNumber), additionalContactNumbers.map(normalizeMobileNumber)).slice(0, 1),
       address: address.trim(),
       businessName: businessName.trim(),
+      legalCompanyName: user.role === 'agricultural_business' ? businessName.trim() : user.legalCompanyName,
+      contactPersonName: user.role === 'agricultural_business' ? contactPersonName.trim() : user.contactPersonName,
+      operatingAddress: user.role === 'agricultural_business' ? operatingAddress.trim() : user.operatingAddress,
+      serviceCoverageArea: user.role === 'agricultural_business' ? serviceCoverageArea.trim() : user.serviceCoverageArea,
       rsbsaNumber: rsbsaNumber.trim(),
       palaySenseId: user.role === 'farmer' ? palaySenseId.trim().toUpperCase() : undefined,
       avatarUrl: avatarUrl,
@@ -100,12 +123,19 @@ export default function UserProfileModal({
     }
   };
 
+  const registeredServices = (['transport', 'storage', 'drying', 'milling'] as const)
+    .map(type => ({ type, profile: getBusinessCapability(user, type) }))
+    .filter(item => item.profile?.enabled);
+
   const saveSummary = pendingSave ? ([
     { label: lang === 'en' ? 'Name' : 'Pangalan', value: pendingSave.name, before: user.name },
     { label: lang === 'en' ? 'Contact phone' : 'Numero ng telepono', value: pendingSave.contactNumber, before: user.contactNumber || '' },
     { label: lang === 'en' ? 'Additional contact' : 'Karagdagang contact', value: (pendingSave.additionalContactNumbers || []).join(', '), before: (user.additionalContactNumbers || []).join(', ') },
     { label: lang === 'en' ? 'Address' : 'Tirahan', value: pendingSave.address, before: user.address || '' },
     { label: lang === 'en' ? 'Business name' : 'Pangalan ng negosyo', value: pendingSave.businessName || '', before: user.businessName || user.legalCompanyName || '' },
+    { label: lang === 'en' ? 'Contact person' : 'Taong kokontakin', value: pendingSave.contactPersonName || '', before: user.contactPersonName || '' },
+    { label: lang === 'en' ? 'Operating address' : 'Address ng operasyon', value: pendingSave.operatingAddress || '', before: user.operatingAddress || '' },
+    { label: lang === 'en' ? 'Service coverage area' : 'Lugar na sakop ng serbisyo', value: pendingSave.serviceCoverageArea || '', before: user.serviceCoverageArea || '' },
     { label: 'RSBSA', value: pendingSave.rsbsaNumber || '', before: user.rsbsaNumber || '' },
     { label: 'PalaySense ID', value: pendingSave.palaySenseId || '', before: user.palaySenseId || '' },
     { label: lang === 'en' ? 'Profile photo' : 'Larawan sa profile', value: pendingSave.avatarUrl ? (lang === 'en' ? 'Updated' : 'Na-update') : '', before: user.avatarUrl ? (lang === 'en' ? 'Set' : 'May larawan') : '' },
@@ -114,12 +144,12 @@ export default function UserProfileModal({
   ] as Array<{ label: string; value: string; before: string }>).filter((item) => item.value !== item.before) : [];
 
   return createPortal(
-    <div className="fixed inset-0 z-[2000] overflow-y-auto bg-black/60 p-3 backdrop-blur-xs md:flex md:items-center md:justify-center md:p-4">
+    <div className="fixed inset-0 z-[2000] overflow-y-auto bg-black/60 p-2 backdrop-blur-xs md:flex md:items-center md:justify-center md:p-4">
       <motion.div
         initial={{ scale: 0.95, opacity: 0, y: 10 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 10 }}
-        className="mx-auto flex max-h-[calc(100dvh-1.5rem)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white text-left shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+        className="mx-auto flex max-h-[calc(100dvh-1rem)] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white text-left shadow-2xl dark:border-slate-800 dark:bg-slate-900 md:max-h-[calc(100dvh-2rem)]"
       >
         {/* Modal Header */}
         <div className="relative flex shrink-0 items-center justify-between bg-gradient-to-r from-emerald-600 to-teal-700 px-4 py-4 text-white md:px-6 md:py-5">
@@ -185,7 +215,7 @@ export default function UserProfileModal({
                   </span>
                 <span className="text-slate-400">•</span>
                 <span className="text-slate-500 font-mono text-[11px]">
-                  {user.email || 'user@kawing.com'}
+                  {user.email || (lang === 'en' ? 'No email on file' : 'Walang email sa talaan')}
                 </span>
               </div>
             </div>
@@ -221,30 +251,32 @@ export default function UserProfileModal({
                 </div>
               </div>
 
-              {/* Role Specific Registration Info */}
-              {user.role === 'farmer' && (
-                <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-xl space-y-1">
-                  <span className="text-[10px] font-extrabold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider block flex items-center gap-1">
-                    <FileText className="w-3.5 h-3.5 text-emerald-600" />
-                    {lang === 'en' ? 'RSBSA Farmer Number (Registry ID)' : 'Numero ng Magsasaka sa RSBSA'}
-                  </span>
-                  <strong className="text-xs font-bold font-mono text-emerald-900 dark:text-emerald-200 block">
-                    {rsbsaNumber || 'RSBSA-03-4912-8821'}
-                  </strong>
-                </div>
-              )}
+              {(user.role === 'farmer' || user.role === 'agricultural_business') && <section className="space-y-3 rounded-2xl border border-emerald-200 p-4 dark:border-emerald-900/60">
+                <h4 className="flex items-center gap-2 text-sm font-extrabold text-emerald-800 dark:text-emerald-300"><FileText className="h-4 w-4" />{lang === 'en' ? 'Registration Requirements' : 'Mga Detalye ng Rehistrasyon'}</h4>
+                <dl className="grid gap-3 sm:grid-cols-2">
+                  {user.role === 'farmer' ? <>
+                    <RegistrationDetail label={lang === 'en' ? 'Full name' : 'Buong pangalan'} value={user.fullName || (lang === 'en' ? 'Not provided' : 'Walang inilagay')} />
+                    <RegistrationDetail label="RSBSA Number" value={rsbsaNumber || (lang === 'en' ? 'Not provided' : 'Walang inilagay')} />
+                    <RegistrationDetail label="PalaySense ID" value={palaySenseId || (lang === 'en' ? 'Not provided' : 'Walang inilagay')} />
+                  </> : <>
+                    <RegistrationDetail label={lang === 'en' ? 'Contact person' : 'Taong kokontakin'} value={user.contactPersonName || (lang === 'en' ? 'Not provided' : 'Walang inilagay')} />
+                    <RegistrationDetail label={lang === 'en' ? 'Legal company name' : 'Rehistradong pangalan ng kumpanya'} value={user.legalCompanyName || businessName || (lang === 'en' ? 'Not provided' : 'Walang inilagay')} />
+                    <RegistrationDetail label={lang === 'en' ? 'Operating address' : 'Address ng operasyon'} value={user.operatingAddress || (lang === 'en' ? 'Not provided' : 'Walang inilagay')} />
+                    <RegistrationDetail label={lang === 'en' ? 'Service coverage area' : 'Lugar na sakop ng serbisyo'} value={user.serviceCoverageArea || (lang === 'en' ? 'Not provided' : 'Walang inilagay')} />
+                  </>}
+                </dl>
+                {registeredServices.map(({ type, profile }) => <div key={type} className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                  <h5 className="mb-2 text-xs font-extrabold uppercase text-emerald-700 dark:text-emerald-300">{type === 'transport' ? 'Trucking' : type === 'storage' ? 'Storage' : type === 'drying' ? 'Drying' : 'Milling'}</h5>
+                  <dl className="grid gap-2 sm:grid-cols-2">
+                    {type === 'transport' && <><RegistrationDetail label={lang === 'en' ? 'Truck type' : 'Uri ng trak'} value={profile?.vehicleType || '—'} /><RegistrationDetail label={lang === 'en' ? 'Plate number' : 'Numero ng plaka'} value={profile?.plateNumber || '—'} /><RegistrationDetail label={lang === 'en' ? 'Carrying capacity' : 'Kapasidad'} value={profile?.carryingCapacity || profile?.capacity || '—'} /></>}
+                    {type === 'storage' && <><RegistrationDetail label={lang === 'en' ? 'Storage type' : 'Uri ng imbakan'} value={profile?.storageType || '—'} /><RegistrationDetail label={lang === 'en' ? 'Storage capacity' : 'Kapasidad'} value={profile?.storageCapacity || profile?.capacity || '—'} /><RegistrationDetail label={lang === 'en' ? 'Facility location' : 'Lokasyon ng pasilidad'} value={profile?.facilityLocation || '—'} /></>}
+                    {type === 'drying' && <><RegistrationDetail label={lang === 'en' ? 'Dryer type' : 'Uri ng patuyuan'} value={profile?.dryerType || '—'} /><RegistrationDetail label={lang === 'en' ? 'Batch capacity' : 'Kapasidad ng batch'} value={profile?.batchCapacity || profile?.capacity || '—'} /><RegistrationDetail label={lang === 'en' ? 'Facility location' : 'Lokasyon ng pasilidad'} value={profile?.facilityLocation || '—'} /></>}
+                    {type === 'milling' && <><RegistrationDetail label={lang === 'en' ? 'Mill type' : 'Uri ng gilingan'} value={profile?.millType || '—'} /><RegistrationDetail label={lang === 'en' ? 'Milling capacity' : 'Kapasidad'} value={profile?.millingCapacity || profile?.capacity || '—'} /><RegistrationDetail label={lang === 'en' ? 'Facility location' : 'Lokasyon ng pasilidad'} value={profile?.facilityLocation || '—'} /></>}
+                  </dl>
+                </div>)}
+              </section>}
 
-              {(user.role === 'buyer' || user.role === 'logistics' || user.role === 'truck' || user.role === 'storage' || user.role === 'dryer' || user.role === 'miller') && (
-                <div className="p-3 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-xl space-y-1">
-                  <span className="text-[10px] font-extrabold text-blue-800 dark:text-blue-300 uppercase tracking-wider block flex items-center gap-1">
-                    <Building className="w-3.5 h-3.5 text-blue-600" />
-                    {lang === 'en' ? 'Registered Business Name' : 'Pangalan ng Kumpanya / Business'}
-                  </span>
-                  <strong className="text-xs font-bold text-blue-900 dark:text-blue-200 block">
-                    {businessName || `${user.name} Trading`}
-                  </strong>
-                </div>
-              )}
+              {(user.role === 'buyer' || user.role === 'logistics' || user.role === 'truck' || user.role === 'storage' || user.role === 'dryer' || user.role === 'miller') && businessName && <RegistrationDetail label={lang === 'en' ? 'Registered business name' : 'Pangalan ng kumpanya'} value={businessName} />}
 
               {bio && (
                 <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
@@ -268,26 +300,18 @@ export default function UserProfileModal({
                 </span>
               </div>
 
-              {/* Verified ID Preview */}
-              <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200/60 dark:border-slate-700/60 space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                    {lang === 'en' ? 'Government ID or RSBSA Proof' : 'Government ID o Katibayan ng RSBSA'}
-                  </span>
-                  <span className="text-[10px] text-emerald-600 font-extrabold">{lang === 'en' ? 'Verified Document' : 'Beripikadong Dokumento'}</span>
-                </div>
-                <div className="h-24 w-full rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-900 relative">
-                  <img
-                    src={user.documents?.govIdData || 'https://images.unsplash.com/photo-1554774853-aae0a22c8aa4?w=500&auto=format&fit=crop&q=60'}
-                    alt="Gov ID"
-                    className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-all"
-                  />
-                  <div className="absolute bottom-1 right-1 bg-black/70 text-white text-[9px] px-2 py-0.5 rounded font-mono">
-                    ID-VERIFIED-0091
-                  </div>
-                </div>
-              </div>
+              {(user.role === 'farmer' || user.role === 'agricultural_business') && <section className="space-y-3 rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+                <h4 className="flex items-center gap-2 text-sm font-extrabold text-slate-800 dark:text-slate-200"><ShieldCheck className="h-4 w-4 text-emerald-600" />{lang === 'en' ? 'Registration Documents' : 'Mga Dokumento sa Rehistrasyon'}</h4>
+                {user.registrationSource === 'kiosk' && <p className="rounded-lg bg-amber-50 p-2 text-xs text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">{lang === 'en' ? 'Kiosk registration: documents are checked in person by staff.' : 'Rehistrasyon sa kiosk: pisikal na sinusuri ng kawani ang mga dokumento.'}</p>}
+                <dl className="grid gap-3 sm:grid-cols-2">
+                  <RegistrationDetail label={user.role === 'farmer' ? 'RSBSA Registration ID' : 'Company Registration ID'} value={user.documents?.govId || (user.registrationSource === 'kiosk' ? (lang === 'en' ? 'Physical verification required' : 'Kailangang suriin nang personal') : (lang === 'en' ? 'No file stored' : 'Walang nakaimbak na file'))} />
+                  {user.documents?.avatar && <RegistrationDetail label={lang === 'en' ? 'Profile photo' : 'Larawan sa profile'} value={user.documents.avatar} />}
+                  {registeredServices.some(({ type }) => type === 'transport') && <RegistrationDetail label="Truck OR/CR" value={user.documents?.transportOrCr || (user.registrationSource === 'kiosk' ? (lang === 'en' ? 'Physical verification required' : 'Kailangang suriin nang personal') : (lang === 'en' ? 'No file stored' : 'Walang nakaimbak na file'))} />}
+                  {registeredServices.some(({ type }) => type === 'storage') && <RegistrationDetail label={lang === 'en' ? 'Storage proof' : 'Patunay ng imbakan'} value={user.documents?.storageProof || (user.registrationSource === 'kiosk' ? (lang === 'en' ? 'Physical verification required' : 'Kailangang suriin nang personal') : (lang === 'en' ? 'No file stored' : 'Walang nakaimbak na file'))} />}
+                  {registeredServices.some(({ type }) => type === 'drying') && <RegistrationDetail label={lang === 'en' ? 'Drying proof' : 'Patunay ng patuyuan'} value={user.documents?.dryingProof || (user.registrationSource === 'kiosk' ? (lang === 'en' ? 'Physical verification required' : 'Kailangang suriin nang personal') : (lang === 'en' ? 'No file stored' : 'Walang nakaimbak na file'))} />}
+                  {registeredServices.some(({ type }) => type === 'milling') && <RegistrationDetail label={lang === 'en' ? 'Milling proof' : 'Patunay ng gilingan'} value={user.documents?.millingProof || (user.registrationSource === 'kiosk' ? (lang === 'en' ? 'Physical verification required' : 'Kailangang suriin nang personal') : (lang === 'en' ? 'No file stored' : 'Walang nakaimbak na file'))} />}
+                </dl>
+              </section>}
 
               {/* Edit Profile Trigger Button */}
               <button
@@ -341,10 +365,11 @@ export default function UserProfileModal({
                     {lang === 'en' ? 'Contact Phone' : 'Numero ng Telepono'}
                   </label>
                   <input
-                    type="text"
+                    type="tel"
+                    inputMode="tel"
                     required
                     value={contactNumber}
-                    onChange={(e) => setContactNumber(e.target.value)}
+                    onChange={(e) => setContactNumber(e.target.value.replace(/[\s-]/g, ''))}
                     className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold text-sm"
                   />
                 </div>
@@ -354,7 +379,7 @@ export default function UserProfileModal({
                   <div className="space-y-2">
                     {additionalContactNumbers.slice(0, 1).map((number, index) => (
                       <div key={index} className="flex gap-2">
-                        <input type="tel" value={number} onChange={(event) => setAdditionalContactNumbers(current => current.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} placeholder={lang === 'en' ? 'Additional contact number' : 'Karagdagang numero'} className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+                        <input type="tel" inputMode="tel" value={number} onChange={(event) => setAdditionalContactNumbers(current => current.map((item, itemIndex) => itemIndex === index ? event.target.value.replace(/[\s-]/g, '') : item))} placeholder={lang === 'en' ? 'Additional contact number' : 'Karagdagang numero'} className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
                         <button type="button" onClick={() => setAdditionalContactNumbers(current => current.filter((_, itemIndex) => itemIndex !== index))} aria-label={lang === 'en' ? 'Remove contact number' : 'Alisin ang contact number'} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-red-300 text-red-600 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30"><Trash2 className="size-4" /></button>
                       </div>
                     ))}
@@ -362,6 +387,8 @@ export default function UserProfileModal({
                   </div>
                 </div>
               </div>
+
+              {phoneError && <p role="alert" className="text-sm text-red-600 dark:text-red-400">{phoneError}</p>}
 
               <div className="space-y-1">
                 <label className="block text-xs font-bold uppercase text-slate-700 dark:text-slate-300">{lang === 'en' ? 'Barangay & Address' : 'Barangay at Lokasyon'}</label>
@@ -390,17 +417,25 @@ export default function UserProfileModal({
                   </div>
                 </div>
               ) : (
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-slate-300 block uppercase text-xs">
-                    {lang === 'en' ? 'Registered Business Name' : 'Pangalan ng Kumpanya'}
-                  </label>
-                  <input
-                    type="text"
-                    value={businessName}
-                    onChange={(e) => setBusinessName(e.target.value)}
-                    placeholder="e.g. San Jose Grains Trading"
-                    className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold text-sm"
-                  />
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <label htmlFor="profile-business-name" className="block text-xs font-bold uppercase text-slate-700 dark:text-slate-300">{user.role === 'agricultural_business' ? (lang === 'en' ? 'Legal Company Name' : 'Rehistradong Pangalan ng Kumpanya') : (lang === 'en' ? 'Registered Business Name' : 'Pangalan ng Kumpanya')}</label>
+                    <input id="profile-business-name" type="text" value={businessName} onChange={(e) => setBusinessName(e.target.value)} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+                  </div>
+                  {user.role === 'agricultural_business' && <>
+                    <div className="space-y-1">
+                      <label htmlFor="profile-contact-person" className="block text-xs font-bold uppercase text-slate-700 dark:text-slate-300">{lang === 'en' ? 'Contact Person' : 'Taong Kokontakin'}</label>
+                      <input id="profile-contact-person" type="text" value={contactPersonName} onChange={(e) => setContactPersonName(e.target.value)} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+                    </div>
+                    <div className="space-y-1">
+                      <label htmlFor="profile-operating-address" className="block text-xs font-bold uppercase text-slate-700 dark:text-slate-300">{lang === 'en' ? 'Operating Address' : 'Address ng Operasyon'}</label>
+                      <input id="profile-operating-address" type="text" value={operatingAddress} onChange={(e) => setOperatingAddress(e.target.value)} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+                    </div>
+                    <div className="space-y-1">
+                      <label htmlFor="profile-coverage-area" className="block text-xs font-bold uppercase text-slate-700 dark:text-slate-300">{lang === 'en' ? 'Service Coverage Area' : 'Lugar na Sakop ng Serbisyo'}</label>
+                      <input id="profile-coverage-area" type="text" value={serviceCoverageArea} onChange={(e) => setServiceCoverageArea(e.target.value)} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+                    </div>
+                  </>}
                 </div>
               )}
 
@@ -491,12 +526,12 @@ export default function UserProfileModal({
         </div>
       </motion.div>
       {pendingSave && (
-        <div className="fixed inset-0 z-[2100] flex items-center justify-center bg-black/55 p-4" role="presentation">
+        <div className="fixed inset-0 z-[2100] flex items-center justify-center bg-black/55 p-2 md:p-4" role="presentation">
           <section
             role="dialog"
             aria-modal="true"
             aria-labelledby="profile-save-confirm-title"
-            className="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+            className="flex max-h-[calc(100dvh-1rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900 md:max-h-[calc(100dvh-2rem)]"
           >
             <div className="bg-emerald-700 px-5 py-4 text-white">
               <h4 id="profile-save-confirm-title" className="text-base font-extrabold">
@@ -506,7 +541,7 @@ export default function UserProfileModal({
                 {lang === 'en' ? 'Check these details before saving.' : 'Tingnan muna ang mga detalyeng ito bago i-save.'}
               </p>
             </div>
-            <div className="max-h-[55dvh] space-y-3 overflow-y-auto p-5">
+            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-5">
               {saveSummary.length ? saveSummary.map((item) => (
                 <div key={item.label} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-slate-700 dark:bg-slate-800">
                   <div className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">{item.label}</div>

@@ -1,9 +1,11 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/config.php';
+require __DIR__ . '/phone.php';
 require __DIR__ . '/mailer.php';
 require __DIR__ . '/realtime.php';
 require __DIR__ . '/ratings.php';
+require __DIR__ . '/grainyConversation.php';
 
 $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
 $path = trim((string) ($_GET['route'] ?? ''), '/');
@@ -180,8 +182,18 @@ try {
         respond(['enabled' => $enabled]);
     }
     if ($path === 'ratings' && in_array($method, ['GET', 'POST'], true)) handleRatings($pdo, $method, $sessionIdentity());
+    if ($path === 'registrations/username' && $method === 'POST') {
+        $body = jsonBody();
+        $name = trim((string) ($body['name'] ?? ''));
+        if ($name === '') respond(['error' => 'Enter a username.'], 422);
+        $check = $pdo->prepare('SELECT 1 FROM users WHERE LOWER(TRIM(name)) = LOWER(?) LIMIT 1');
+        $check->execute([$name]);
+        respond(['available' => $check->fetchColumn() === false]);
+    }
     if ($path === 'registrations' && $method === 'POST') {
         $body = jsonBody();
+        if (!is_string($body['contactNumber'] ?? null) || !isValidMobileNumber($body['contactNumber'])) respond(['error' => 'Enter a valid Philippine mobile number (09 or +63).'], 422);
+        $body['contactNumber'] = normalizeMobileNumber($body['contactNumber']);
         $name = trim((string) ($body['name'] ?? ''));
         $email = strtolower(trim((string) ($body['email'] ?? '')));
         $password = (string) ($body['password'] ?? '');
@@ -207,9 +219,12 @@ try {
             respond(['error' => 'Upload the required registration ID, or submit from an enabled KAWING kiosk.'], 422);
         }
         beginEndpointWrite($pdo, ['users-directory', 'users:' . $email]);
-        $duplicate = $pdo->prepare('SELECT COUNT(*) FROM users WHERE LOWER(email) = ? OR LOWER(name) = LOWER(?)');
-        $duplicate->execute([$email, $name]);
-        if ((int) $duplicate->fetchColumn() > 0) respond(['error' => 'That email address or account name is already registered.'], 409);
+        $duplicateName = $pdo->prepare('SELECT 1 FROM users WHERE LOWER(TRIM(name)) = LOWER(?) LIMIT 1');
+        $duplicateName->execute([$name]);
+        if ($duplicateName->fetchColumn() !== false) respond(['error' => 'That username is already taken. Choose another username.'], 409);
+        $duplicateEmail = $pdo->prepare('SELECT 1 FROM users WHERE LOWER(email) = ? LIMIT 1');
+        $duplicateEmail->execute([$email]);
+        if ($duplicateEmail->fetchColumn() !== false) respond(['error' => 'That email address is already registered.'], 409);
         if ($palaySenseId !== '') {
             $duplicateDevice = $pdo->prepare('SELECT COUNT(*) FROM users WHERE palaysense_id = ?');
             $duplicateDevice->execute([$palaySenseId]);
@@ -224,7 +239,7 @@ try {
         $account['isApproved'] = false;
         if ($role === 'farmer' && $palaySenseId !== '') $account['palaySenseId'] = $palaySenseId;
         else unset($account['palaySenseId']);
-        if ($requiresRegistrationId && $kioskRegistration && !$hasRegistrationId) {
+        if ($requiresRegistrationId && $kioskRegistration) {
             $account['registrationSource'] = 'kiosk';
             $account['registrationDocumentStatus'] = 'pending_physical_verification';
             if ($role === 'farmer') $account['rsbsaDocumentStatus'] = 'pending_physical_verification';
@@ -446,7 +461,7 @@ try {
         $identity = $sessionIdentity();
         $body = jsonBody();
         beginEndpointWrite($pdo, ['users-directory', 'users:' . $identity['email']]);
-        $allowedFields = ['name', 'contactNumber', 'additionalContactNumbers', 'address', 'businessName', 'legalCompanyName', 'rsbsaNumber', 'palaySenseId', 'avatarUrl', 'bio', 'emailNotificationsEnabled'];
+        $allowedFields = ['name', 'fullName', 'contactNumber', 'additionalContactNumbers', 'address', 'businessName', 'legalCompanyName', 'contactPersonName', 'operatingAddress', 'serviceCoverageArea', 'rsbsaNumber', 'palaySenseId', 'avatarUrl', 'bio', 'emailNotificationsEnabled'];
         $provided = array_values(array_intersect(array_keys($body), $allowedFields));
         if (!$provided) respond(['error' => 'No profile changes were supplied.'], 422);
 
@@ -457,12 +472,14 @@ try {
             }
             if ($field === 'additionalContactNumbers') {
                 if (!is_array($body[$field])) respond(['error' => 'additionalContactNumbers must be a list.'], 422);
-                $primary = strtolower(trim((string) ($body['contactNumber'] ?? '')));
+                $primary = normalizeMobileNumber((string) ($body['contactNumber'] ?? ''));
                 $seen = []; $numbers = [];
                 foreach ($body[$field] as $number) {
                     if (!is_string($number)) respond(['error' => 'Every contact number must be text.'], 422);
-                    $number = trim($number); $key = strtolower($number);
-                    if ($number === '' || $key === $primary || isset($seen[$key])) continue;
+                    if (trim($number) === '') continue;
+                    if (!isValidMobileNumber($number)) respond(['error' => 'Enter a valid additional Philippine mobile number.'], 422);
+                    $number = normalizeMobileNumber($number); $key = $number;
+                    if ($key === $primary || isset($seen[$key])) continue;
                     $seen[$key] = true; $numbers[] = $number;
                     if (count($numbers) >= 1) break;
                 }
@@ -470,6 +487,10 @@ try {
                 continue;
             }
             if (!is_string($body[$field])) respond(['error' => "{$field} must be text."], 422);
+        }
+        if (array_key_exists('contactNumber', $body)) {
+            if (!isValidMobileNumber($body['contactNumber'])) respond(['error' => 'Enter a valid Philippine mobile number (09 or +63).'], 422);
+            $body['contactNumber'] = normalizeMobileNumber($body['contactNumber']);
         }
         if (array_key_exists('name', $body) && trim($body['name']) === '') respond(['error' => 'Your name is required.'], 422);
         if (array_key_exists('name', $body) && mb_strlen(trim($body['name'])) > 191) respond(['error' => 'Your name is too long.'], 422);
@@ -913,21 +934,7 @@ try {
             respond(['error' => 'Unsupported Grainy model.'], 422);
         }
         unset($_SESSION['grainy_reservations'][$reservation]);
-        $rawConversation = $body['conversation'] ?? [];
-        if (!is_array($rawConversation) || $rawConversation === [] || count($rawConversation) > 20) {
-            respond(['error' => 'A valid Grainy conversation is required.'], 422);
-        }
-        $conversation = [];
-        foreach ($rawConversation as $turn) {
-            if (!is_array($turn)) continue;
-            $role = (string) ($turn['role'] ?? '');
-            $content = trim((string) ($turn['content'] ?? ''));
-            if (!in_array($role, ['system', 'user', 'assistant'], true) || $content === '') continue;
-            $contentLimit = $role === 'system' ? 40000 : 6000;
-            if (mb_strlen($content) > $contentLimit) $content = mb_substr($content, 0, $contentLimit);
-            $conversation[] = ['role' => $role, 'content' => $content];
-        }
-        if ($conversation === []) respond(['error' => 'The Grainy conversation is empty.'], 422);
+        $conversation = normalizeGrainyConversation($body['conversation'] ?? null);
 
         $sendAiRequest = static function (string $url, array $headers, array $payload) use ($caBundle): array {
             $request = curl_init($url);
@@ -970,7 +977,6 @@ try {
         $contents = [];
         $openAiConversation = [];
         foreach ($conversation as $turn) {
-            if ($turn['role'] === 'system') { $systemInstruction .= "\n\n" . $turn['content']; continue; }
             $contents[] = ['role' => $turn['role'] === 'assistant' ? 'model' : 'user', 'parts' => [['text' => $turn['content']]]];
             $openAiConversation[] = $turn;
         }
