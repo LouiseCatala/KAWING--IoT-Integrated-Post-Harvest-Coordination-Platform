@@ -17,7 +17,7 @@ export function notificationDestination(notification: AppNotification, role: Use
   if (role === 'farmer') {
     if (/loan|pautang/.test(text)) return 'loans';
     if (/service|serbisyo|kahilingan|logistics/.test(title)) return 'directory';
-    if (/ani na-post|harvest posted/.test(title)) return 'harvests';
+    if (/ani na-post|harvest posted|matagumpay na na-post/.test(text)) return 'harvests';
     if (/offer|alok|buyer|mamimili/.test(text)) return 'interests';
     if (/service|serbisyo|kahilingan|transport|storage|drying|milling/.test(text)) return 'directory';
     return 'harvests';

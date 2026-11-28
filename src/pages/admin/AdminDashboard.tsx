@@ -137,8 +137,8 @@ export default function AdminDashboard({
   // 2. Centralized State to make the administrative panel 100% interactive
   const [usersList, setUsersList] = useState<UserAccount[]>(() => registeredUsers);
   const [suspendedUsers, setSuspendedUsers] = useState<string[]>([]);
-  const [rejectedApplications, setRejectedApplications] = useState<UserAccount[]>([]);
-  const [resubmissionRequests, setResubmissionRequests] = useState<string[]>([]);
+  const rejectedApplications = usersList.filter(u => u.registrationReviewStatus === 'rejected');
+  const resubmissionRequests = usersList.filter(u => u.registrationReviewStatus === 'correction_requested').map(u => u.name);
   
   // Modals
   const [selectedDoc, setSelectedDoc] = useState<SelectedDocType | null>(null);
@@ -164,17 +164,12 @@ export default function AdminDashboard({
     }
     // Propagate to AppContext and update local list
     onApproveUser(name);
-    setUsersList(prev => prev.map(u => u.name === name ? { ...u, isApproved: true } : u));
-    setResubmissionRequests(prev => prev.filter(r => r !== name));
+    setUsersList(prev => prev.map(u => u.name === name ? { ...u, isApproved: true, registrationReviewStatus: 'approved', registrationReviewReason: '' } : u));
   };
 
   const handleReject = (name: string, reason: string) => {
     onRejectUser(name, reason);
-    const userToReject = usersList.find(u => u.name === name);
-    if (userToReject) {
-      setRejectedApplications(prev => [...prev, userToReject]);
-    }
-    setUsersList(prev => prev.filter(u => u.name !== name));
+    setUsersList(prev => prev.map(u => u.name === name ? { ...u, isApproved: false, registrationReviewStatus: 'rejected', registrationReviewReason: reason.trim() } : u));
   };
 
   const handleDeleteUser = (name: string) => {
@@ -187,8 +182,12 @@ export default function AdminDashboard({
     setUsersList(prev => prev.filter(u => !names.includes(u.name)));
   };
 
-  const handleRequestResubmission = (name: string, _reason: string) => {
-    setResubmissionRequests(prev => [...prev, name]);
+  const handleRequestResubmission = (name: string, reason: string) => {
+    const applicant = usersList.find(u => u.name === name);
+    if (!applicant) return;
+    const updated: UserAccount = { ...applicant, isApproved: false, registrationReviewStatus: 'correction_requested', registrationReviewReason: reason.trim() };
+    onUpdateUser(name, updated);
+    setUsersList(prev => prev.map(u => u.name === name ? updated : u));
   };
 
   const handleToggleSuspend = (name: string) => {

@@ -45,6 +45,8 @@ export interface UserAccount {
   role: UserRole;
   rating?: number;
   isApproved?: boolean; // if false, needs admin approval
+  registrationReviewStatus?: 'approved' | 'rejected' | 'correction_requested';
+  registrationReviewReason?: string;
   contactNumber?: string;
   additionalContactNumbers?: string[];
   address?: string;

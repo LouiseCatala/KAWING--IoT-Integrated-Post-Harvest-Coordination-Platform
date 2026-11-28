@@ -39,21 +39,7 @@ const migrateLegacyProvider = (user: UserAccount): UserAccount => {
   if (user.role === 'farmer' || user.role === 'admin') return { ...user, userId };
 
   const logisticsServices = { ...(user.logisticsServices || {}) };
-  const serviceTypes = ['transport', 'storage', 'drying', 'milling'] as const;
-  serviceTypes.forEach((serviceType) => {
-    const profile = logisticsServices[serviceType];
-    if (profile?.enabled && profile.approvalStatus === 'pending') {
-      logisticsServices[serviceType] = { ...profile, approvalStatus: 'approved', isAvailable: true };
-    }
-  });
-
   const businessCapabilities = { ...(user.businessCapabilities || {}) };
-  serviceTypes.forEach((serviceType) => {
-    const profile = businessCapabilities[serviceType];
-    if (profile?.enabled && profile.approvalStatus === 'pending') {
-      businessCapabilities[serviceType] = { ...profile, approvalStatus: 'approved', isAvailable: true };
-    }
-  });
   if (user.role === 'agricultural_business' && !businessCapabilities.buyer) {
     businessCapabilities.buyer = { enabled: true, approvalStatus: user.isApproved === false ? 'pending' : 'approved', isAvailable: user.isApproved !== false };
   }
@@ -160,7 +146,7 @@ export default function App() {
             const authData = await authResponse.json();
             const restoredUser = migrateLegacyProvider(authData.user as UserAccount);
             setActiveUser(restoredUser);
-            localStorage.setItem('kawing_active_session', JSON.stringify(restoredUser));
+            try { localStorage.setItem('kawing_active_session', JSON.stringify(restoredUser)); } catch { /* Session caching must not interrupt server saves. */ }
             setPhase('dashboard');
           } else if (authResponse.status === 401 || authResponse.status === 403) {
             setActiveUser(null);
@@ -238,7 +224,7 @@ export default function App() {
     skipNextFullSnapshotSync.current = true;
     setRegisteredUsers(current => current.map(user => user.email?.toLowerCase() === savedUser.email?.toLowerCase() ? { ...user, ...savedUser } : user));
     setActiveUser(savedUser);
-    localStorage.setItem('kawing_active_session', JSON.stringify(savedUser));
+    try { localStorage.setItem('kawing_active_session', JSON.stringify(savedUser)); } catch { /* Session caching must not interrupt server saves. */ }
   };
 
   const persistUserProfile = async (updated: UserAccount, before: UserAccount): Promise<void> => {
@@ -276,7 +262,7 @@ export default function App() {
     skipNextFullSnapshotSync.current = true;
     setRegisteredUsers(current => current.map(account => account.email?.toLowerCase() === savedUser.email?.toLowerCase() ? { ...account, ...savedUser } : account));
     setActiveUser(current => current?.email?.toLowerCase() === savedUser.email?.toLowerCase() ? { ...current, ...savedUser } : current);
-    localStorage.setItem('kawing_active_session', JSON.stringify({ ...updated, ...savedUser }));
+    try { localStorage.setItem('kawing_active_session', JSON.stringify({ ...updated, ...savedUser })); } catch { /* Session caching must not interrupt server saves. */ }
   };
 
   const handlePublishAnnouncement = (title: string, content: string, notifyByEmail: boolean) => {
@@ -325,7 +311,7 @@ export default function App() {
     resetEmailConsentPrompt(user.email);
     setSyncError('');
     setActiveUser(user);
-    localStorage.setItem('kawing_active_session', JSON.stringify(user));
+    try { localStorage.setItem('kawing_active_session', JSON.stringify(user)); } catch { /* Session caching must not interrupt server saves. */ }
     setPhase('dashboard');
   };
 
@@ -375,42 +361,42 @@ export default function App() {
               },
             }
           : u.businessCapabilities;
-        return { ...u, isApproved: true, logisticsServices, businessCapabilities };
+        return { ...u, isApproved: true, registrationReviewStatus: 'approved' as const, registrationReviewReason: '', logisticsServices, businessCapabilities };
       }
       return u;
     });
     setRegisteredUsers(updatedUsers);
-    localStorage.setItem('kawing_users', JSON.stringify(updatedUsers));
+
   };
 
-  const handleRejectUser = (name: string, _reason: string) => {
-    const updatedUsers = registeredUsers.filter(u => u.name !== name);
+  const handleRejectUser = (name: string, reason: string) => {
+    const updatedUsers = registeredUsers.map(u => u.name === name ? { ...u, isApproved: false, registrationReviewStatus: 'rejected' as const, registrationReviewReason: reason.trim() } : u);
     setRegisteredUsers(updatedUsers);
-    localStorage.setItem('kawing_users', JSON.stringify(updatedUsers));
+
   };
 
   const handleDeleteUser = (name: string) => {
     const updatedUsers = registeredUsers.filter(u => u.name !== name);
     setRegisteredUsers(updatedUsers);
-    localStorage.setItem('kawing_users', JSON.stringify(updatedUsers));
+
   };
 
   const handleDeleteUsers = (names: string[]) => {
     const updatedUsers = registeredUsers.filter(u => !names.includes(u.name));
     setRegisteredUsers(updatedUsers);
-    localStorage.setItem('kawing_users', JSON.stringify(updatedUsers));
+
   };
 
   const handleDeleteHarvest = (harvestId: string) => {
     const updatedHarvests = harvests.filter(h => h.id !== harvestId);
     setHarvests(updatedHarvests);
-    localStorage.setItem('kawing_harvests', JSON.stringify(updatedHarvests));
+
   };
 
   const handleDeleteHarvests = (ids: string[]) => {
     const updatedHarvests = harvests.filter(h => !ids.includes(h.id));
     setHarvests(updatedHarvests);
-    localStorage.setItem('kawing_harvests', JSON.stringify(updatedHarvests));
+
   };
 
   const handleUpdateHarvest = (harvestId: string, updates: Partial<Harvest>) => {
@@ -420,7 +406,7 @@ export default function App() {
         : harvest
     );
     setHarvests(updatedHarvests);
-    localStorage.setItem('kawing_harvests', JSON.stringify(updatedHarvests));
+
   };
 
   const persistProviderSettings = async (updated: UserAccount, before: UserAccount) => {
@@ -444,7 +430,7 @@ export default function App() {
     skipNextFullSnapshotSync.current = true;
     setRegisteredUsers(current => current.map(account => account.email?.toLowerCase() === savedUser.email?.toLowerCase() ? { ...account, ...savedUser } : account));
     setActiveUser(savedUser);
-    localStorage.setItem('kawing_active_session', JSON.stringify(savedUser));
+    try { localStorage.setItem('kawing_active_session', JSON.stringify(savedUser)); } catch { /* Session caching must not interrupt server saves. */ }
   };
 
   const handleUpdateUser = (originalName: string, updated: UserAccount, formBaseline?: UserAccount) => {
@@ -474,13 +460,13 @@ export default function App() {
     if (providerSettingsChanged || emailPreferenceChanged || profileChanged) skipNextFullSnapshotSync.current = true;
     const updatedUsers = registeredUsers.map(u => u.name === originalName ? { ...u, ...updated } : u);
     setRegisteredUsers(updatedUsers);
-    localStorage.setItem('kawing_users', JSON.stringify(updatedUsers));
+
 
     // Sync active user session if they updated themselves
     if (activeUser && activeUser.name === originalName) {
       const newActive = { ...activeUser, ...updated };
       setActiveUser(newActive);
-      localStorage.setItem('kawing_active_session', JSON.stringify(newActive));
+      try { localStorage.setItem('kawing_active_session', JSON.stringify(newActive)); } catch { /* Session caching must not interrupt server saves. */ }
     }
     if (providerSettingsChanged) {
       void persistProviderSettings(updated, formBaseline || originalUser || activeUser || updated).catch(error => {
@@ -582,7 +568,7 @@ export default function App() {
     };
     const updatedHarvests = [newHarvest, ...harvests];
     setHarvests(updatedHarvests);
-    localStorage.setItem('kawing_harvests', JSON.stringify(updatedHarvests));
+
 
     const isOpenBidding = newHarvest.sellingMethod === 'bidding' && !newHarvest.targetBuyerEmail;
 
@@ -702,7 +688,9 @@ export default function App() {
           activeUser.email || 'magsasaka@kawing.com',
           'KAWING Update',
           msg,
-          'success'
+          'success',
+          false,
+          { Page: serviceType === 'buyer' ? 'harvests' : 'directory' }
         );
       });
     } else {
@@ -710,7 +698,9 @@ export default function App() {
         activeUser.email || 'magsasaka@kawing.com',
         'Bagong Ani na-Post',
         `Matagumpay na na-post ang iyong ani na ${newHarvest.cropType} sa market board.`,
-        'success'
+        'success',
+        false,
+        { Page: 'harvests' }
       );
     }
   };
@@ -764,7 +754,7 @@ export default function App() {
       return h;
     });
     setHarvests(updatedHarvests);
-    localStorage.setItem('kawing_harvests', JSON.stringify(updatedHarvests));
+
 
     const serviceNameFilipino = 
       type === 'transport' ? 'transportasyon' :
@@ -1114,7 +1104,7 @@ export default function App() {
       return h;
     });
     setHarvests(updatedHarvests);
-    localStorage.setItem('kawing_harvests', JSON.stringify(updatedHarvests));
+
 
     // 3. Notify farmer
     addNotification(

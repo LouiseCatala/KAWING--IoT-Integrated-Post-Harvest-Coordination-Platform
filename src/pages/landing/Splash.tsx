@@ -102,8 +102,8 @@ export default function Splash({ onComplete }: SplashProps) {
       <footer className="landing-footer">
         <div className="landing-footer-grid">
           <div className="landing-footer-brand"><img src={kawingLogo} alt="KAWING" /><p>{copy.connecting}</p></div>
-          <div><h3>{copy.address}</h3><p>6M67+94C, Magalang, Pampanga</p></div>
-          <div><h3>{copy.office}</h3><p>{copy.weekdays}</p><p>{copy.weekends}</p></div>
+          <div data-nosnippet><h3>{copy.address}</h3><p>6M67+94C, Magalang, Pampanga</p></div>
+          <div data-nosnippet><h3>{copy.office}</h3><p>{copy.weekdays}</p><p>{copy.weekends}</p></div>
         </div>
         <div className="landing-copyright">{copy.rights}</div>
         <p className="landing-disclaimer">{copy.disclaimer}</p>

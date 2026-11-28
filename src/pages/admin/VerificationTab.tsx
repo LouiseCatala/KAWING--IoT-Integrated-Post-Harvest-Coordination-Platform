@@ -349,9 +349,9 @@ export default function VerificationTab({
             <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
               {filteredResubmissions.map((name) => (
                 <div key={name} className="py-3 flex justify-between items-center">
-                  <span className="font-bold text-slate-900 dark:text-white">{name}</span>
+                  <div><span className="font-bold text-slate-900 dark:text-white">{name}</span><p className="mt-1 whitespace-pre-wrap break-words text-slate-500">{pendingUsers.find(u => u.name === name)?.registrationReviewReason}</p></div>
                   <span className="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">
-                    {lang === 'en' ? 'Waiting for upload' : 'Naghihintay ng upload'}
+                    {lang === 'en' ? 'Corrections requested' : 'Hinihinging pagwawasto'}
                   </span>
                 </div>
               ))}
@@ -379,6 +379,7 @@ export default function VerificationTab({
                     <span className="ml-2 px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 uppercase text-[8px] font-bold">
                       {accountTypeLabel(u)}
                     </span>
+                    <p className="mt-1 whitespace-pre-wrap break-words text-slate-500">{u.registrationReviewReason}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] text-red-600 font-bold bg-red-50 dark:bg-red-950/20 px-2 py-0.5 rounded">
@@ -448,8 +449,8 @@ export default function VerificationTab({
             <p className="mt-2 text-sm text-slate-500">{lang === 'en' ? 'Applicant:' : 'Aplikante:'} <b>{decision.user.name}</b></p>
             {decision.action !== 'approve' && <textarea autoFocus required value={decisionReason} onChange={(e) => setDecisionReason(e.target.value)} placeholder={decision.action === 'reject' ? (lang === 'en' ? 'Explain why the application is rejected…' : 'Ipaliwanag kung bakit tinatanggihan ang aplikasyon…') : (lang === 'en' ? 'List the documents or information that must be corrected…' : 'Ilista ang mga dokumento o impormasyong kailangang itama…')} className="mt-4 min-h-28 w-full rounded-xl border border-slate-300 bg-slate-50 p-3 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />}
             <div className="mt-5 flex gap-3">
-              <button type="button" onClick={() => setDecision(null)} className="flex-1 rounded-xl border border-slate-300 py-3 text-sm font-bold text-slate-700 dark:border-slate-700 dark:text-slate-300">{lang === 'en' ? 'Cancel' : 'Kanselahin'}</button>
-              <button type="button" disabled={decision.action !== 'approve' && !decisionReason.trim()} onClick={() => { if (decision.action === 'approve') onApprove(decision.user.name); else if (decision.action === 'reject') onReject(decision.user.name, decisionReason.trim()); else onRequestResubmission(decision.user.name, decisionReason.trim()); setDecision(null); }} className={`flex-1 rounded-xl py-3 text-sm font-black text-white disabled:opacity-50 ${decision.action === 'reject' ? 'bg-red-600' : 'bg-emerald-600'}`}>{lang === 'en' ? 'Confirm' : 'Kumpirmahin'}</button>
+              <button type="button" onClick={() => setDecision(null)} className="flex-1 cursor-pointer rounded-xl border border-slate-300 py-3 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-emerald-500 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">{lang === 'en' ? 'Cancel' : 'Kanselahin'}</button>
+              <button type="button" disabled={decision.action !== 'approve' && !decisionReason.trim()} onClick={() => { if (decision.action === 'approve') onApprove(decision.user.name); else if (decision.action === 'reject') onReject(decision.user.name, decisionReason.trim()); else onRequestResubmission(decision.user.name, decisionReason.trim()); setDecision(null); }} className={`flex-1 cursor-pointer rounded-xl py-3 text-sm font-black text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 disabled:cursor-not-allowed disabled:opacity-50 ${decision.action === 'reject' ? 'bg-red-600 hover:bg-red-500' : 'bg-emerald-600 hover:bg-emerald-500'}`}>{lang === 'en' ? 'Confirm' : 'Kumpirmahin'}</button>
             </div>
           </div>
         </div>
